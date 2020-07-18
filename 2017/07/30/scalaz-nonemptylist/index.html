@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Scalaz NonEmptyList | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In this post we’ll look at NonEmptyList which is a singly-linked list guaranteed to be non-empty. Let’s begin by seeing how using a NEL (short for NonEmptyList) in appropriate places is better than us">
+<meta name="keywords" content="scala,functional programming,scalaz">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scalaz NonEmptyList">
+<meta property="og:url" content="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In this post we’ll look at NonEmptyList which is a singly-linked list guaranteed to be non-empty. Let’s begin by seeing how using a NEL (short for NonEmptyList) in appropriate places is better than us">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Scalaz NonEmptyList">
+<meta name="twitter:description" content="In this post we’ll look at NonEmptyList which is a singly-linked list guaranteed to be non-empty. Let’s begin by seeing how using a NEL (short for NonEmptyList) in appropriate places is better than us">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-scalaz-nonemptylist" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/30/scalaz-nonemptylist/" class="article-date">
+  <time datetime="2017-07-30T15:55:30.000Z" itemprop="datePublished">2017-07-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Scalaz NonEmptyList
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/NonEmptyList.scala" target="_blank" rel="noopener">NonEmptyList</a> which is a singly-linked list guaranteed to be non-empty. Let’s begin by seeing how using a NEL (short for <code>NonEmptyList</code>) in appropriate places is better than using regular <code>List</code>.  </p>
+<h2 id="Contrasting-List-with-NEL"><a href="#Contrasting-List-with-NEL" class="headerlink" title="Contrasting List with NEL"></a>Contrasting List with NEL</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">email</span></span>(body: <span class="type">String</span>, recipients: <span class="type">List</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// send email</span></span><br><span class="line">  &#125;</span><br><span class="line">defined function email</span><br></pre></td></tr></table></figure>  
+<p>Let’s say we’re writing an <code>email</code> function that sends email to a list of people. A naive assumption would be to always expect <code>recipients</code> to have at least one element. However, we <em>may</em> end up with an empty list and that’ll lead to painstaking debugging trying to find out why emails weren’t sent out.   </p>
+<p>So, we’ll change our <code>email</code> function to this:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">email</span></span>(body: <span class="type">String</span>, recipients: <span class="type">List</span>[<span class="type">String</span>]): <span class="type">Either</span>[<span class="type">String</span>, <span class="type">String</span>] = &#123;</span><br><span class="line">    <span class="keyword">if</span>(recipients.length == <span class="number">0</span>)</span><br><span class="line">        <span class="type">Left</span>(<span class="string">"Empty list of recipients"</span>)</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="comment">// send email</span></span><br><span class="line">        <span class="type">Right</span>(<span class="string">s"Email sent to <span class="subst">$&#123;recipients.length&#125;</span> recipient(s)"</span>)</span><br><span class="line">  &#125;</span><br><span class="line">defined function email</span><br></pre></td></tr></table></figure>  
+<p>Now although we’re handling the case of empty list, we’ve introduced unnecessary noise with an <code>if</code>-<code>else</code>. Here’s how we can get a guarantee on being non-empty and avoid the conditional:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">email</span></span>(body: <span class="type">String</span>, recipients: <span class="type">NonEmptyList</span>[<span class="type">String</span>]): <span class="type">Unit</span> = &#123;</span><br><span class="line">    <span class="comment">// send email</span></span><br><span class="line">  &#125;</span><br><span class="line">defined function email</span><br></pre></td></tr></table></figure>  
+<p>Voila! Using a NEL gives us two advantages:</p>
+<ul>
+    <li> A guarantee on never receiving an empty list </li>
+    <li> Expressing our intent in the function signature </li>
+</ul>
+
+<p>With that said, let’s look at how we can create and use NELs.  </p>
+<h3 id="Creating-a-NEL"><a href="#Creating-a-NEL" class="headerlink" title="Creating a NEL"></a>Creating a NEL</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">res2: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure>
+<p>In the example above, we’re using the <code>apply</code> method to create a NEL. It looks like the following:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>[<span class="type">A</span>](h: <span class="type">A</span>, t: <span class="type">A</span>*)</span><br></pre></td></tr></table></figure>
+<p>The first argument is the head whereas the second argument is varargs which becomes the tail. Internally, the <code>apply</code> method calls the <code>nels</code> method. We can use that directly, too.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span> nels(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">res3: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure>
+<p>You can also create a NEL from a single value by using <code>wrapNel</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.</span>wrapNel</span><br><span class="line">res4: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
+<p>You can even create a NEL in the cons list way like you’d do with a <code>List</code></p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// good ol' List</span></span><br><span class="line">@ <span class="number">1</span> :: <span class="type">List</span>(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">res5: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// NEL</span></span><br><span class="line">@ <span class="number">1</span> &lt;:: <span class="type">NonEmptyList</span>(<span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>)</span><br><span class="line">res6: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure>
+<p>You can convert a <code>List</code> to a NEL by calling <code>toNel</code>. This will yield an <code>Option</code> of NEL since the <code>List</code> may be empty</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) toNel</span><br><span class="line">res7: <span class="type">Option</span>[<span class="type">NonEmptyList</span>[<span class="type">Int</span>]] = <span class="type">Some</span>(<span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>])</span><br></pre></td></tr></table></figure>
+<h3 id="Appending-NELs"><a href="#Appending-NELs" class="headerlink" title="Appending NELs"></a>Appending NELs</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) append <span class="type">NonEmptyList</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line">res8: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>]</span><br></pre></td></tr></table></figure>  
+<p>You can also concatenate two NELs by using <code>append</code>.  </p>
+<h3 id="Head-and-Tail"><a href="#Head-and-Tail" class="headerlink" title="Head and Tail"></a>Head and Tail</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).head</span><br><span class="line">res13: <span class="type">Int</span> = <span class="number">1</span></span><br><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).tail</span><br><span class="line">res14: <span class="type">IList</span>[<span class="type">Int</span>] = <span class="type">ICons</span>(<span class="number">2</span>, <span class="type">ICons</span>(<span class="number">3</span>, []))</span><br><span class="line"></span><br><span class="line">@ <span class="type">List</span>().head</span><br><span class="line">java.util.<span class="type">NoSuchElementException</span>: head of empty list</span><br><span class="line">  scala.collection.immutable.<span class="type">Nil</span>$.head(<span class="type">List</span>.scala:<span class="number">428</span>)</span><br><span class="line">  scala.collection.immutable.<span class="type">Nil</span>$.head(<span class="type">List</span>.scala:<span class="number">425</span>)</span><br><span class="line">  ammonite.$sess.cmd15$.&lt;init&gt;(cmd15.sc:<span class="number">1</span>)</span><br><span class="line">  ammonite.$sess.cmd15$.&lt;clinit&gt;(cmd15.sc)</span><br></pre></td></tr></table></figure>  
+<p><code>head</code> and <code>tail</code> return and head and tail of the NEL, respectively. Note that <code>head</code> is guaranteed to work without exceptions because we’ll always have one element.</p>
+<h3 id="Iterating"><a href="#Iterating" class="headerlink" title="Iterating"></a>Iterating</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) foreach println</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"></span><br><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) map &#123; _ + <span class="number">1</span> &#125;</span><br><span class="line">res18: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure>  
+<p>Because NEL is also a list, you can perform familiar list operations like <code>foreach</code>, <code>map</code>, etc.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This post was intended to give you an introduction to Scalaz <code>NonEmptyList</code> and how it differs from the usual <code>List</code>. The guarantee on NEL being non-empty means that you can call <code>head</code> without having to worry about exceptions. This makes your code less cluttered and its intent more expressive. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="ckcr7ulfh001qr8t24fwuoura" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/01/scalaz-lens/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Scalaz Lens
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/07/17/scalaz-either/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Scalaz Either</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

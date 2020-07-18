@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Assumptions Underlying Ordinary Least Squares | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Assumptions Underlying Ordinary Least Squares">
+<meta property="og:url" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_2.png">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.854Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Assumptions Underlying Ordinary Least Squares">
+<meta name="twitter:description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
+<meta name="twitter:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" class="article-date">
+  <time datetime="2018-11-12T03:32:15.000Z" itemprop="datePublished">2018-11-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Assumptions Underlying Ordinary Least Squares
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression line we obtained is a good fit. In other words, we need to assess how close $\hat{\beta}_1$ and $\hat{\beta}_2$ are to $\beta_1$ and $\beta_2$ or how close $\hat{Y}_i$ is to $E(Y|X_i)$. Recall that the population regression function (PRF) is given by $Y_i = \beta_1 + \beta_2X_i + u_i$. This shows that the value of $Y_i$ depends on $X_i$ and $u_i$. To be able to make any statistical inference about $Y_i$ (and $\beta_1$ and $\beta_2$) we need to make assumptions about how the values of $X_i$ and $u_i$ were generated. We’ll discuss these assumptions in this post as they’re important for the valid interpretation of the regression estimates. </p>
+<h2 id="Classic-Linear-Regression-Model-CLRM"><a href="#Classic-Linear-Regression-Model-CLRM" class="headerlink" title="Classic Linear Regression Model (CLRM)"></a>Classic Linear Regression Model (CLRM)</h2><p>There are 7 assumptions that <strong>Gaussian</strong> or <strong>Classic</strong> linear regression model (CLRM) makes. These are:  </p>
+<h3 id="1-The-regression-model-is-linear-in-parameters"><a href="#1-The-regression-model-is-linear-in-parameters" class="headerlink" title="1. The regression model is linear in parameters"></a>1. The regression model is linear in parameters</h3><p>Recall that the population regression function is given by $Y_i = \beta_1 + \beta_2X_i + u_i$. This is linear in parameters since $\beta_1$ and $\beta_2$ have power 1. The explanatory variables, however, do not have to be linear.  </p>
+<h3 id="2-Values-of-X-are-fixed-in-repeated-sampling"><a href="#2-Values-of-X-are-fixed-in-repeated-sampling" class="headerlink" title="2. Values of X are fixed in repeated sampling"></a>2. Values of X are fixed in repeated sampling</h3><p>In this series of posts, we’ll be looking at <strong>fixed regressor models</strong><sup>[1]</sup> where the values of X are considered to be fixed when drawing a random sample. For example, in the previous post the values of X were fixed between 80 and 260. If another sample were to be drawn, the sample values of X would be used.  </p>
+<h3 id="3-Zero-mean-value-of-the-error-term-u-i"><a href="#3-Zero-mean-value-of-the-error-term-u-i" class="headerlink" title="3. Zero mean value of the error term $u_i$"></a>3. Zero mean value of the error term $u_i$</h3><p>This assumption states that for every given $X_i$, the error term $u_i$ is zero, on average. This should be intuitive. The regression line passes through the conditional mean for every $X_i$. The error term $u_i$ are distances of the individual points $Y_i$ from the conditional mean. Some of them lie above the regression line and some of them lie below. However, they cancel each other out; the positive $u_i$ cancel out the negative $u_i$ and therefore $u_i$ is zero, on average. Notationally, $E(u_i|X_i) = 0$. </p>
+<p>What this assumption means that all those variables that were not considered to be a part of the regression model do not systematically affect $E(Y|X_i)$ i.e. their effect on average is zero on $E(Y|X_i)$. </p>
+<p>This assumption also means is that there is no <strong>specification error</strong> or <strong>specification bias</strong>. This happens when we chose the wrong functional form for the regression model, exclude necessary explanatory variables or include unnecessary ones.  </p>
+<h3 id="4-Constant-variance-of-u-i-homoscedasticity"><a href="#4-Constant-variance-of-u-i-homoscedasticity" class="headerlink" title="4. Constant variance of $u_i$ (homoscedasticity)"></a>4. Constant variance of $u_i$ (homoscedasticity)</h3><p>This assumption states that the variation of $u_i$ is the same regardless of $X$.  </p>
+<script type="math/tex; mode=display">
+\begin{align}
+var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
+& = E(u_i|X_i)^2 \\
+& = E(u_i^2) \\
+& = \sigma^2
+\end{align}</script><p>With this assumption, we assume that the variance of $u_i$ for a given $X_i$ (i.e. conditional variance) is a positive constant value given by $\sigma^2$. This means that the variance for the various $Y$ populations is the same. What this also means is that the variance around the regression line is the same and it neither increases nor decreases with change in values of $X$.  </p>
+<h3 id="5-No-autocorrelation-between-disturbances"><a href="#5-No-autocorrelation-between-disturbances" class="headerlink" title="5. No autocorrelation between disturbances"></a>5. No autocorrelation between disturbances</h3><p>Given any two $X$ values, $X_i$ and $X_j$ ($i \neq j$), the correlation between any two $u_i$ and $u_j$ is zero. In other words, the observations are independently sampled. Notationally, $cov(u_i, u_j|X_i, X_j) = 0$. This assumption states that there is no <strong>serial correlation</strong> or <strong>autocorrelation</strong> i.e. $u_i$ and $u_j$ are uncorrelated.  </p>
+<p>To build an intuition, let’s consider the population regression function $Y_t = \beta_1 + \beta_2X_t + u_t$   </p>
+<p>Now suppose that $u_t$ and $u_{t-1}$ are positively correlated. This means that $Y_t$ depends not only on $X_t$ but also on $u_{t-1}$ because that affects $u_t$. Autocorrelation occurs in timeseries data like stock market trends where the the observation of one day depends on the observation of the previous day. What we assume is that each observation is independent as it is in case of the income-expense example we saw.  </p>
+<h3 id="6-The-sample-size-n-must-be-greater-than-the-number-of-parameters-to-estimate"><a href="#6-The-sample-size-n-must-be-greater-than-the-number-of-parameters-to-estimate" class="headerlink" title="6. The sample size $n$ must be greater than the number of parameters to estimate"></a>6. The sample size $n$ must be greater than the number of parameters to estimate</h3><p>This is fairly simple to understand. To be able to estimate $\beta_1$ and $\beta_2$, we need atleast 2 pairs of observations.</p>
+<h3 id="7-Nature-of-X-variables"><a href="#7-Nature-of-X-variables" class="headerlink" title="7. Nature of X variables"></a>7. Nature of X variables</h3><p>There are a few things we assume about the value of $X$ variables. One, for a given sample they are not all the same i.e. $var(X)$ is a positive number. Second, there are no outliers among the values.  </p>
+<p>If we have all the values of $X$ the same in a given sample, the regression line would be a horizontal line and therefore it will be impossible to estimate $\beta_2$ and thus $\beta_1$. This will happen because in the equation $\hat{\beta}_2 = \frac{\sum{x_iy_i}}{\sum{x_i^2}}$, the denominator will become zero since $Xi$ and $\bar{X}$ will be the same.</p>
+<p>Furthermore, we assume that there are no outliers in the $X$ values. Suppose there are a few $X$ values which are far apart from the mean value, the regression line which we get will be vastly different depending on whether the sample drawn contains these outliers or not.  </p>
+<p>These are the 7 assumptions underlying OLS. In the next section, I’d like to elucidate on assumption 3 and 5 a little more.  </p>
+<h2 id="More-on-Assumption-3-and-5"><a href="#More-on-Assumption-3-and-5" class="headerlink" title="More on Assumption 3. and 5."></a>More on Assumption 3. and 5.</h2><p>In assumption 3. we state that $E(u_i|X_i) = 0$ i.e. on average the disturbance term is zero. For the expected value of a variable $u_i$ given another variable $X_i$ be zero means the two variables are uncorrelated. We assume these two variables to be uncorrelated so that we can assess the impact each has on the predicted value of $Y_i$. If the disturbance $u_i$ and the explanatory variable $X_i$ were correlated positively or negatively then it means that $u_i$ contains some factor that affects the predicted value of $Y_i$ i.e. we’ve skipped an important explanatory variable that should’ve been included in the regression model. This means we have functionally misspecified our regression model and introduced specification bias.  </p>
+<p>Functionally misspecifying our regression model will also introduce autocorrelation in our model. Consider the two plots shown below.  </p>
+<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
+<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_2.png">
+<p>In the first plot the line fits the sample points properly. In the second one, it doesn’t fit properly. The sample points seem to form a curve of some sort while we try to fit a straight line through it. What we get is runs of negative residuals followed by positive residuals which indicates autocorrelation.  </p>
+<p>Autocorrelation can also be introduced not just by functionally misspecifying the regression model but also by the nature of data itself. For example, consider timeseries data representing stock market movement. The value of $X_t$ depends on $X_{t-1}$ i.e. the two are correlated.   </p>
+<p>When there is autocorrelation, the OLS estimators are no longer the best estimators for predicting the value of $Y_i$.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>In this post we looked at the assumptions underlying OLS. In the coming post we’ll look at the Gauss-Markov theorem and the BLUE property of OLS estimators.  </p>
+<hr>
+
+<p>[1] There are also <strong>stochastic regression models</strong> where the values of X are not fixed.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" data-id="ckcr7ulev000br8t2qxuozuuh" data-title="Assumptions Underlying Ordinary Least Squares" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Precision of OLS Estimates
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Bivariate Linear Regression</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

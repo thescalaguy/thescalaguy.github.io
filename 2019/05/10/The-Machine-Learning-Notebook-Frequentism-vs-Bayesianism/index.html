@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Frequentism vs Bayesianism | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="When it comes to statistics, there’s two schools of thought - frequentism and Bayesianism. In the coming posts we’ll be looking at hypothesis testing and interval estimation and knowing the difference">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Frequentism vs Bayesianism">
+<meta property="og:url" content="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="When it comes to statistics, there’s two schools of thought - frequentism and Bayesianism. In the coming posts we’ll be looking at hypothesis testing and interval estimation and knowing the difference">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Frequentism vs Bayesianism">
+<meta name="twitter:description" content="When it comes to statistics, there’s two schools of thought - frequentism and Bayesianism. In the coming posts we’ll be looking at hypothesis testing and interval estimation and knowing the difference">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/" class="article-date">
+  <time datetime="2019-05-10T05:53:25.000Z" itemprop="datePublished">2019-05-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Frequentism vs Bayesianism
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>When it comes to statistics, there’s two schools of thought - frequentism and Bayesianism. In the coming posts we’ll be looking at hypothesis testing and interval estimation and knowing the difference between the two schools is important. In this post I’ll go over what frequentism and Bayesianism are and how they differ.   </p>
+<h2 id="What-is-‘probability’"><a href="#What-is-‘probability’" class="headerlink" title="What is ‘probability’?"></a>What is ‘probability’?</h2><p>The reason for these two schools of thoughts is the difference in their interpretation of probability. For frequentists, probabilities are about frequency of occurence of events. For Bayesians, probabilities are about degree of certainty of events. This fundamental divide in the definition of probability leads to vastly different methods of statistical analysis.  </p>
+<h2 id="The-two-schools"><a href="#The-two-schools" class="headerlink" title="The two schools"></a>The two schools</h2><p>The aim of both the frequentists and Bayesians is the same - to estimate some parameters of a population that are unknown.  </p>
+<p>The assumption of the frequentist approach is that the parameters of a population are fixed but unknown constants. Since these are constants, no statements of probability can be made about them. The frequentist procedures work by drawing a large number of random samples, calculating a statistic using each of these samples, and then finding the probability distribution of the statistic. This is called the sampling distribution. Statements of probability can be made about the statistic. </p>
+<p>The assumption of the Bayesian approach is that the parameters of a population are random variables. This allows making probability statements about them. There is a notion of some true value that the parameters can take with certain probability. The Bayesian approach thus allows adding in some prior information. The cornerstone of Bayesian approach is Bayes’ theorem:  </p>
+<script type="math/tex; mode=display">
+P(\mathcal{H} ~ | ~ \mathcal{D}) = \frac{P(\mathcal{D} ~ | ~ \mathcal{H}) ~ P(\mathcal{H})} {P(\mathcal{D})}</script><p>Here, $\mathcal{H}$ is the hypothesis and $\mathcal{D}$ is the data. What the theorem lets us calculate is the posterior $P(\mathcal{H} ~ | ~ \mathcal{D})$ which is the probability of the hypothesis being true given the data. The prior $P(\mathcal{H})$ is the probability that $H$ is true before the data is considered. The prior lets us encode our beliefs about the parameters of the population into the equation. $P(\mathcal{D} ~ | ~ \mathcal{H})$ is the likelihood and is the evidence about hypothesis $\mathcal{H}$ given data $\mathcal{D}$. Finally, $P(\mathcal{D})$ is the probability of getting the data regardless of the hypothesis. </p>
+<p>What’s important here is the prior $P(\mathcal{H})$. This is our degree of certainty about the hypothesis $\mathcal{H}$ being true. This probability can itself be calculated using frequentist methods but what matters is the fact that Bayesian approach lets us factor it in.   </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Frequentist</th>
+<th>Bayesian</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parameters are fixed, unknown constants. No statements of probability can be made about them.</td>
+<td>Parameters are random variables. Since random variables have an underlying probability distribution, statements of probability can be made about them.</td>
+</tr>
+<tr>
+<td>Probability is about long run frequencies.</td>
+<td>Probability is about specifying the degree of (un)certainty.</td>
+</tr>
+<tr>
+<td>No statements of probability are made about the data or the hypothesis.</td>
+<td>Statements of probability are made about both data and hypothesis.</td>
+</tr>
+<tr>
+<td>Makes use only of the likelihood.</td>
+<td>Makes use of both the prior and the likelihood.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="The-procedures"><a href="#The-procedures" class="headerlink" title="The procedures"></a>The procedures</h2><p>In the frequentist approach, the parameters are an unknown constant and it is the data that changes (by repeated sampling). In the Bayesian approach, the parameters are a random variable and it is the data that stays constant (the data that has been observed).  In this section we will contrast the frequentist confidence interval with Bayesian credible interval.  </p>
+<p>Both confidence intervals and credible intervals are interval estimators. Interval estimators provide a range of values that the true parameters can take.  </p>
+<h3 id="The-frequentist-confidence-interval"><a href="#The-frequentist-confidence-interval" class="headerlink" title="The frequentist confidence interval"></a>The frequentist confidence interval</h3><p>Let’s assume that there’s a true parameter $\theta$, representing the mean of a population, that we are trying to estimate. From a sample of values $(x_1, x_2, \dots, x_n)$ we can then construct two estimators $\hat{\theta}_1$ and $\hat{\theta}_2$ and say that the true value $\theta$ lies between $\hat{\theta}_1$ and $\hat{\theta}_2$ with a certain level of confidence.   </p>
+<p>To be confident that $\hat{\theta}_1 \le \theta \le \hat{\theta}_2$, we need to know the sampling distribution of the estimator. If the random variable $X$ is normally distributed, then the sample mean $\bar{X}$ is also normally distributed with mean $\mu$ (true mean) and variance $\frac{\sigma^2}{n}$ i.e. $\bar{X} \sim \mathcal{N}(\mu, \frac{\sigma^2}{n})$. In a normal distribution, 95% of the area under the curve is covered by two standard deviations. Therefore, if we want 95% of the intervals to contain the true value of $\theta$, we can construct an interval $\bar{X} \pm 2 \frac{\sigma}{\sqrt{n}}$.  </p>
+<p>What this means is that if we were to keep drawing samples and constructing these intervals, 95% of these random intervals will contain the true value of the parameter $\theta$. This can be stated more generally as $P(\hat{\theta}_1 \le \theta \le \hat{\theta}_2) = 1 - \alpha$. This means that with probability $1 - \alpha$ (with $0 &lt; \alpha &lt; 1$), the interval between $\hat{\theta}_1$ and $\hat{\theta}_2$ contains the true value of the parameter $\theta$. So, if we set $\alpha = 0.05$, we’re constructing a 95% confidence interval. $\alpha$ is called the level of significance and is the probability of committing type I error.  </p>
+<p>Let’s suppose we’re trying to find the average height of men. It is normally distributed with mean $\mu$ and standard deviation $\sigma = 2.5$ inches. We take a sample of $n = 100$ and find that the sample mean $\bar{X} = 67$ inches. The 95% confidence interval would be $\bar{X} \pm 2 \left( \frac{2.5}{\sqrt{100}} \right)$. This gives us the confidence interval $66.5 \le \mu \le 67.5$. This is one such interval. If we were to construct 100 such intervals, 95 of them would contain the true parameter $\mu$. </p>
+<p>The caveat here is that for simplicity I’ve assumed the critical value to be 2 instead of 1.96 for constructing the interval.</p>
+<h3 id="The-Bayesian-credible-interval"><a href="#The-Bayesian-credible-interval" class="headerlink" title="The Bayesian credible interval"></a>The Bayesian credible interval</h3><p>A Bayesian credible interval is an interval that has a high posterior probability, $1 - \alpha$, of containing the true value of the parameter. Compared to the frequentist confidence intervals which say that $(1 - \alpha)\%$ of all the intervals calculated will contain the true parameter $\theta$, the Bayesian credible interval says that the calculated interval has $(1 - \alpha)\%$ probability of containing the true parameter. </p>
+<p>Let’s suppose we’re interested in the proportion of population <sup><a href="http://www2.stat.duke.edu/~rcs46/lecturesModernBayes/601-module3-morebayes/lecture5-more-bayes.pdf" target="_blank" rel="noopener">[1]</a></sup> that gets 8 hours of sleep every night. The parameter $\theta$ here now represents proportion. A sample of 27 is drawn of which 11 get 8 hours of sleep every night. Therefore, the random variable $X \sim \text{Binom}(27, ~ \theta)$.   </p>
+<p>To calculate a Bayesian credible interval, we need to assume a subjective prior. Suppose the prior was $\text{Beta}(3.3, 7.2)$. The posterior would thus be $\text{Beta}(11 + 3.3, 27 - 11 + 7.2) = \text{Beta}(14.3, 23.2)$. This can be calculated using <code>scipy</code> as follows:  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> scipy <span class="keyword">import</span> stats</span><br><span class="line">stats.beta.interval(<span class="number">0.9</span>, <span class="number">14.3</span>, <span class="number">23.2</span>)</span><br><span class="line">(<span class="number">0.256110060437748</span>, <span class="number">0.5138511051170076</span>)</span><br></pre></td></tr></table></figure>
+<p>The 90% credible interval is (0.256, 0.514).  </p>
+<p>In summary, here are some of the frequentist approaches and their Bayesian counterparts.  </p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Frequentist</th>
+<th>Bayesian</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max likelihood estimation (MLE)</td>
+<td>Max a posteriori (MAP)</td>
+</tr>
+<tr>
+<td>Confidence interval</td>
+<td>Credible interval</td>
+</tr>
+<tr>
+<td>Significance test</td>
+<td>Bayes factor</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A thing that I have glossed over is handling of nuisance parameters. Bayesian procedures provide a general way of dealing with nuisance parameters. These are the parameters we do not want to make inference about, and we do not want them to interfere with the inference we are making about the main parameter. For example, if we’re trying to infer the mean of a normal distribution, the variance is a nuisance parameter.</p>
+<h2 id="The-critique"><a href="#The-critique" class="headerlink" title="The critique"></a>The critique</h2><p>The prior is subjective and can change from person to person. This is the frequentist critique of the Bayesian approach; it introduces subjectivity into the equation. The frequentist approach make use of only the likelihood. On the other hand, the Bayesian criticism of the frequentist approach is that it uses an implicit prior. Bayes theorem can be restated as $\text{posterior} \propto \text{likelihood} \times \text{prior}$. For the frequentist approach, which makes use of likelihood, the prior would need to be set to 1 i.e. a flat prior. The Bayesian approach makes the use of prior explicit even if it is subjective.  </p>
+<p>The Bayesian criticism of frequentist procedures is that they do not answer the question that was asked but rather skirt around it. Suppose the question posed was “in what range will the true values of the parameter lie?”. The Bayesian credible interval will give one, albeit subjective, interval. The frequentist confidence interval, however, will give many different intervals. In that sense, frequentism isn’t answering the question posed.  </p>
+<p>Another Bayesian criticism of the frequentist procedures that they rely on the possible samples that could occur but did not instead of relying on the one sample that did occur. Bayesian procedures treat this sample as the fixed data and vary the parameters around it.  </p>
+<p>The end.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/" data-id="ckcr7ulez000ir8t2mxbplfjt" data-title="Frequentism vs Bayesianism" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Max Likelihood</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

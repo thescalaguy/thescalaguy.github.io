@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Gauss-Markov Theorem | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Gauss-Markov Theorem">
+<meta property="og:url" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Gauss-Markov Theorem">
+<meta name="twitter:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
+<meta name="twitter:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-Gauss-Markov-Theorem" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" class="article-date">
+  <time datetime="2019-03-28T09:10:03.000Z" itemprop="datePublished">2019-03-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Gauss-Markov Theorem
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to state that the OLS estimators are the best linear unbiased estimators, in the class of linear unbiased estimators. </p>
+<h2 id="Gauss-Markov-Theorem"><a href="#Gauss-Markov-Theorem" class="headerlink" title="Gauss-Markov Theorem"></a>Gauss-Markov Theorem</h2><p>To recap briefly, some of the assumptions we made were that:</p>
+<ol>
+<li>On average, the stochastic error term is zero i.e. $E(u_i | X_i) = 0$. </li>
+<li>The data is homoscedastic i.e. the variance / standard deviation of the stochastic error term is a finite value regardless of $X_i$. </li>
+<li>The model is linear in parameters i.e. $\beta_1$ and $\beta_2$ have power 1. </li>
+<li>There is no autocorrelation between the disturbance terms.  </li>
+</ol>
+<p>The Gauss-Markov theorem states the following: </p>
+<blockquote>
+<p>Given the assumptions underlying the CLRM, the OLS estimators, in the class of linear unbiased estimators, have minimum variance. That is, they are BLUE (Best Linear Unbiased Estimators).  </p>
+</blockquote>
+<p>We’ll go over what it means for an estimator to be best, linear, and unbiased.  </p>
+<img src="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
+<h2 id="Linear"><a href="#Linear" class="headerlink" title="Linear"></a>Linear</h2><p>The dependent variable $Y$ is a linear function of the variables in the model. The model must be linear in parameters. Under this assumption $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i + \hat{u}_i$ and $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i^2 + \hat{u}_i$ are both valid models since the estimators are linear in both of them. </p>
+<h2 id="Unbiased"><a href="#Unbiased" class="headerlink" title="Unbiased"></a>Unbiased</h2><p>This means that on average, the value of the estimator is the same as the parameter it is estimating i.e. $E(\hat{\beta}_1) = \beta_1$.</p>
+<h2 id="Best"><a href="#Best" class="headerlink" title="Best"></a>Best</h2><p>This means that among the class of linear estimators, the OLS estimators will have the least variance. Consider the two normal distributions shown in the graph above for two linear, unbiased estimators $\hat{\beta}_1$ (represented by orange) and $\beta_1^*$ (represented by blue). Also let’s assume that the true value of $\beta_1$ is zero. This means that both of these are unbiased since, on average, their value is the same as the true value of the parameter. However, the OLS estimator $\hat{\beta}_1$ is better since it has lesser variance compared to the other estimator. </p>
+<p>Finito.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="ckcr7ulf0000kr8t2oh3hrnwd" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Classic Normal Linear Regression Model
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Precision of OLS Estimates</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

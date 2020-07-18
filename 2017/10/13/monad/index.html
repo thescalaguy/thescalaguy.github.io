@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Monad | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
+<meta name="keywords" content="category theory,scala,functional programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Monad">
+<meta property="og:url" content="http://fasihkhatib.com/2017/10/13/monad/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Monad">
+<meta name="twitter:description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-monad" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/13/monad/" class="article-date">
+  <time datetime="2017-10-13T00:50:09.000Z" itemprop="datePublished">2017-10-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Monad
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am sure that you’ve used it without realizing it. So let’s get to it.</p>
+<h2 id="Definition"><a href="#Definition" class="headerlink" title="Definition"></a>Definition</h2><p>A monad has more structure than a functor. This means that you can call <code>map</code> on it and that it obeys all the functor laws. In addition, a monad has a <code>flatMap</code> function which you can use to chain monads together. In essence, monads represent units of computation that you can chain together and the result of this chaining is also a monad.</p>
+<p>Let’s look at a few examples.</p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> first = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line"><span class="keyword">val</span> next = <span class="type">List</span>(<span class="number">8</span>, <span class="number">9</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">  i &lt;- first</span><br><span class="line">  j &lt;- next</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">yield</span>(i * j)</span><br></pre></td></tr></table></figure>
+<p>The above code<sup><a href="http://debasishg.blogspot.in/2008/03/monads-another-way-to-abstract.html" target="_blank" rel="noopener">[1]</a></sup> uses a <code>for</code> comprehension to muliply elements of the list together. Under the hood, this gets translated to:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">first flatMap &#123;</span><br><span class="line">  f =&gt; next map &#123;</span><br><span class="line">    n =&gt; f * n</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The compiler is making use of the <code>List</code> monad to chain operations together. Let’s break this down. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">next map &#123;</span><br><span class="line">  n =&gt; f * n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>This part of the code will return a <code>List</code> since that is what calling <code>map</code> on a <code>List</code> does. Since we have two elements in <code>first</code> list, the result of mapping will generate two lists of two elements each. This isn’t what we want. We want a single list that combines the results together. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">first flatMap &#123;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>The flattening of results is what <code>flatMap</code> does - it takes the two lists and squishes them into one.</p>
+<h2 id="Monad-Laws"><a href="#Monad-Laws" class="headerlink" title="Monad Laws"></a>Monad Laws</h2><p>For something to be a monad, it has to obey the monadic laws. There’s three monad laws:  </p>
+<ol>
+<li>Left identity</li>
+<li>Right identity</li>
+<li>Associativity</li>
+</ol>
+<h3 id="Left-Identity"><a href="#Left-Identity" class="headerlink" title="Left Identity"></a>Left Identity</h3><p>This law means that if we take a value, put it into a monad, and then <code>flatMap</code> it with a function <code>f</code>, that’s the same as simply applying the function <code>f</code> to the original value. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = &#123; <span class="type">List</span>(x * <span class="number">2</span>) &#125;</span><br><span class="line">f: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// left identity</span></span><br><span class="line"><span class="type">List</span>(<span class="number">2</span>).flatMap(f) == f(<span class="number">2</span>)</span><br><span class="line">res5: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h3 id="Right-Identity"><a href="#Right-Identity" class="headerlink" title="Right Identity"></a>Right Identity</h3><p>This law means that if we take a monad, <code>flatMap</code> it, and within that <code>flatMap</code> we try to create a monad out of it, then that’s the same as original monad. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// right identity</span></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap(&#123; x =&gt; <span class="type">List</span>(x) &#125;) == <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res6: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>Let’s walkthrough this. The function to <code>flatMap</code> gets the elements of the original list, <code>List(1, 2, 3)</code>, one-by-one. The result is <code>List(List(1), List(2), List(3))</code>. This is then flattened to create <code>List(1, 2, 3)</code>, which is the original list.</p>
+<h3 id="Associativity"><a href="#Associativity" class="headerlink" title="Associativity"></a>Associativity</h3><p>This law states that if we apply a chain of functions to our monad, that’s the same as the composition of all the functions. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = &#123; <span class="type">List</span>(x + <span class="number">1</span>) &#125;</span><br><span class="line">f: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">g</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = &#123; <span class="type">List</span>(x + <span class="number">1</span>) &#125;</span><br><span class="line">g: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap(f).flatMap(g) == <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap(x =&gt; f(x).flatMap(g))</span><br><span class="line">res8: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on monads and their laws. <code>List</code> isn’t the only monad in your arsenal. <code>Option</code>s and <code>Future</code>s are monads, too. I suggest going ahead and constructing examples for monadic laws for them. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="ckcr7ulf70012r8t2tfet7cws" data-title="Monad" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/11/16/unit-testing-with-specs/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Unit Testing with Specs
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/09/05/functors/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Functor</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/10/13/monad/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Functor | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="The next algebraic structure we’ll look at is a functor. In the introduction, we saw that a category consists of objects and arrows. As an example, we morphed a set of strings to another set which con">
+<meta name="keywords" content="category theory,scala,functional programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Functor">
+<meta property="og:url" content="http://fasihkhatib.com/2017/09/05/functors/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="The next algebraic structure we’ll look at is a functor. In the introduction, we saw that a category consists of objects and arrows. As an example, we morphed a set of strings to another set which con">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Functor">
+<meta name="twitter:description" content="The next algebraic structure we’ll look at is a functor. In the introduction, we saw that a category consists of objects and arrows. As an example, we morphed a set of strings to another set which con">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-functors" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/09/05/functors/" class="article-date">
+  <time datetime="2017-09-05T03:16:09.000Z" itemprop="datePublished">2017-09-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Functor
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>The next algebraic structure we’ll look at is a functor. In the <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/">introduction</a>, we saw that a category consists of objects and arrows. As an example, we morphed a set of strings to another set which contained the reverse of those strings. In other words, we morphed an object to another object. What if we could morph an entire category to another category while preserving the structure? Well, that’s what a functor does.</p>
+<h2 id="Formal-Definition"><a href="#Formal-Definition" class="headerlink" title="Formal Definition"></a>Formal Definition</h2><p>Let $C$ and $D$ be categories. A <strong>functor</strong> $F: C \rightarrow D$ is a map taking each $C$-object $A$ to a $D$-object $F(A)$ and each $C$-arrow $f: A \rightarrow B$ to a $D$ arrow $F(f): F(A) \rightarrow F(B)$, such that all $C$-objects $A$ and composable $C$-arrows $f$ and $g$ </p>
+<ol>
+<li> $F(id_A) = id_{F(A)}$ </li>
+<li> $F(g \circ f) = F(g) \circ F(f)$
+</li></ol>
+
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Say we have a set $S$. From this set we create another set $List(S)$ which contains finite lists of elements drawn from $S$. The functor we want maps from set to set. Since we know that a category contains objects and arrows, $List$ becomes the object part. The arrow part takes a function $f:S \rightarrow S^\prime$ to a function $List(f): List(S) \rightarrow List(S^\prime)$ that given a list $L = [s_1, s_2, s_3, … s_n]$ maps $f$ over elements of $L$</p>
+<script type="math/tex; mode=display">
+List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How does this translate to code? This actually translates fairly easily to code. Containers like lists, trees, etc. that you can call <code>map</code> on are functors.   </p>
+<p>Let’s write some code. We’ll begin by creating a set $S$.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> <span class="type">S</span> = <span class="type">Set</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>)</span><br><span class="line"><span class="type">S</span>: <span class="type">Set</span>[<span class="type">Int</span>] = <span class="type">Set</span>(<span class="number">0</span>, <span class="number">5</span>, <span class="number">1</span>, <span class="number">6</span>, <span class="number">9</span>, <span class="number">2</span>, <span class="number">7</span>, <span class="number">3</span>, <span class="number">8</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll create $f: S \rightarrow S^\prime$.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>) = &#123; x * <span class="number">2</span> &#125;</span><br><span class="line">defined function f</span><br></pre></td></tr></table></figure>
+<p>Next, let’s create $L$.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> <span class="type">L</span> = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line"><span class="type">L</span>: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll create the function <code>maplist</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">maplist</span></span>(f: <span class="type">Int</span> =&gt; <span class="type">Int</span>)(<span class="type">L</span>: <span class="type">List</span>[<span class="type">Int</span>]) = <span class="type">L</span> map f</span><br><span class="line">defined function maplist</span><br></pre></td></tr></table></figure>
+<p>Finally, let’s see this in action:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ maplist(f)(<span class="type">L</span>)</span><br><span class="line">res4: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">2</span>, <span class="number">4</span>, <span class="number">6</span>)</span><br></pre></td></tr></table></figure>
+<p>As we can see, <code>maplist</code> applied the function <code>f</code> on all elements of <code>L</code>. We did this by using the <code>map</code> method of a <code>List</code> instance. </p>
+<h2 id="Functor-Laws"><a href="#Functor-Laws" class="headerlink" title="Functor Laws"></a>Functor Laws</h2><p>All functors are expected to obey the two laws that we saw in the formal definition. Let’s see how they translate to code.</p>
+<h3 id="First-Law"><a href="#First-Law" class="headerlink" title="First Law"></a>First Law</h3><script type="math/tex; mode=display">F(id_A) = id_{F(A)}</script><p>The first law states that if we map the identity function over a functor, we’ll get back a functor which is the same as the original functor.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) map identity</span><br><span class="line">res5: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+<p>As we can see, applying <code>identity</code> to the list gives back the same list.</p>
+<h3 id="Second-Law"><a href="#Second-Law" class="headerlink" title="Second Law"></a>Second Law</h3><script type="math/tex; mode=display">F(g \circ f) = F(g) \circ F(f)</script><p>The second law states that if we map a functor using a composition of two functions, $F(g \circ f)$, it’s the same as first mapping the functor using the first function and then mapping the resulting functor using the second function, $F(g) \circ F(f)$.</p>
+<p>We’ll begin by creating two functions <code>f</code> and <code>g</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>): <span class="type">Int</span> = x + <span class="number">1</span></span><br><span class="line">defined function f</span><br><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">g</span></span>(x: <span class="type">Int</span>): <span class="type">Int</span> = x + <span class="number">1</span></span><br><span class="line">defined function g</span><br></pre></td></tr></table></figure>
+<p>Now let’s put the theory into practice.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// composition of two functions</span></span><br><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) map &#123; x =&gt; g(f(x)) &#125;</span><br><span class="line">res8: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// applying map twice</span></span><br><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) map f map g</span><br><span class="line">res9: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>)</span><br></pre></td></tr></table></figure>
+<p>As we see, the two lists are the same.</p>
+<h2 id="More-Functor-Examples"><a href="#More-Functor-Examples" class="headerlink" title="More Functor Examples"></a>More Functor Examples</h2><h3 id="Example-1"><a href="#Example-1" class="headerlink" title="Example 1"></a>Example 1</h3><p>Let’s consider a category where objects are integers. Arrows between objects indicates a “divided by” relationship. For example,</p>
+<script type="math/tex; mode=display">
+10 \rightarrow 5</script><p>This indicates that 10 can be divided by 5. To reiterate, objects are numbers and arrows represent a “divided by” relationship. </p>
+<p>Now let’s create a functor from the category to itself. This functor will multiply each object by 13. So, $F(10) = 130$. Is this a valid functor? We have $a \rightarrow b$ but is it true that $F(a) \rightarrow F(b)$?</p>
+<p>The answer is yes. Our category has arrows that indicate a “divided by” relationship. So, $\frac{a}{b}$ will be an integer. Similarly, $\frac{13a}{13b}$ will also be an integer and maintain a “divided by” relationship. This shows that arrows do not always have to be functions. They can also indicate a relationship between their domain and codomain.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>In this post we saw functors which map objects from one category to another. Containers like trees, lists, etc. are functors. All functors are required to obey the two functor laws.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="ckcr7ulf6000zr8t2j8vz1yup" data-title="Functor" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/10/13/monad/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Monad
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/08/10/monoid/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Monoid</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/09/05/functors/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

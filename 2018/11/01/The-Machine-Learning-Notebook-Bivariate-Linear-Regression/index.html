@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Bivariate Linear Regression | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Bivariate Linear Regression">
+<meta property="og:url" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_2.png">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Bivariate Linear Regression">
+<meta name="twitter:description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
+<meta name="twitter:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-Bivariate-Linear-Regression" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" class="article-date">
+  <time datetime="2018-11-01T13:46:43.000Z" itemprop="datePublished">2018-11-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Bivariate Linear Regression
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanatory variable. Since we only have two variables involved, it’s called <strong>bivariate linear regression</strong>.  </p>
+<h2 id="Ordinary-Least-Squares"><a href="#Ordinary-Least-Squares" class="headerlink" title="Ordinary Least Squares"></a>Ordinary Least Squares</h2><p>We defined sample regression function as:</p>
+<script type="math/tex; mode=display">
+{Y_i} = \hat{\beta}_1 + \hat{\beta}_2X_i + \hat{u}_i \\\\
+{Y_i} = \hat{Y}_i + \hat{u}_i</script><p>The term $\hat{u}_i$ is called the <strong>residual</strong>. If we re-write the sample regression function, we get $\hat{u}_i = Y_i - \hat{Y}_i$. The residual then represents how far off our estimated value $\hat{Y}_i$ is from the actual value $Y_i$.<sup>[1]</sup> A reasonable assumption to make is that we should pick $\hat{\beta}_1$ and $\hat{\beta}_2$ such that the sum of $\hat{u}_i$ is the smallest. This would mean that our estimates are close to the actual values.  </p>
+<p>This assumption, however, does not work. Let’s assume that our values for $\hat{u}_i$ are -10, 3, -3, 10. Here the sum is zero but we can see that the first and last predictions are far apart from the actual values. To mitigate this, we can add the squares of the residuals. We need to pick $\hat{\beta}_1$ and $\hat{\beta}_2$ such that the sum of the square of the residuals is the minimum i.e. $\sum{\hat{u}_i^2} = \sum{(Y_i - \hat{Y}_i)^2}$ is the least.   </p>
+<p>Again, assuming the values of $\hat{u}_i$ to be -10, 3, -3, 10, the squares are 100, 9, 9, 100. This sums to 218. This shows us that the predicted values are far from the actual values. $\sum{\hat{u}_i^2}$ is called the <strong>residual sum of squares (RSS)</strong> or the <strong>squared error term</strong>.  </p>
+<p>The method of OLS provides us with estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ such that, for a given sample set, $\sum{\hat{u}_i^2}$ is the least. These estimators are given by the formula:  </p>
+<script type="math/tex; mode=display">
+\begin{align}
+\hat{\beta}_2 &= \frac{\sum{x_iy_i}}{\sum{x_i^2}} \\ 
+\hat{\beta}_1 &= \bar{Y} - \hat{\beta}_2\bar{X}
+\end{align}</script><p>where $x_i$ = $X_i - \bar{X}$, $y_i = Y_i - \bar{Y}$. These are the differences of individual values from their corresponding sample mean $\bar{X}$ or $\bar{Y}$. The estimators thus obtained are called <strong>least-squares estimators</strong>.  </p>
+<p>Now that we’ve covered significant ground, let’s solve a sum by hand.  </p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Let’s start by drawing a random sample from the original dataset. The sample I’ve drawn looks like this:  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">income (X)  expenditure (Y)</span><br><span class="line">        80               65</span><br><span class="line">       100               70</span><br><span class="line">       120               84</span><br><span class="line">       140               80</span><br><span class="line">       160              118</span><br><span class="line">       180              130</span><br><span class="line">       200              144</span><br><span class="line">       220              137</span><br><span class="line">       240              191</span><br><span class="line">       260              150</span><br></pre></td></tr></table></figure>
+<p>To see how this contrasts with the original dataset, here’s a plot of the original dataset and the random sample. The faint green points represent the original dataset whereas the red ones are the sample we’ve drawn. As always, our task is to use the sample dataset to come up with a regression line that’s as close as possible to the population dataset i.e. use the red dots to come up with a line that’d be similar to the line we’d get if we had all the faint green dots.</p>
+<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png"> 
+<p>I’ll write some Python + Pandas code to come up with the intermediate calculations and the final $\hat{\beta}_1$ and $\hat{\beta}_2$ values. I highly recommend that you solve this by hand to get the feel for it.  </p>
+<figure class="highlight python"><figcaption><span>regression.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ols</span><span class="params">(sample)</span>:</span></span><br><span class="line">    Xbar = sample[<span class="string">'X'</span>].mean()</span><br><span class="line">    Ybar = sample[<span class="string">'Y'</span>].mean()</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'x'</span>] = sample[<span class="string">'X'</span>].apply(<span class="keyword">lambda</span> Xi: Xi - Xbar)</span><br><span class="line">    sample[<span class="string">'x_sq'</span>] = sample[<span class="string">'x'</span>].apply(<span class="keyword">lambda</span> x: x ** <span class="number">2</span>)</span><br><span class="line">    sample[<span class="string">'y'</span>] = sample[<span class="string">'Y'</span>].apply(<span class="keyword">lambda</span> Yi: Yi - Ybar)</span><br><span class="line">    sample[<span class="string">'xy'</span>] = sample[[<span class="string">'x'</span>, <span class="string">'y'</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">'x'</span>] * row[<span class="string">'y'</span>], axis=<span class="string">'columns'</span>)</span><br><span class="line"></span><br><span class="line">    beta2cap = sample[<span class="string">'xy'</span>].sum() / sample[<span class="string">'x_sq'</span>].sum()</span><br><span class="line">    beta1cap = Ybar - (beta2cap * Xbar)</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'Ycap'</span>] = sample[<span class="string">'X'</span>].apply(<span class="keyword">lambda</span> X: beta1cap + (beta2cap * X))</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'ucap'</span>] = sample[[<span class="string">'Y'</span>, <span class="string">'Ycap'</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">'Y'</span>] - row[<span class="string">'Ycap'</span>], axis=<span class="string">'columns'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta1cap, beta2cap</span><br></pre></td></tr></table></figure>
+<p>On calling the function, these are the results I get:  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>ols(sample)</span><br><span class="line">(<span class="number">9.696969696969703</span>, <span class="number">0.6306060606060606</span>)</span><br></pre></td></tr></table></figure>
+<p>and the intermediate calculations are the following:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">     X    Y     x    x_sq     y      xy        Ycap       ucap</span><br><span class="line">0   80   65 -90.0  8100.0 -51.9  4671.0   60.145455   4.854545</span><br><span class="line">1  100   70 -70.0  4900.0 -46.9  3283.0   72.757576  -2.757576</span><br><span class="line">2  120   84 -50.0  2500.0 -32.9  1645.0   85.369697  -1.369697</span><br><span class="line">3  140   80 -30.0   900.0 -36.9  1107.0   97.981818 -17.981818</span><br><span class="line">4  160  118 -10.0   100.0   1.1   -11.0  110.593939   7.406061</span><br><span class="line">5  180  130  10.0   100.0  13.1   131.0  123.206061   6.793939</span><br><span class="line">6  200  144  30.0   900.0  27.1   813.0  135.818182   8.181818</span><br><span class="line">7  220  137  50.0  2500.0  20.1  1005.0  148.430303 -11.430303</span><br><span class="line">8  240  191  70.0  4900.0  74.1  5187.0  161.042424  29.957576</span><br><span class="line">9  260  150  90.0  8100.0  33.1  2979.0  173.654545 -23.654545</span><br></pre></td></tr></table></figure>
+<p>Let’s plot the line we obtained as a result of this. </p>
+<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_2.png">
+<h2 id="Interpreting-the-Results"><a href="#Interpreting-the-Results" class="headerlink" title="Interpreting the Results"></a>Interpreting the Results</h2><p>Our calculations gave us the results that $\hat{\beta}_1 = 9.6969$ and $\hat{\beta}_2 = 0.630$. Having a slope ($\hat{\beta}_2$) of $0.630$ means that for every unit increase in income, there’s an increase of $0.630$ in expenditure. The intercept $\hat{\beta}_1$ is where the regression line meets the Y axis. This means that even without any income, a persion would have an expenditure of $9.6969$. In a lot of cases, however, the intercept term doesn’t really matter as much as the slope and how to interpret the intercept depends upon what the Y axis represents.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it for this post on bivariate linear regression. We saw how to calculate $\hat{\beta}_1$ and $\hat{\beta}_2$ and worked on a sample problem. We also saw how to interpret the result of the calculations. In the coming post we’ll look at how to assess whether the regression line is a good fit.</p>
+<hr>  
+
+<p>[1] It’s important to not confuse the stochastic error term $u_i$ with the residual $\hat{u}_i$. The stochastic error term represents the inherent variability of data whereas the residual represents the difference between the predicted and actual values of $Y_i$. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" data-id="ckcr7ulex000dr8t2cnpfmenb" data-title="Bivariate Linear Regression" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Assumptions Underlying Ordinary Least Squares
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Introduction to Linear Regression</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

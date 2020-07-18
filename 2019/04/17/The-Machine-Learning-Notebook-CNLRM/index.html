@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Classic Normal Linear Regression Model | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Classic Normal Linear Regression Model">
+<meta property="og:url" content="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Classic Normal Linear Regression Model">
+<meta name="twitter:description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-CNLRM" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" class="article-date">
+  <time datetime="2019-04-17T05:32:08.000Z" itemprop="datePublished">2019-04-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Classic Normal Linear Regression Model
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$, is to the true $\beta_2$? This is a question of statistical inference. To be able to make an inference, $\beta_2$ would need to follow some distribution. CLRM makes no assumptions about the distribution of data. CNLRM (Classic Normal Linear Regression Model), however, adds the assumption of normality i.e. the data and parameters are normally distributed.  </p>
+<p>In this post we will cover the normal distribution, CNLRM, and how the assumption of normality helps us.  </p>
+<h2 id="Normal-Distribution"><a href="#Normal-Distribution" class="headerlink" title="Normal Distribution"></a>Normal Distribution</h2><p>A probability distribution is a function which provides the probabilities of the outcomes of a random phenomenon. For example, a random variable $D$ could describe the outcomes of rolling a fair dice. The probability distribution would then be a function that would return $\frac{1}{6}$ for each of the outcomes of $D$.</p>
+<p>The normal distribution is the most commonly encoutered probability distribution. It states that the averages (or any other statistic like sum or count) calculated by drawing samples of observations from a random variable tend to converge to the normal. The distribution is defined by two parameters - the mean ($\mu$), and the variance ($\sigma^2$). If a random variable $X$ is normally distributed, it is written notationally as $X \sim \mathcal{N}(\mu, \sigma^2)$. The probability density function of normal distribution is given by:  </p>
+<script type="math/tex; mode=display">
+f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2 \sigma ^ 2}}</script><h2 id="Distribution-of-u-i-hat-beta-1-and-hat-beta-2"><a href="#Distribution-of-u-i-hat-beta-1-and-hat-beta-2" class="headerlink" title="Distribution of $u_i$, $\hat{\beta}_1$, and $\hat{\beta}_2$"></a>Distribution of $u_i$, $\hat{\beta}_1$, and $\hat{\beta}_2$</h2><p>For us to be able to draw any inference about the estimators $\hat{\beta}_1$ and $\hat{\beta}_2$, we will have to make some assumption about the probability distribution of $u_i$. In one of the previous posts we saw that $\hat{\beta}_2 = \frac{\sum{x_iy_i}} {\sum{x_i^2}}$. This can alternatively be written as $\hat{\beta}_2 = \frac{\sum{x_iY_i}} {\sum{x_i^2}} = \sum{k_iY_i}$ where $k = \frac{x_i}{\sum{x_i^2}}$. So we have  </p>
+<script type="math/tex; mode=display">
+\begin{align}
+\hat{\beta}_2 & = \sum{k_i Y_i} \\
+& = \sum{k_i (\beta_1 + \beta_2X_i + u_i)} 
+\end{align}</script><p>The $k_i$, betas, and $X_i$ are fixed and therefore $\hat{\beta}_2$ is a linear function of $u_i$. Under CNLRM, we assume $u_i$ to be to be normally distributed. A property of normally distributed random variables is that their linear functions are also normally distributed. What this means is that since $\hat{\beta}_1$ and $\hat{\beta}_2$ are linear functions of $u_i$, they are also normally distributed.<br>As mentioned previously, a normal distribution is described by its mean and variance. This means $u_i$ can also be described by its mean and variance as $u_i \sim \mathcal{N}(0, \sigma^2)$. What this shows us is that we assume, on average, for $u_i$ to be zero and there to be constant variance (homoscedasticity). </p>
+<p>A further assumption we make is that $cov(u_i, u_j) = 0$ where $i \ne j$. This means that the $u_i$ and $u_j$ are uncorrelated and independently distributed because zero correlation between two normally distributed variables implies statstical independence. </p>
+<p>Also note that since $u_i$ is normally distributed, so is $Y_i$. We can state this as $Y_i \sim \mathcal{N}(\beta_1 + \beta_2X_i, \sigma^2) $ </p>
+<h2 id="Why-do-we-assume-normality"><a href="#Why-do-we-assume-normality" class="headerlink" title="Why do we assume normality?"></a>Why do we assume normality?</h2><p>We assume normality for the following reasons:  </p>
+<p>First, the $u_i$ subsume the effect of a large number of factors that affect the dependent variable but are not included in the regression model. By using the central limit theorem we can state that the distribution of the sum of these variables will be normal. </p>
+<p>Second, because we assume $u_i$ to be normal, both $\hat{\beta}_1$ and $\hat{\beta}_2$ are normal since they are linear functions of $u_i$.  </p>
+<p>Third, the normal distribution is fairly easy to understand as it involves just two parameters, and is extensively studied.  </p>
+<h2 id="Properties-of-estimators-under-CNLRM"><a href="#Properties-of-estimators-under-CNLRM" class="headerlink" title="Properties of estimators under CNLRM"></a>Properties of estimators under CNLRM</h2><ol>
+<li>They are unbiased.  </li>
+<li>They have minimum variance.  </li>
+</ol>
+<p>Combinining 1. and 2. means that the estimators are efficient - they are minimum-variance unbiased.  </p>
+<ol>
+<li><p>They are consistent. This means that as the size of the sample increases, the values of the estimators tend to converge to the true population value.  </p>
+</li>
+<li><p>The estimators have the least variance in the class of all estimators - linear or otherwise. This makes the estimators best unbiased estimators (BUE) as opposed to best linear unbiased estimators (BLUE).</p>
+</li>
+</ol>
+<h2 id="Misc"><a href="#Misc" class="headerlink" title="Misc"></a>Misc</h2><p>Earlier in the post I mentioned that $\hat{\beta}_2 = \frac{\sum{x_iY_i}} {\sum{x_i^2}}$. This section gives the derivation of this expression. We will look at the numerator for ease of calculation.  </p>
+<script type="math/tex; mode=display">
+\begin{align} 
+\sum{x_i y_i} &=  \sum{(X_i - \bar{X}) (Y_i - \bar{Y})} \\
+&= \sum{[X_iY_i - X_i\bar{Y} - \bar{X}Y_i + \bar{X}\bar{Y}]} \\
+&= \sum{[Y_i(X_i - \bar{X}) - X_i\bar{Y} + \bar{X}\bar{Y}]} \\ 
+&= \sum{Y_ix_i} - \sum{X_i\bar{Y}} + n\bar{X}\bar{Y} \\
+&= \sum{Y_ix_i} - n\bar{X}\bar{Y} + n\bar{X}\bar{Y} \\ 
+&= \sum{x_i Y_i} 
+\end{align}</script><p>Finito.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" data-id="ckcr7uley000fr8t2f8bzga7c" data-title="Classic Normal Linear Regression Model" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Max Likelihood
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Gauss-Markov Theorem</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Implementing TSum: An Algorithm for Table Summarization | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="So, I am taking a break from my JVM JIT series to write this post about a table summarization algorithm that I had implemented way back in my college days. Simply put, the algorithm finds the most des">
+<meta name="keywords" content="machine learning,algorithms">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Implementing TSum: An Algorithm for Table Summarization">
+<meta property="og:url" content="http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="So, I am taking a break from my JVM JIT series to write this post about a table summarization algorithm that I had implemented way back in my college days. Simply put, the algorithm finds the most des">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.854Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Implementing TSum: An Algorithm for Table Summarization">
+<meta name="twitter:description" content="So, I am taking a break from my JVM JIT series to write this post about a table summarization algorithm that I had implemented way back in my college days. Simply put, the algorithm finds the most des">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Implementing-TSum-An-Algorithm-for-Table-Summarization" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/" class="article-date">
+  <time datetime="2018-10-21T12:12:11.000Z" itemprop="datePublished">2018-10-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Implementing TSum: An Algorithm for Table Summarization
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>So, I am taking a break from my JVM JIT series to write this post about a table summarization algorithm that I had implemented way back in my college days. Simply put, the algorithm finds the most descriptive patterns in the table that succinctly convey the meaning of the rows contained i.e. summarize it. This post will focus on what the algorithm is and how it’s implemented in JavaScript. Take this post with a grain of salt because the implementation was a part of my college assignment and hasn’t been thoroughly checked for correctness.  </p>
+<h3 id="What-is-TSum"><a href="#What-is-TSum" class="headerlink" title="What is TSum?"></a>What is TSum?</h3><p>TSum is the <a href="https://ai.google/research/pubs/pub41683" target="_blank" rel="noopener">algorithm published by Google Research</a> <sup><a href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41683.pdf" target="_blank" rel="noopener">[link to the pdf]</a></sup>. To quote the abstract:</p>
+<blockquote>
+<p>Given a table where rows correspond to records and columns correspond to attributes, we want to find a small number of patterns that succinctly summarize the dataset. … TSum, a method that provides a sequence of patterns ordered by their “representativeness.” It can decide both which these patterns are, as well as how many are necessary to properly summarize the data.  </p>
+</blockquote>
+<p>An algorithm like this is useful in situations where the volume of data is so large that it’d be impossible for a human to deduce anything from it simply by looking at the data. For example, given patient records, a description like “most patients are middle-aged men with cholestrol, followed by child patients with chickenpox” provides a very human-readable summary of the data.  </p>
+<p>The algorithm views finding the best pattern as a compression problem — the best pattern will give the best compression.  </p>
+<h3 id="Definitions"><a href="#Definitions" class="headerlink" title="Definitions"></a>Definitions</h3><h4 id="Pattern-and-Pattern-Size"><a href="#Pattern-and-Pattern-Size" class="headerlink" title="Pattern and Pattern Size"></a>Pattern and Pattern Size</h4><p>A pattern $P$ is a tuple $(A_1 = u_1, …, A_D = u_D)$ where $u_i$ can can be either a specific value or a “don’t care” value represented by $\ast$. The number of matching attributes in a pattern is called the size of the pattern and is denoted by $size(P)$. An attribute is considered matching if and only if its value doesn’t equal “don’t care” value.  </p>
+<h4 id="Pattern-List-and-Pattern-Set"><a href="#Pattern-List-and-Pattern-Set" class="headerlink" title="Pattern List and Pattern Set"></a>Pattern List and Pattern Set</h4><p>A pattern list is an ordered sequence of patterns $\mathcal{P} = [P_1, P_2 …]$ while a pattern set is a set of patterns $\mathcal{P} = \{P_1, P_2 … \}$ with no order.  </p>
+<h4 id="Compression-Saving"><a href="#Compression-Saving" class="headerlink" title="Compression Saving"></a>Compression Saving</h4><p>Compression saving of a pattern $P$ on a table $\mathcal{T}$, denoted as $Saving(P,\mathcal{T})$ is the amount of compression it can achieve. Specifically, it is the difference of bits between he uncompressed and compressed representations of the data records covered by the pattern $P$. Let $N$ be the number of records covered by pattern $P$ and $D$ be the number of attributes in $\mathcal{T}$. Then, </p>
+<script type="math/tex; mode=display">Saving(P, \mathcal{T}) = Benefit(P, \mathcal{T}) - Overhead(P, \mathcal{T})</script><p>where</p>
+<script type="math/tex; mode=display">Benefit(P, \mathcal{T}) = (N - 1) \ast \sum_{i, A_i \in matched(P)} W_i</script><p>and</p>
+<script type="math/tex; mode=display">Overhead(P, \mathcal{T}) = D + log^*(N)</script><p>$W_i$ is the average number of bits in the i<sup>th</sup> attribute.<br>$D$ is the number of attributes.<br>$log^*(N) = 2 \ast \lceil log_2(N+2) \rceil$ </p>
+<h4 id="Residue-Data-Table"><a href="#Residue-Data-Table" class="headerlink" title="Residue Data Table"></a>Residue Data Table</h4><p>Given a table $\mathcal{T}$ and a pattern collection $\mathcal{P}$, the residue data table contains the records that are not covered by any of the patterns in $\mathcal{P}$.  </p>
+<h4 id="Pattern-Marhsalling"><a href="#Pattern-Marhsalling" class="headerlink" title="Pattern Marhsalling"></a>Pattern Marhsalling</h4><p>Given a set of patterns $\mathcal{S}$, the pattern marshalling algorithm picks a pattern from $\mathcal{S}$ which has the highest compression saving. After every iteration, the records in the table which have been covered by the patterns chosen so far will be removed from consideration.</p>
+<h3 id="Generating-Patterns-Local-Expansion"><a href="#Generating-Patterns-Local-Expansion" class="headerlink" title="Generating Patterns - Local Expansion"></a>Generating Patterns - Local Expansion</h3><p>Local expansion is a pattern generation strategy that tries to “grow” the patterns to increase the compression savings on the data record. In this approach, the algorithm will start with single attributes first and and find a single-condition pattern $P = \{ (A=a) \}$ that has the best compression saving, and then expand the pattern by adding other conditions until the compression cost cannot be improved. To find the next pattern, the same procedure is repeated, but only on the residue data table - the part of the table not covered by any of the patterns found so far.  </p>
+<h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p>We’ll start with simpler code first. Let’s start by writing a function to calculate the benefit.  </p>
+<figure class="highlight javascript"><figcaption><span>benefit.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The benefit of using this pattern to represent the table</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>T the table containing rows</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>pattern the pattern to be applied</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">benefit</span>(<span class="params">pattern, T</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(pattern == <span class="literal">null</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// a function for internal use.</span></span><br><span class="line">    <span class="comment">// find out the bits needed to encode the value</span></span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">bitsFor</span>(<span class="params">value</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>( <span class="keyword">typeof</span>(value) === <span class="string">"string"</span> || value <span class="keyword">instanceof</span> <span class="built_in">String</span>)&#123;</span><br><span class="line">            <span class="comment">// JS uses UTF-16</span></span><br><span class="line">            <span class="keyword">return</span> value.length * <span class="number">16</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>( <span class="keyword">typeof</span>(value) === <span class="string">"number"</span> || value <span class="keyword">instanceof</span> <span class="built_in">Number</span>)&#123;</span><br><span class="line">            <span class="comment">// 64-bit for each number</span></span><br><span class="line">            <span class="keyword">return</span> <span class="number">64</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> N = _.filter(T, pattern).length;</span><br><span class="line">    <span class="keyword">let</span> W = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">let</span> attributes = <span class="built_in">Object</span>.keys(pattern);</span><br><span class="line"></span><br><span class="line">    attributes.forEach(<span class="function"><span class="params">attribute</span> =&gt;</span> &#123;</span><br><span class="line">        W += bitsFor(pattern[attribute]);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (N<span class="number">-1</span>) * W;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = benefit;</span><br></pre></td></tr></table></figure>
+<p>The actual translation of formula to code happens from line #25. We start by finding <code>N</code> which is the number of records in the table that match the pattern. Im using <a href="https://lodash.com/docs#filter" target="_blank" rel="noopener"><code>lodash</code>‘s <code>filter</code> function</a> to avoid the boilerplate of having to find the matching records myself. <code>W</code> is the accumulator in which I will sum the number of bits each attribute in the pattern take. <code>attributes</code> are the attributes in the pattern. Then for each attribute, we use <code>bitsFor</code> and add it up with the value of <code>W</code>. Finally, we return the value according to the formula.  </p>
+<p>Simply put, benefit is $N - 1$ times the total number of bits each attribute in the pattern would take.</p>
+<p>Next, let’s write code to find $log^\ast(N)$</p>
+<figure class="highlight javascript"><figcaption><span>log.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Calculates log*(N).</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>N number of rows in the table</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@returns <span class="type">&#123;number&#125;</span></span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">log</span>(<span class="params">N</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span> * <span class="built_in">Math</span>.log2( N+<span class="number">2</span> );</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = log;</span><br></pre></td></tr></table></figure>
+<p>This is a fairly straightforward translation of the formula to code and needs no explanation.  </p>
+<p>We now have all the code we need to calculate overhead so let’s do that.  </p>
+<figure class="highlight javascript"><figcaption><span>overhead.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="keyword">const</span> log = <span class="built_in">require</span>(<span class="string">"./log"</span>);</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The overhead of using this pattern to represent this table</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>T the table containing rows</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>pattern the pattern to be applied</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">overhead</span>(<span class="params">pattern, T</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> N = _.filter(T, pattern).length;</span><br><span class="line">    <span class="keyword">let</span> D = <span class="built_in">Object</span>.keys(T[<span class="number">0</span>]).length; <span class="comment">// number of attributes</span></span><br><span class="line">    <span class="keyword">return</span> D + log(N);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = overhead;</span><br></pre></td></tr></table></figure>
+<p>Notice that I start by <code>require</code>-ing the <code>log.js</code> module we just saw. I am using <code>filter</code> to find the number of rows in the table that match the pattern. On the next line I find the number of attributes in a given record of the table. Since the algorithm assumes no null / empty values for any attribute, we can safely pick up the 0<sup>th</sup> record and see how many attributes it contains. </p>
+<p>Now that we have <code>benefit</code> and <code>overhead</code> in place, let’s calculate <code>saving</code></p>
+<figure class="highlight javascript"><figcaption><span>saving.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="keyword">const</span> benefit = <span class="built_in">require</span>(<span class="string">"./benefit"</span>);</span><br><span class="line"><span class="keyword">const</span> overhead = <span class="built_in">require</span>(<span class="string">"./overhead"</span>);</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * The compression saving of a pattern P on a data table T,</span></span><br><span class="line"><span class="comment"> * denoted by saving(P,T) is the amount of compression it can achieve.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>T the table containing rows</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>pattern the pattern to be applied</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">saving</span>(<span class="params">pattern, T</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">return</span> benefit(pattern, T) - overhead(pattern, T);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">module</span>.exports = saving;</span><br></pre></td></tr></table></figure>
+<p>Now let’s write code for pattern marshalling. </p>
+<figure class="highlight javascript"><figcaption><span>pattern_marshalling.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="keyword">const</span> saving = <span class="built_in">require</span>(<span class="string">"./saving"</span>);</span><br><span class="line"><span class="keyword">const</span> coverage = <span class="built_in">require</span>(<span class="string">"./coverage"</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">patternMarshalling</span>(<span class="params">S, T</span>)</span>&#123;</span><br><span class="line">    <span class="comment">// chosen patterns</span></span><br><span class="line">    <span class="keyword">let</span> patterns = []; <span class="comment">// empty = don't care for every attribute</span></span><br><span class="line">    <span class="keyword">let</span> remainingPatterns = _.cloneDeep(S);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span>( remainingPatterns.length &gt; <span class="number">0</span> )&#123;</span><br><span class="line">        <span class="comment">// select the pattern with the top incremental compression saving</span></span><br><span class="line">        <span class="keyword">let</span> bTop = <span class="built_in">Number</span>.NEGATIVE_INFINITY;</span><br><span class="line">        <span class="keyword">let</span> pTop;</span><br><span class="line">        <span class="keyword">let</span> residualTable = residue(patterns, T);</span><br><span class="line"></span><br><span class="line">        remainingPatterns.forEach(<span class="function"><span class="params">pattern</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="keyword">let</span> compression = saving(pattern, residualTable);</span><br><span class="line">            <span class="keyword">if</span>( compression &gt; bTop ) &#123;</span><br><span class="line">                bTop = compression;</span><br><span class="line">                pTop = pattern;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>( bTop &gt; <span class="number">0</span> )&#123;</span><br><span class="line">            patterns.push(&#123;</span><br><span class="line">                <span class="string">"pattern"</span> : pTop,</span><br><span class="line">                <span class="string">"saving"</span> : bTop,</span><br><span class="line">                <span class="string">"coverage"</span> : coverage(pTop,T)</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        remainingPatterns = _.difference(remainingPatterns, _.filter(remainingPatterns, pTop));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> patterns;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">residue</span>(<span class="params">patterns, T</span>)</span>&#123;</span><br><span class="line">    patterns.forEach(<span class="function"><span class="params">pattern</span> =&gt;</span> &#123;</span><br><span class="line">        T = _.difference(T, _.filter(T, pattern.pattern));</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">return</span> T;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = patternMarshalling;</span><br></pre></td></tr></table></figure>
+<p>Given a set of patterns $\mathcal{S}$ and a table $\mathcal{T}$, we start by making a copy of the patterns passed to us. The aim is to select a pattern which gives us non-negative compression. If we find such a pattern, we add it to our <code>patterns</code> list and remove the chosen pattern from the current list of patterns. We continue the next itreation on the residue table. We repeat this until we have no more patterns to consider.  </p>
+<p>The next piece of the puzzle is to write code for local expansion.  </p>
+<figure class="highlight javascript"><figcaption><span>local_expansion.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="keyword">const</span> expand = <span class="built_in">require</span>(<span class="string">"./expand"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Local expansion pattern generation strategy that directly looks</span></span><br><span class="line"><span class="comment"> * for patterns that could minimize the compression cost</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param </span>T an array of JSON objects</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@returns <span class="type">&#123;Array&#125;</span> </span>of patterns that best summarize the data</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">localExpansion</span>(<span class="params">T</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> patterns = []; <span class="comment">// final list of patterns to return</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// while we still have rows</span></span><br><span class="line">    <span class="keyword">while</span>( T.length &gt; <span class="number">0</span> )&#123;</span><br><span class="line">        <span class="comment">// expand from an empty pattern (Algorithm 4)</span></span><br><span class="line">        <span class="keyword">let</span> pattern = expand(T, &#123;&#125;);</span><br><span class="line">        <span class="comment">// stop if we cannot achieve more compression saving</span></span><br><span class="line">        <span class="keyword">if</span>( _.isEqual(pattern, &#123;&#125;) )&#123;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// found a new pattern</span></span><br><span class="line">        patterns.push( pattern );</span><br><span class="line">        <span class="comment">// remove all the rows that match the pattern i.e.residual table for the pattern</span></span><br><span class="line">        T = _.difference(T, _.filter(T, pattern));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> patterns;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = localExpansion;</span><br></pre></td></tr></table></figure>
+<p>As mentioned in the definitions, local expansion grows a pattern, starting with an empty pattern. The expansion is done in <code>expand</code> function.  </p>
+<figure class="highlight javascript"><figcaption><span>expand.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="keyword">const</span> saving = <span class="built_in">require</span>(<span class="string">"./saving"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Expands a pattern to improve compression saving. See algorithm 4.</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param <span class="variable">T</span></span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param <span class="variable">pattern</span></span></span></span><br><span class="line"><span class="comment"> * <span class="doctag">@returns <span class="type">&#123;*&#125;</span></span></span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">expand</span>(<span class="params">T, pattern</span>)</span>&#123;</span><br><span class="line">    <span class="comment">// find the attributes not included in the pattern</span></span><br><span class="line">    <span class="keyword">let</span> allAttributes = <span class="built_in">Object</span>.keys(T[<span class="number">0</span>]);</span><br><span class="line">    <span class="keyword">let</span> matchedAttributes = <span class="built_in">Object</span>.keys(pattern);</span><br><span class="line">    <span class="keyword">let</span> attributes = _.difference(allAttributes, matchedAttributes);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> bestPattern;</span><br><span class="line">    <span class="keyword">let</span> highestCompressionSaving = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    attributes.forEach( <span class="function"><span class="params">attribute</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="comment">// find all the unique values for the current attribute</span></span><br><span class="line">        <span class="keyword">let</span> values = _.map(T, attribute);</span><br><span class="line">        values = _.uniq(values);</span><br><span class="line"></span><br><span class="line">        values.forEach( <span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">            <span class="comment">// an expanded pattern created by appending the current</span></span><br><span class="line">            <span class="comment">// attribute and its value to the existing pattern</span></span><br><span class="line">            <span class="keyword">let</span> newPattern = _.cloneDeep(pattern);</span><br><span class="line">            newPattern[attribute] = value;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">let</span> compressionSaving = saving(newPattern, T);</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span>(compressionSaving &gt; highestCompressionSaving)&#123;</span><br><span class="line">                highestCompressionSaving = compressionSaving;</span><br><span class="line">                bestPattern = newPattern;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>( saving(bestPattern, T) &gt; saving(pattern, T) )&#123;</span><br><span class="line">        <span class="keyword">return</span> expand(T, bestPattern);</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">return</span> pattern;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = expand;</span><br></pre></td></tr></table></figure>  
+<p>The final piece of code we need to look at is to calculate the coverage i.e. how much of the data is described by a given pattern.  </p>
+<figure class="highlight javascript"><figcaption><span>coverage.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">coverage</span>(<span class="params">pattern,T</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> matchingRows = _.filter(T,pattern);</span><br><span class="line">    <span class="keyword">let</span> coverage = matchingRows.length / T.length;</span><br><span class="line">    <span class="keyword">return</span> coverage * <span class="number">100</span>; <span class="comment">// % of coverage</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = coverage;</span><br></pre></td></tr></table></figure>
+<p>Now that we have all the machinery in place, let’s write a simple test. We’ll take the patients example given in the paper and turn it into JSON objects. Then we’ll write a simple script to run our code using this data and check whether the results make sense.  </p>
+<p>Here’s the data:</p>
+<figure class="highlight json"><figcaption><span>patients.json</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"adult"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"normal"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"adult"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"low"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"adult"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"normal"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"adult"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"high"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"adult"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"low"</span>&#125;,</span><br><span class="line"></span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"F"</span>,<span class="attr">"age"</span>:<span class="string">"child"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"low"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"child"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"low"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"F"</span>,<span class="attr">"age"</span>:<span class="string">"child"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"low"</span>&#125;,</span><br><span class="line"></span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"M"</span>,<span class="attr">"age"</span>:<span class="string">"teen"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"high"</span>&#125;,</span><br><span class="line">  &#123;<span class="attr">"gender"</span>:<span class="string">"F"</span>,<span class="attr">"age"</span>:<span class="string">"child"</span>,<span class="attr">"blood_pressure"</span>:<span class="string">"normal"</span>&#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure> 
+<p>Here’s the test:  </p>
+<figure class="highlight javascript"><figcaption><span>test1.js</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">"use strict"</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> tsum = <span class="built_in">require</span>(<span class="string">"../index"</span>);</span><br><span class="line"><span class="keyword">const</span> table = <span class="built_in">require</span>(<span class="string">"./data/patients.json"</span>);</span><br><span class="line"><span class="keyword">const</span> _ = <span class="built_in">require</span>(<span class="string">"lodash"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> patterns = tsum.localExpansion( table );</span><br><span class="line"><span class="keyword">let</span> sorted = tsum.patternMarshalling(patterns,table);</span><br><span class="line"></span><br><span class="line">patterns = _.shuffle(patterns);</span><br><span class="line"><span class="built_in">console</span>.log( sorted );</span><br></pre></td></tr></table></figure> 
+<p>Now let’s run this:  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ node <span class="built_in">test</span>/test1.js</span><br><span class="line">[ &#123; pattern: &#123; age: <span class="string">'adult'</span>, gender: <span class="string">'M'</span> &#125;,</span><br><span class="line">    saving: 375.3852901558848,</span><br><span class="line">    coverage: 50 &#125;,</span><br><span class="line">  &#123; pattern: &#123; age: <span class="string">'child'</span>, blood_pressure: <span class="string">'low'</span> &#125;,</span><br><span class="line">    saving: 248.35614381022526,</span><br><span class="line">    coverage: 30 &#125; ]</span><br></pre></td></tr></table></figure> 
+<p>The output says that the most descriptive pattern is “adult male” which makes up 50% of the rows followed by “children with low blood pressure” which make up 30% of the rows. if we look at the sample data, out of the 10 rows, 5 are “adult male” and 3 are “children with low blood pressure”. So the output of the algorithm checks out.  </p>
+<p>Finito. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/" data-id="ckcr7ulen0002r8t2psx5y4z4" data-title="Implementing TSum: An Algorithm for Table Summarization" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithms/">algorithms</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          The Machine Learning Notebook: Introduction
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/05/20/JVM-JIT-Loop-Unrolling/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">JVM JIT - Loop Unrolling</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Introduction to Linear Regression | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="The first topic we’ll look at is linear regression. As mentioned previously, regression is about understanding dependence of one variable on another. We’ll start by building an intuitive understanding">
+<meta name="keywords" content="machine learning">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introduction to Linear Regression">
+<meta property="og:url" content="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="The first topic we’ll look at is linear regression. As mentioned previously, regression is about understanding dependence of one variable on another. We’ll start by building an intuitive understanding">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/Regression_1.png">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Introduction to Linear Regression">
+<meta name="twitter:description" content="The first topic we’ll look at is linear regression. As mentioned previously, regression is about understanding dependence of one variable on another. We’ll start by building an intuitive understanding">
+<meta name="twitter:image" content="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/Regression_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-The-Machine-Learning-Notebook-Introduction-to-Linear-Regression" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" class="article-date">
+  <time datetime="2018-10-28T12:05:15.000Z" itemprop="datePublished">2018-10-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Introduction to Linear Regression
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>The first topic we’ll look at is linear regression. As mentioned previously, regression is about understanding dependence of one variable on another. We’ll start by building an intuitive understanding of what it is before we dive into the math-y details of it. We’ll cover the theory, learn to solve some problems by hand, look at the assumptions supporting it, then look at what happens if these assumptions aren’t held. Once this is done we’ll look at how we can do the same by using gradient descent.  </p>
+<h2 id="What-is-Regression-Analysis"><a href="#What-is-Regression-Analysis" class="headerlink" title="What is Regression Analysis?"></a>What is Regression Analysis?</h2><p>Regression analysis is the study of the dependence of one variable (<strong>dependent variable</strong>, <strong>regressand</strong>) over one or more other variables (<strong>explanatory variables</strong>, <strong>regressors</strong>). The aim is to see how the dependent variable changes, on average, if there is a change in the explanatory variables. This is better explained with an example.  </p>
+<img src="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/Regression_1.png">  
+<p>The plot shown here is of daily income and daily expenditure. The dependent variable here is the expenditure which depends on the explanatory variable income. As we can see from the plot, for every income level we have a range of expenditures. However, as the <strong>regression line</strong> shows, on average as income goes up, the expenditure goes up, too.  </p>
+<p>Why do we say that the income goes up <strong>on average</strong>? Let’s look at the raw data when daily income is 80 or 100.  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">income (X)  expenditure (Y)  average</span><br><span class="line">        80               55     65.0</span><br><span class="line">        80               60</span><br><span class="line">        80               65</span><br><span class="line">        80               70</span><br><span class="line">        80               75</span><br><span class="line">       100               65     77.0</span><br><span class="line">       100               70</span><br><span class="line">       100               74</span><br><span class="line">       100               80</span><br><span class="line">       100               85</span><br><span class="line">       100               88</span><br></pre></td></tr></table></figure> 
+<p>The highest expenditure when income is 80 (75) is greater than the lowest expenditure when income level is 100 (65). If we look at the averages, the expenditure has gone up. There are a number of factors which may have caused the person with income 80 to expend 75 but as a whole, people with his daily income tend to expend less than those who earn 100 a day. The regression line passes through these averages.  </p>
+<p>That’s the basic idea behind regression analysis.  </p>
+<h2 id="The-Math-behind-Regression-Analysis"><a href="#The-Math-behind-Regression-Analysis" class="headerlink" title="The Math behind Regression Analysis"></a>The Math behind Regression Analysis</h2><p>The regression line passes through the average expenditure for every given income level. In other words, it passes through the <strong>conditional expected value</strong> — $E(Y|X_i)$. This is read as “the expected value of expenditure (Y) given an income level ($X_i$)”. Therefore, $E(Y|X_i)$ is a function of $X_i$ i.e. $E(Y|X_i) = f(X_i)$. The question now is: what is the function $f$?  </p>
+<p>We can start by assuming $f$ to be a straight line function which means that we’re assuming expenditure to be linearly related to income. So, $E(Y|X_i) = \beta_1 + \beta_2X_i$. This is the <strong>slope-intercept form</strong> of a line where $\beta_1$ is the intercept and $\beta_2$ is the slope of the line. Both $\beta_1$ and $\beta_2$ are called the <strong>regression coefficients</strong> (or <strong>parameters</strong>). The function $f$ is called the <strong>population regression function</strong>.  </p>
+<p>Now given that we know how to calculate the average expenditure for a given income level, how do we calculate the expenditure of each individual at that income level? We can say that the individual’s expenditure is “off the average expenditure by a certain margin”. This can be written as $Y_i = E(Y|X_i) + u_i$. The term $u_i$ denotes how far off an individual’s expenditure is from the average and is called the <strong>stochastic error term</strong>.  </p>
+<p>No matter how good our regression model is, there is always going to be some inherent variability. There are factors other than income which define a person’s expenditure. Factors like gender, age, etc. affect the expenditure. All of these factors are subsumed into the stochastic error term.  </p>
+<p>When it comes to applying regression analysis, we won’t have access to the population data. Rather, we have access to sample data. Our task is to come up with sample regression coefficients such that they’ll be as close as possible to the population regression coefficients. The <strong>sample regression function</strong> is defined as: </p>
+<script type="math/tex; mode=display">
+{Y_i} = \hat{\beta}_1 + \hat{\beta}_2X_i + \hat{u}_i \\\\
+{Y_i} = \hat{Y}_i + \hat{u}_i</script><p>Here $\hat{\beta}_1$, $\hat{\beta}_2$, $\hat{u}_i$, and $\hat{Y}_i$ are <strong>estimators</strong> of $\beta_1$, $\beta_2$, $u_i$, and $E(Y|X_i)$ respectively. An estimator is simply a formula which tells us how to estimate the population parameter from the information provided by the sample data available to us.  </p>
+<h2 id="What-it-means-to-be-‘Linear’"><a href="#What-it-means-to-be-‘Linear’" class="headerlink" title="What it means to be ‘Linear’"></a>What it means to be ‘Linear’</h2><p>Linearity can be defined as being either linear in parameters or linear in explanatory variables. To be <strong>linear in parameters</strong> means that all your parameters in the regression function will have power 1. By that definition, $E(Y|X_i) = \beta_1 + \beta_2X_i^2$ is linear. In contrast, $E(Y|X_i) = \beta_1 + \beta_2^2X_i$ is <strong>linear in explanatory variables</strong> since $X_i$ has power 1. We’ll be looking at models that are linear in parameters. Henceforth, “linear” would mean “linear in parameters”.</p>
+<p>That’s it. This is what sets the foundation for further studying linear regression.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" data-id="ckcr7ulf1000nr8t27vlj8kx6" data-title="Introduction to Linear Regression" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Bivariate Linear Regression
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">The Machine Learning Notebook: Introduction</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

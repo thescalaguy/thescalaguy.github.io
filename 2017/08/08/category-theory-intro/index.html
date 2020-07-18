@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Introduction to Category Theory | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="We’ve covered a lot of topics in Scalaz but before moving forward, I’d like to cover functors, monoids, monads, etc. These form the basis of functional programming and are predicated in category theor">
+<meta name="keywords" content="category theory,scala,functional programming">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introduction to Category Theory">
+<meta property="og:url" content="http://fasihkhatib.com/2017/08/08/category-theory-intro/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="We’ve covered a lot of topics in Scalaz but before moving forward, I’d like to cover functors, monoids, monads, etc. These form the basis of functional programming and are predicated in category theor">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/d/d3/Simple-cat.png">
+<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Introduction to Category Theory">
+<meta name="twitter:description" content="We’ve covered a lot of topics in Scalaz but before moving forward, I’d like to cover functors, monoids, monads, etc. These form the basis of functional programming and are predicated in category theor">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/d/d3/Simple-cat.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+</head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">☕</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-category-theory-intro" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/08/category-theory-intro/" class="article-date">
+  <time datetime="2017-08-08T16:45:35.000Z" itemprop="datePublished">2017-08-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Introduction to Category Theory
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>We’ve covered a lot of topics in Scalaz but before moving forward, I’d like to cover functors, monoids, monads, etc. These form the basis of functional programming and are predicated in category theory. This post is intended to be an introduction to category theory.  </p>
+<h2 id="What-is-Category-Theory"><a href="#What-is-Category-Theory" class="headerlink" title="What is Category Theory?"></a>What is Category Theory?</h2><p>Category theory is a mathematical theory involving the study of categories. A category consists of a group of objects and transformations between them. Think of a category as a simple collection.<sup><a href="https://en.wikibooks.org/wiki/Haskell/Category_theory" target="_blank" rel="noopener">[1]</a></sup> </p>
+<p>Formally, a category $C$ consists of the following: </p>
+<ol>
+<li>a collection of <strong>objects</strong></li>
+<li>a collection of <strong>arrows</strong> (called <strong>morphisms</strong>)</li>
+<li>operations assigning each arrow $f$ an object $dom \space f$, its <strong>domain</strong>, and an object $cod \space f$, its <strong>codomain</strong>. We write this as $f: A \rightarrow B$</li>
+<li>a composition operator assigning each pair of arrows $f$ and $g$, with $cod \space f = dom \space g$ a composite arrow $g \circ f: dom \space f \rightarrow cod \space g$, satisfying the <em>associative law</em>:<br>for any arrows $f: A \rightarrow B$, $g: B \rightarrow C$, and $h: C \rightarrow D$ (with $A$, $B$, $C$, and $D$ not necessarily distinct),<br>$h \circ (g \circ f) = (h \circ g) \circ f$</li>
+<li>for each object $A$, an <strong>identity arrow</strong> $id_A: A \rightarrow A$ satisfying the <em>identity law</em>:<br>for any arrow $f: A \rightarrow B$,<br>$id_B \circ f = f$ and $f \circ id_A = f$</li>
+</ol>
+<p>The formal definition above is taken verbatim from <a href="https://mitpress.mit.edu/books/basic-category-theory-computer-scientists" target="_blank" rel="noopener">Basic Category Theory for Computer Scientists</a>.</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/d/d3/Simple-cat.png" alt="Simple Category"></p>
+<p>Let’s relate the diagram above<sup><a href="https://en.wikibooks.org/wiki/Haskell/Category_theory" target="_blank" rel="noopener">[2]</a></sup> to the formal definition that we have. This simple category $C$ has three <strong>objects</strong> $A$, $B$, and $C$. There’s three <strong>identity arrows</strong> $id_A$, $id_B$, and $id_C$. These identity arrows satisfy the <strong>identity law</strong>. For example, $id_A \circ g = g$. Intuitively, if you were “standing” on $A$ and you first “walked along” the $id_A$ arrow and then “walked along” the $g$ arrow to reach $B$, it’s as good as just “walking along” $g$. </p>
+<h2 id="A-More-Concrete-Example"><a href="#A-More-Concrete-Example" class="headerlink" title="A More Concrete Example"></a>A More Concrete Example</h2><p>Let’s consider a category $S$ whose objects are sets. We’ll translate this into code and hold it to the laws stated above. </p>
+<ol>
+<li>$S$ is a collection of sets i.e. each object is a set.</li>
+<li>an arrow $f: A \rightarrow B$ is a morphism from set $A$ to set $B$</li>
+<li>for each function $f$, we have $dom \space f = A$, and $cod \space f = B$</li>
+<li>the composition of a function $f: A \rightarrow B$ with $g: B \rightarrow C$ is a function from $A$ to $C$ mapping each element $a \in A$ to $g(f(a)) \in C$</li>
+<li>for each set $A$, the identity function $id_A$ is a function with domain and codomain as $A$.</li>
+</ol>
+<h3 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h3><p>Let’s begin by creating our first object of category $S$ - a set $A$.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> <span class="type">A</span> = <span class="type">Set</span>(<span class="string">"apples"</span>, <span class="string">"oranges"</span>)</span><br><span class="line"><span class="type">A</span>: <span class="type">Set</span>[<span class="type">String</span>] = <span class="type">Set</span>(<span class="string">"apples"</span>, <span class="string">"oranges"</span>)</span><br></pre></td></tr></table></figure> 
+<p>Next, let’s define a function $f$ which morphs $A$ to $B$.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(a: <span class="type">Set</span>[<span class="type">String</span>]): <span class="type">Set</span>[<span class="type">String</span>] = a map &#123; _.reverse &#125;</span><br><span class="line">defined function f</span><br></pre></td></tr></table></figure>
+<p>Next, let’s morph $A$ to $B$ by applying the function $f$</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> <span class="type">B</span> = f(<span class="type">A</span>)</span><br><span class="line"><span class="type">B</span>: <span class="type">Set</span>[<span class="type">String</span>] = <span class="type">Set</span>(<span class="string">"selppa"</span>, <span class="string">"segnaro"</span>)</span><br></pre></td></tr></table></figure>
+<p>The domain of $f$ is the set $A$ where as codomain is the set of reversed strings, $B$.</p>
+<p>Next, let’s define a function $g$ </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">g</span></span>(b: <span class="type">Set</span>[<span class="type">String</span>]): <span class="type">Set</span>[<span class="type">Int</span>] = b map &#123; _.length &#125;</span><br><span class="line">defined function g</span><br></pre></td></tr></table></figure>
+<p>Now let’s compose $f$ and $g$</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> <span class="type">C</span> = g(f(<span class="type">A</span>))</span><br><span class="line"><span class="type">C</span>: <span class="type">Set</span>[<span class="type">Int</span>] = <span class="type">Set</span>(<span class="number">6</span>, <span class="number">7</span>)</span><br></pre></td></tr></table></figure>
+<p>And finally, let’s create an identity function</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">idA</span></span>(a: <span class="type">Set</span>[<span class="type">String</span>]): <span class="type">Set</span>[<span class="type">String</span>] = a map identity</span><br><span class="line">defined function idA</span><br></pre></td></tr></table></figure>
+<p>Let’s see this in action</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ idA(<span class="type">A</span>)</span><br><span class="line">res7: <span class="type">Set</span>[<span class="type">String</span>] = <span class="type">Set</span>(<span class="string">"apples"</span>, <span class="string">"oranges"</span>)</span><br></pre></td></tr></table></figure>
+<p>This is how we translate a category to code. In the coming posts we’ll cover more category theory. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="ckcr7ulf5000xr8t2828i9f2j" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/08/10/monoid/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Monoid
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/08/05/scalaz-memo/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Scalaz Memo</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 10px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/">Max Likelihood</a>
+          </li>
+        
+          <li>
+            <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/">Classic Normal Linear Regression Model</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/">Gauss-Markov Theorem</a>
+          </li>
+        
+          <li>
+            <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/">Precision of OLS Estimates</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
+          </li>
+        
+          <li>
+            <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/08/08/category-theory-intro/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config("");
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>
