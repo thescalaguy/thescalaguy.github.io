@@ -44,13 +44,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/misc/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/tags/scalaz/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -67,6 +60,13 @@
     <url>
         <loc>http://fasihkhatib.com/tags/testing/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/tags/misc/</loc>
+        <lastmod>2021-11-07T07:23:22.181Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
