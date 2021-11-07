@@ -8,7 +8,7 @@
 
     <url>
         <loc>http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/</loc>
-        <lastmod>2021-11-07T07:23:22.181Z</lastmod>
+        <lastmod>2021-11-07T08:39:57.711Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -47,14 +47,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -63,7 +55,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/10/monoid/</loc>
+        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -71,7 +63,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
+        <loc>http://fasihkhatib.com/2017/08/10/monoid/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -88,6 +80,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -135,7 +135,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/</loc>
+        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -143,7 +143,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
+        <loc>http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -239,7 +239,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
+        <loc>http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/</loc>
         <lastmod>2020-07-17T12:01:05.858Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -247,7 +247,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/</loc>
+        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
         <lastmod>2020-07-17T12:01:05.858Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
