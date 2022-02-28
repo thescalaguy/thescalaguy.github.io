@@ -2,14 +2,14 @@
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
     <url>
-        <loc>http://fasihkhatib.com/tags/algorithms/</loc>
+        <loc>http://fasihkhatib.com/tags/compilers/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/compilers/</loc>
+        <loc>http://fasihkhatib.com/tags/algorithms/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
@@ -66,7 +66,7 @@
 
     <url>
         <loc>http://fasihkhatib.com/tags/misc/</loc>
-        <lastmod>2021-11-07T08:39:57.711Z</lastmod>
+        <lastmod>2022-02-28T07:13:22.666Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>

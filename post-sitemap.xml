@@ -8,7 +8,7 @@
 
     <url>
         <loc>http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/</loc>
-        <lastmod>2021-11-07T08:39:57.711Z</lastmod>
+        <lastmod>2022-02-28T07:13:22.666Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -39,6 +39,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2017/08/08/category-theory-intro/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -47,7 +55,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <loc>http://fasihkhatib.com/2017/08/10/monoid/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -63,7 +71,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/10/monoid/</loc>
+        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -80,14 +88,6 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -223,7 +223,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/01/06/transducers/</loc>
+        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -231,7 +231,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
+        <loc>http://fasihkhatib.com/2018/01/06/transducers/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -279,14 +279,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
-        <lastmod>2020-07-17T12:01:05.854Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -295,7 +287,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
+        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -304,6 +296,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
+        <lastmod>2020-07-17T12:01:05.854Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
