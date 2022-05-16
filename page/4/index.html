@@ -68,6 +68,78 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-order" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/29/scalaz-order/" class="article-date">
+  <time datetime="2017-06-29T09:00:08.000Z" itemprop="datePublished">2017-06-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/06/29/scalaz-order/">Scalaz Order</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at how to implement ordering using Scalaz <a href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Order.scala" target="_blank" rel="noopener"><code>Order</code></a> trait. However, before we do that, let’s step back a little and look at how we implement ordering using <a href="http://www.scala-lang.org/api/current/scala/math/Ordering.html" target="_blank" rel="noopener"><code>scala.math.Ordering</code></a>  </p>
+<h2 id="Sorting-a-Collection-Scala-Way"><a href="#Sorting-a-Collection-Scala-Way" class="headerlink" title="Sorting a Collection - Scala Way"></a>Sorting a Collection - Scala Way</h2><p>Say we have a <code>List</code> and we’d like to sort it.<sup><a href="http://alvinalexander.com/scala/how-to-sort-scala-collections-sortwith-sorted-ordered-ordering" target="_blank" rel="noopener">[1]</a></sup> We can do so by calling the <code>sorted</code> method on it and it’ll work out-of-the-box for lists of <code>Int</code>, <code>Float</code>, etc. because there is an implicit in <code>scala.math.Ordering</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">-1</span>, <span class="number">0</span>).sorted</span><br><span class="line">res0: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>  
+<p>Going over the documentation for <code>scala.math.Ordering</code><sup><a href="http://www.scala-lang.org/api/current/scala/math/Ordering.html" target="_blank" rel="noopener">[2]</a></sup>:  </p>
+<p><em>Ordering is a trait whose instances each represent a strategy for sorting instances of a type.<br>Ordering’s companion object defines many implicit objects to deal with subtypes of AnyVal (e.g. Int, Double), String, and others.</em>  </p>
+<p>All the implicit objects in the companion object implement the <code>scala.math.Ordering</code> trait which extends the <code>java.util.Comparator</code> interface. Thus, they all have a <code>compare</code> method. What if we have types for which there is no sorting strategy in the companion object of <code>scala.math.Ordering</code>? We define our own like so:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>)</span></span><br><span class="line"><span class="class"><span class="title">defined</span> <span class="title">class</span> <span class="title">Salary</span></span></span><br><span class="line"><span class="class"><span class="title">@</span> <span class="title">implicit</span> <span class="title">object</span> <span class="title">SalaryOrdered</span> <span class="keyword">extends</span> <span class="title">Ordering</span>[<span class="type">Salary</span>] </span>&#123;</span><br><span class="line">    <span class="comment">// we are using compare on type Float</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(a: <span class="type">Salary</span>, b: <span class="type">Salary</span>): <span class="type">Int</span> = a.amt compare b.amt</span><br><span class="line">  &#125;</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrdered</span></span></span><br><span class="line"><span class="class"><span class="title">@</span> <span class="title">List</span>(<span class="params"><span class="type">Salary</span>(999.0f</span>), <span class="title">Salary</span>(<span class="params">555.0f</span>)).<span class="title">sorted</span></span></span><br><span class="line"><span class="class"><span class="title">res4</span></span>: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">555.0</span>F), <span class="type">Salary</span>(<span class="number">999.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>But we still don’t have operators like <code>&lt;</code>, <code>&lt;=</code>, etc. on type <code>Salary</code>.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">999.0</span>f) &gt; <span class="type">Salary</span>(<span class="number">555.0</span>f)</span><br><span class="line">cmd3.sc:<span class="number">1</span>: value &gt; is not a member of ammonite.$sess.cmd0.<span class="type">Salary</span></span><br><span class="line"><span class="keyword">val</span> res3 = <span class="type">Salary</span>(<span class="number">999.0</span>f) &gt; <span class="type">Salary</span>(<span class="number">555.0</span>f)</span><br><span class="line">                          ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<p>To do that, the trait <code>scala.math.Ordered</code> would have to be mixed in.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>) <span class="keyword">extends</span> <span class="title">Ordered</span>[<span class="type">Salary</span>] </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(that: <span class="type">Salary</span>): <span class="type">Int</span> = <span class="keyword">this</span>.amt compare that.amt</span><br><span class="line">  &#125;</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Salary</span></span></span><br><span class="line"><span class="class"><span class="title">@</span> <span class="title">Salary</span>(<span class="params">1.0f</span>) <span class="title">&lt;</span> <span class="title">Salary</span>(<span class="params">2.0f</span>)</span></span><br><span class="line"><span class="class"><span class="title">res1</span></span>: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">1.0</span>f)).sorted</span><br><span class="line">res2: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">1.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>And we know that if we’re working with a library, we do not have the liberty to mix a trait for our convenience. Also, Scala’s comparison operators are not type safe.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> &gt; <span class="number">2.0</span></span><br><span class="line">res4: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Sorting-a-Collection-Scalaz-Way"><a href="#Sorting-a-Collection-Scalaz-Way" class="headerlink" title="Sorting a Collection - Scalaz Way"></a>Sorting a Collection - Scalaz Way</h2><p>As stated before, Scalaz provides <code>Order</code> trait. Staying with our <code>Salary</code> example, let’s put Scalaz <code>Order</code> to use.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>)</span></span><br><span class="line"><span class="class"><span class="title">defined</span> <span class="title">class</span> <span class="title">Salary</span></span></span><br><span class="line"><span class="class"><span class="title">@</span> <span class="title">implicit</span> <span class="title">object</span> <span class="title">SalaryOrder</span> <span class="keyword">extends</span> <span class="title">Order</span>[<span class="type">Salary</span>] </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">order</span></span>(a: <span class="type">Salary</span>, b: <span class="type">Salary</span>): <span class="type">Ordering</span> = &#123;</span><br><span class="line">      a.amt compare b.amt <span class="keyword">match</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">-1</span> =&gt; <span class="type">Ordering</span>.<span class="type">LT</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="type">Ordering</span>.<span class="type">EQ</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="type">Ordering</span>.<span class="type">GT</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrder</span></span></span><br></pre></td></tr></table></figure>
+<p>We’ve defined a way to order <code>Salary</code> objects using Scalaz <code>Order</code> trait via a typeclass. The implicit object needs to provide an implementation for <code>order</code> method which returns an <a href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Ordering.scala" target="_blank" rel="noopener"><code>Ordering</code></a> value. Going over the code for Scalaz <code>Ordering</code>: </p>
+<p><em>This Ordering is analogous to the Ints returned by scala.math.Ordering.</em>  </p>
+<p>Now, we have comparison operators at our disposal. Here’s how we can compare <code>Salary</code> objects using the <code>?|?</code> operator:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">1.0</span>f) ?|? <span class="type">Salary</span>(<span class="number">2.0</span>f)</span><br><span class="line">res4: <span class="type">Ordering</span> = <span class="type">LT</span></span><br></pre></td></tr></table></figure>  
+<p><code>?|?</code> can also be used with <code>Int</code>, <code>Float</code>, etc. and is type-safe.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.0</span> ?|? <span class="number">2.0</span></span><br><span class="line">res5: <span class="type">Ordering</span> = <span class="type">LT</span></span><br><span class="line">@ <span class="number">1.0</span> ?!? <span class="number">2</span></span><br><span class="line">cmd6.sc:<span class="number">1</span>: value ?!? is not a member of <span class="type">Double</span></span><br><span class="line"><span class="keyword">val</span> res6 = <span class="number">1.0</span> ?!? <span class="number">2</span></span><br><span class="line">               ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<p>Also, analogous to <code>&lt;</code>, <code>&lt;=</code>, we now have type-safe <code>lt</code>, <code>lte</code>, etc.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.0</span> gte <span class="number">2.0</span></span><br><span class="line">res6: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line">@ <span class="number">1</span> gt <span class="number">2.0</span></span><br><span class="line">cmd8.sc:<span class="number">1</span>: <span class="class"><span class="keyword">type</span> <span class="title">mismatch</span></span>;</span><br><span class="line"> found   : <span class="type">Double</span>(<span class="number">2.0</span>)</span><br><span class="line"> required: <span class="type">Int</span></span><br><span class="line"><span class="keyword">val</span> res8 = <span class="number">1</span> gt <span class="number">2.0</span></span><br><span class="line">                ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>
+<p>That’s not where the power ends. You can also compare <code>Option</code>s seamlessly. Do note that it is <code>some</code> with a lowercase “s”.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ some(<span class="type">Salary</span>(<span class="number">1.0</span>f)) ?|? some(<span class="type">Salary</span>(<span class="number">2.0</span>f))</span><br><span class="line">res8: <span class="type">Ordering</span> = <span class="type">LT</span></span><br></pre></td></tr></table></figure>  
+<p>You can now also use <code>sorted</code> on a collection equally easily. Using <code>Order[A].toScalaOrdering</code> we can get back an object of type <code>scala.math.Ordering</code> which we can use to sort collections. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">implicit</span> <span class="keyword">val</span> salaryOrdering = <span class="type">Order</span>[<span class="type">Salary</span>].toScalaOrdering</span><br><span class="line">salaryOrdering: math.<span class="type">Ordering</span>[<span class="type">Salary</span>] = scalaz.<span class="type">Order</span>$$anon$<span class="number">1</span>@<span class="number">5</span>b8a5d7c</span><br><span class="line">@ <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">1.0</span>f), <span class="type">Salary</span>(<span class="number">0.0</span>f)).sorted</span><br><span class="line">res10: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">0.0</span>F), <span class="type">Salary</span>(<span class="number">1.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>Also, since <code>Order</code> trait extends the <code>Equal</code> trait, you get the <code>===</code> operator, too.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">0.0</span>F) === <span class="type">Salary</span>(<span class="number">1.0</span>F)</span><br><span class="line">res11: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>By using Scalaz <code>Order</code> trait, we can implement comparison between values in a type-safe and extensible way. There’s seamless transformation from Scalaz <code>Order</code> to <code>scala.math.Ordering</code> which lets us use the <code>sorted</code> method on collections.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cl38qmg20001y5jovwp74ucwb" data-title="Scalaz Order" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-equals" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/06/28/scalaz-equals/" class="article-date">
@@ -119,7 +191,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cl2vgrbsk001k7iovxnms495a" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cl38qmg1r001i5jovveh8zrgv" data-title="Scalaz Equal" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -191,7 +263,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cl2vgrbsy00287iovr9aukmwx" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cl38qmg2400285jov6ku7gpxt" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -248,7 +320,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cl2vgrbsz002a7iovg7ucup2r" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cl38qmg25002a5jov7xp9xt59" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -305,7 +377,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cl2vgrbsl001m7iovn4dmwoq8" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cl38qmg1s001l5jov03v51qbc" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -336,7 +408,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 11.67px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/data/" style="font-size: 10px;">data</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 11.67px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -346,6 +418,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/05/16/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-1/">Real-time data pipeline with Debezium and Snowflake Part 1</a>
+          </li>
         
           <li>
             <a href="/2021/11/07/Learn-you-a-SQL-for-Great-Good/">Learn you a SQL for Great Good</a>
@@ -381,10 +457,6 @@
         
           <li>
             <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
-          </li>
-        
-          <li>
-            <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
           </li>
         
       </ul>

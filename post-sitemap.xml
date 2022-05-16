@@ -7,8 +7,24 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2022/05/16/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-1/</loc>
+        <lastmod>2022-05-16T13:03:20.971Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/</loc>
         <lastmod>2022-02-28T07:13:22.666Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -31,15 +47,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <loc>http://fasihkhatib.com/2017/08/08/category-theory-intro/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -55,15 +63,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/08/category-theory-intro/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
+        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -79,7 +79,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
+        <loc>http://fasihkhatib.com/2017/12/06/one-year-an-engineer/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -87,7 +87,15 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/12/06/one-year-an-engineer/</loc>
+        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -119,7 +127,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
+        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -127,7 +135,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
+        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -159,6 +167,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2017/06/29/scalaz-order/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2017/07/01/scalaz-show/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -168,14 +184,6 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/05/scalaz-stringops/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/06/29/scalaz-order/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -223,14 +231,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2018/01/06/transducers/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -239,8 +239,8 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/</loc>
-        <lastmod>2020-07-17T12:01:05.858Z</lastmod>
+        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -271,6 +271,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/</loc>
+        <lastmod>2020-07-17T12:01:05.858Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/</loc>
         <lastmod>2020-07-17T12:01:05.858Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -287,7 +295,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
+        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -295,7 +303,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
+        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
