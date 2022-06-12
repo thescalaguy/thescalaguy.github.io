@@ -68,6 +68,55 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-memo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/05/scalaz-memo/" class="article-date">
+  <time datetime="2017-08-05T18:12:31.000Z" itemprop="datePublished">2017-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/05/scalaz-memo/">Scalaz Memo</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a href="https://github.com/scalaz/scalaz/blob/fab6f1f97664590652bf37d64750e229c0524000/core/src/main/scala/scalaz/Memo.scala" target="_blank" rel="noopener">Memo</a> which is a Scalaz goodie to add memoization to your program. We’ll recap what memoization is, write a recursive function to calculate Fibonacci numbers, and then add memoization to it using <code>Memo</code>.  </p>
+<h2 id="What-is-Memoization"><a href="#What-is-Memoization" class="headerlink" title="What is Memoization?"></a>What is Memoization?</h2><p>In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again.<sup><a href="https://en.wikipedia.org/wiki/Memoization" target="_blank" rel="noopener">[1]</a></sup> </p>
+<h2 id="Fibonacci-without-Memo"><a href="#Fibonacci-without-Memo" class="headerlink" title="Fibonacci (without Memo)"></a>Fibonacci (without Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">fibo</span></span>(n: <span class="type">Int</span>): <span class="type">Int</span> = &#123;</span><br><span class="line">    n <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span> | <span class="number">1</span> =&gt; n</span><br><span class="line">      <span class="keyword">case</span> _: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">defined function fibo</span><br></pre></td></tr></table></figure>
+<p>So here’s the non-memoized recursive <code>fibo</code> which calculates the n<sup>th</sup> Fibonacci number. The issue here is that it’ll recalculate the Fibonacci numbers a lot of times and therefore cannot be used for large values of n. </p>
+<h2 id="Fibonacci-with-Memo"><a href="#Fibonacci-with-Memo" class="headerlink" title="Fibonacci (with Memo)"></a>Fibonacci (with Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = <span class="type">Memo</span>.immutableHashMapMemo &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="number">0</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="number">1</span></span><br><span class="line">    <span class="keyword">case</span> n: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">  &#125;</span><br><span class="line">fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = scalaz.<span class="type">Memo</span>$$$<span class="type">Lambda</span>$<span class="number">2233</span>/<span class="number">1055106802</span>@<span class="number">48649202</span></span><br></pre></td></tr></table></figure> 
+<p>Here’s the memoized version using Scalaz <code>Memo</code>. We are using an immutable, hash map-backed memo. The <code>immutableHashMapMemo</code> method takes a partial function defining how we construct the memo. In our case, if the value of n is not 0 or 1, we try looking up the value in the memo again. We recurse until we reach 0 or 1. Once that happens and our recursion returns, the resultant value is cached in an <code>immutable.HashMap</code>.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Memoization is a great way to optimize your programs. In this post we used an immutable hash map memo. There are other types of memos applying different strategies to cache their results. The <code>Memo</code> companion object is the place to look for an appropriate memo that suits your needs.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cl4ays3k8001v51ovy4t7pn9c" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-lens" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/08/01/scalaz-lens/" class="article-date">
@@ -135,7 +184,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cl38qmg1t001n5jovgms932fu" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cl4ays3k7001s51ovcujtvvvu" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -209,7 +258,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cl38qmg1w001u5jovkeyguws0" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cl4ays3kb001x51ov61awcsq0" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -282,7 +331,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cl38qmg1p001b5jovlizygy1f" data-title="Scalaz Either" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cl4ays3k3001h51ovei5jymm7" data-title="Scalaz Either" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -358,7 +407,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="cl38qmg26002b5jov9nzgce95" data-title="Scalaz Validation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="cl4ays3kk002e51ov7sdie60y" data-title="Scalaz Validation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -414,7 +463,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="cl38qmg1u001p5jovvr2u0vhj" data-title="Scalaz MapOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="cl4ays3k6001q51ovqznobcyx" data-title="Scalaz MapOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-mapops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -476,7 +525,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cl38qmg1q001d5jov84uhba0l" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cl4ays3k2001e51ovzgm2q9jx" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -527,7 +576,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cl38qmg2300235jovcye2h8u8" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cl4ays3kg002751ovkq597n42" data-title="Scalaz TryOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -580,7 +629,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="cl38qmg2300265jovjrlvcoyj" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="cl4ays3kh002951ov4o3zwhop" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -634,7 +683,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="cl38qmg2200215jovvk2t89qv" data-title="Scalaz StringOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="cl4ays3kf002451ovn34zzaop" data-title="Scalaz StringOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-stringops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -684,7 +733,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cl38qmg1z001w5jovbosxphap" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cl4ays3kc001z51oveqns7nio" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -762,61 +811,9 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cl38qmg1q001g5jovbj7ewx09" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cl4ays3k4001j51ov6o7aqjef" data-title="Scalaz Enum" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-show" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/01/scalaz-show/" class="article-date">
-  <time datetime="2017-07-01T05:31:40.000Z" itemprop="datePublished">2017-07-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/01/scalaz-show/">Scalaz Show</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at Scalaz <a href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Show.scala" target="_blank" rel="noopener"><code>Show</code></a>. The only purpose of this trait is to provide a <code>String</code> representation for its subtypes.  </p>
-<h2 id="A-Simple-Example"><a href="#A-Simple-Example" class="headerlink" title="A Simple Example"></a>A Simple Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="number">3.</span>show</span><br><span class="line">res2: <span class="type">Cord</span> = <span class="type">Cord</span>(<span class="number">1</span> [<span class="number">3</span>])</span><br><span class="line">@ <span class="number">3.</span>println</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>  
-<p>As always, there are implicits defined for <code>Int</code>, <code>Float</code>, etc. Calling <code>println</code> returns a <code>String</code> whereas calling <code>show</code> returns a <a href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Cord.scala" target="_blank" rel="noopener"><code>Cord</code></a>. Going over the source code for <code>Cord</code>: </p>
-<p><em>A Cord is a purely functional data structure for efficiently storing and manipulating Strings that are potentially very long.</em>  </p>
-<h2 id="Why-Use-Show"><a href="#Why-Use-Show" class="headerlink" title="Why Use Show?"></a>Why Use Show?</h2><p>A reasonable question to ask is why use <code>Show</code> when we have a <code>toString</code> which produces a <code>String</code> representation of objects. The answer is that <code>toSring</code> doesn’t always produce a useful representation.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ println(<span class="keyword">new</span> <span class="type">Thread</span>())</span><br><span class="line"><span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-185</span>,<span class="number">5</span>,main]</span><br></pre></td></tr></table></figure>  
-<h2 id="Showing-a-Thread"><a href="#Showing-a-Thread" class="headerlink" title="Showing a Thread"></a>Showing a Thread</h2><p>So, let’s create a <code>Show</code> for <code>Thread</code>.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">ThreadShowable</span> <span class="keyword">extends</span> <span class="title">Show</span>[<span class="type">Thread</span>] </span>&#123;</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">shows</span></span>(t: <span class="type">Thread</span>): <span class="type">String</span> = <span class="string">s"Thread Id=<span class="subst">$&#123;t.getId&#125;</span> name=<span class="subst">$&#123;t.getName&#125;</span>"</span></span><br><span class="line">  &#125;</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">ThreadShowable</span></span></span><br><span class="line"><span class="class"><span class="title">@</span> <span class="title">val</span> <span class="title">t</span> </span>= <span class="keyword">new</span> <span class="type">Thread</span>()</span><br><span class="line">t: <span class="type">Thread</span> = <span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-322</span>,<span class="number">5</span>,main]</span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">@ println(t)</span><br><span class="line"><span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-322</span>,<span class="number">5</span>,main]</span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">@ t.println</span><br><span class="line"><span class="type">Thread</span> <span class="type">Id</span>=<span class="number">352</span> name=<span class="type">Thread</span><span class="number">-322</span></span><br></pre></td></tr></table></figure>  
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p><code>Show</code> is probably not that interesting and probably exists because there is <code>Show</code> class in Haskell<sup><a href="https://www.haskell.org/tutorial/stdclasses.html" target="_blank" rel="noopener">[1]</a></sup>:  </p>
-<p><em>The instances of class Show are those types that can be converted to character strings (typically for I/O)</em></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cl38qmg21001z5jovzmd610fe" data-title="Scalaz Show" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -845,7 +842,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/data/" style="font-size: 10px;">data</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 11.67px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.67px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/data/" style="font-size: 11.67px;">data</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/misc/" style="font-size: 11.67px;">misc</a> <a href="/tags/scala/" style="font-size: 18.33px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -855,6 +852,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/06/12/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-2/">Real-time data pipeline with Debezium and Snowflake Part 2</a>
+          </li>
         
           <li>
             <a href="/2022/05/16/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-1/">Real-time data pipeline with Debezium and Snowflake Part 1</a>
@@ -890,10 +891,6 @@
         
           <li>
             <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
-          </li>
-        
-          <li>
-            <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
           </li>
         
       </ul>

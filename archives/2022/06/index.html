@@ -4,22 +4,15 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
-  <title>Gauss-Markov Theorem | Fasih Khatib</title>
+  <title>Archives: 2022/6 | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
-<meta name="keywords" content="machine learning">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Gauss-Markov Theorem">
-<meta property="og:url" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/index.html">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Fasih Khatib">
+<meta property="og:url" content="http://fasihkhatib.com/archives/2022/06/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
-<meta property="og:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
 <meta property="og:locale" content="default">
-<meta property="og:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Gauss-Markov Theorem">
-<meta name="twitter:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
-<meta name="twitter:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
+<meta name="twitter:title" content="Fasih Khatib">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
   
@@ -73,90 +66,40 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-The-Machine-Learning-Notebook-Gauss-Markov-Theorem" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" class="article-date">
-  <time datetime="2019-03-28T09:10:03.000Z" itemprop="datePublished">2019-03-28</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      Gauss-Markov Theorem
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2022" class="archive-year">2022</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/2022/06/12/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-2/" class="archive-article-date">
+  <time datetime="2022-06-12T07:06:34.000Z" itemprop="datePublished">Jun 12</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2022/06/12/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-2/">Real-time data pipeline with Debezium and Snowflake Part 2</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to state that the OLS estimators are the best linear unbiased estimators, in the class of linear unbiased estimators. </p>
-<h2 id="Gauss-Markov-Theorem"><a href="#Gauss-Markov-Theorem" class="headerlink" title="Gauss-Markov Theorem"></a>Gauss-Markov Theorem</h2><p>To recap briefly, some of the assumptions we made were that:</p>
-<ol>
-<li>On average, the stochastic error term is zero i.e. $E(u_i | X_i) = 0$. </li>
-<li>The data is homoscedastic i.e. the variance / standard deviation of the stochastic error term is a finite value regardless of $X_i$. </li>
-<li>The model is linear in parameters i.e. $\beta_1$ and $\beta_2$ have power 1. </li>
-<li>There is no autocorrelation between the disturbance terms.  </li>
-</ol>
-<p>The Gauss-Markov theorem states the following: </p>
-<blockquote>
-<p>Given the assumptions underlying the CLRM, the OLS estimators, in the class of linear unbiased estimators, have minimum variance. That is, they are BLUE (Best Linear Unbiased Estimators).  </p>
-</blockquote>
-<p>We’ll go over what it means for an estimator to be best, linear, and unbiased.  </p>
-<img src="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
-<h2 id="Linear"><a href="#Linear" class="headerlink" title="Linear"></a>Linear</h2><p>The dependent variable $Y$ is a linear function of the variables in the model. The model must be linear in parameters. Under this assumption $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i + \hat{u}_i$ and $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i^2 + \hat{u}_i$ are both valid models since the estimators are linear in both of them. </p>
-<h2 id="Unbiased"><a href="#Unbiased" class="headerlink" title="Unbiased"></a>Unbiased</h2><p>This means that on average, the value of the estimator is the same as the parameter it is estimating i.e. $E(\hat{\beta}_1) = \beta_1$.</p>
-<h2 id="Best"><a href="#Best" class="headerlink" title="Best"></a>Best</h2><p>This means that among the class of linear estimators, the OLS estimators will have the least variance. Consider the two normal distributions shown in the graph above for two linear, unbiased estimators $\hat{\beta}_1$ (represented by orange) and $\beta_1^*$ (represented by blue). Also let’s assume that the true value of $\beta_1$ is zero. This means that both of these are unbiased since, on average, their value is the same as the true value of the parameter. However, the OLS estimator $\hat{\beta}_1$ is better since it has lesser variance compared to the other estimator. </p>
-<p>Finito.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="cl4ays3jt000q51ovaadc4nta" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
-
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Classic Normal Linear Regression Model
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Precision of OLS Estimates</div>
-    </a>
-  
-</nav>
-
-  
 </article>
+  
+  
+    </div></section>
+  
 
-
-<section id="comments">
-  <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-  </div>
-</section>
 
 </section>
         
@@ -247,13 +190,11 @@
 <script>
   var disqus_shortname = 'https-thescalaguy-github-io';
   
-  var disqus_url = 'http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/';
-  
   (function(){
     var dsq = document.createElement('script');
     dsq.type = 'text/javascript';
     dsq.async = true;
-    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>
