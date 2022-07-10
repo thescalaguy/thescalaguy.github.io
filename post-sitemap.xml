@@ -7,22 +7,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2022/06/12/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-2/</loc>
-        <lastmod>2022-06-12T07:06:34.342Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2022/05/16/Real-time-data-pipeline-with-Debezium-and-Snowflake-Part-1/</loc>
-        <lastmod>2022-05-16T13:03:20.971Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/</loc>
         <lastmod>2022-02-28T07:13:22.666Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -31,7 +15,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
+        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -39,7 +23,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
+        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -63,14 +47,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -79,7 +55,23 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2017/08/10/monoid/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -96,14 +88,6 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -175,14 +159,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/06/29/scalaz-order/</loc>
-        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/07/01/scalaz-show/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -192,6 +168,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/05/scalaz-stringops/</loc>
+        <lastmod>2020-07-17T12:01:05.862Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/06/29/scalaz-order/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -295,7 +279,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
+        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -303,7 +287,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
+        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
