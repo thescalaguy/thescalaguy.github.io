@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Bivariate Linear Regression | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
-<meta name="keywords" content="machine learning">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Bivariate Linear Regression">
 <meta property="og:url" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
-<meta property="og:locale" content="default">
+<meta property="og:locale">
 <meta property="og:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png">
 <meta property="og:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_2.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta property="article:published_time" content="2018-11-01T13:46:43.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.858Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="machine learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Bivariate Linear Regression">
-<meta name="twitter:description" content="In the previous post we built the intuition behind linear regression. In this post we’ll dig deeper into the simplest form of linear regression which involves one dependant variable and one explanator">
 <meta name="twitter:image" content="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -30,11 +30,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -46,10 +54,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -111,17 +115,17 @@
 \end{align}</script><p>where $x_i$ = $X_i - \bar{X}$, $y_i = Y_i - \bar{Y}$. These are the differences of individual values from their corresponding sample mean $\bar{X}$ or $\bar{Y}$. The estimators thus obtained are called <strong>least-squares estimators</strong>.  </p>
 <p>Now that we’ve covered significant ground, let’s solve a sum by hand.  </p>
 <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Let’s start by drawing a random sample from the original dataset. The sample I’ve drawn looks like this:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">income (X)  expenditure (Y)</span><br><span class="line">        80               65</span><br><span class="line">       100               70</span><br><span class="line">       120               84</span><br><span class="line">       140               80</span><br><span class="line">       160              118</span><br><span class="line">       180              130</span><br><span class="line">       200              144</span><br><span class="line">       220              137</span><br><span class="line">       240              191</span><br><span class="line">       260              150</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">income (X)  expenditure (Y)</span><br><span class="line">        80               65</span><br><span class="line">       100               70</span><br><span class="line">       120               84</span><br><span class="line">       140               80</span><br><span class="line">       160              118</span><br><span class="line">       180              130</span><br><span class="line">       200              144</span><br><span class="line">       220              137</span><br><span class="line">       240              191</span><br><span class="line">       260              150</span><br></pre></td></tr></table></figure>
 <p>To see how this contrasts with the original dataset, here’s a plot of the original dataset and the random sample. The faint green points represent the original dataset whereas the red ones are the sample we’ve drawn. As always, our task is to use the sample dataset to come up with a regression line that’s as close as possible to the population dataset i.e. use the red dots to come up with a line that’d be similar to the line we’d get if we had all the faint green dots.</p>
-<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png"> 
+<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_1.png" class=""> 
 <p>I’ll write some Python + Pandas code to come up with the intermediate calculations and the final $\hat{\beta}_1$ and $\hat{\beta}_2$ values. I highly recommend that you solve this by hand to get the feel for it.  </p>
-<figure class="highlight python"><figcaption><span>regression.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ols</span><span class="params">(sample)</span>:</span></span><br><span class="line">    Xbar = sample[<span class="string">'X'</span>].mean()</span><br><span class="line">    Ybar = sample[<span class="string">'Y'</span>].mean()</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'x'</span>] = sample[<span class="string">'X'</span>].apply(<span class="keyword">lambda</span> Xi: Xi - Xbar)</span><br><span class="line">    sample[<span class="string">'x_sq'</span>] = sample[<span class="string">'x'</span>].apply(<span class="keyword">lambda</span> x: x ** <span class="number">2</span>)</span><br><span class="line">    sample[<span class="string">'y'</span>] = sample[<span class="string">'Y'</span>].apply(<span class="keyword">lambda</span> Yi: Yi - Ybar)</span><br><span class="line">    sample[<span class="string">'xy'</span>] = sample[[<span class="string">'x'</span>, <span class="string">'y'</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">'x'</span>] * row[<span class="string">'y'</span>], axis=<span class="string">'columns'</span>)</span><br><span class="line"></span><br><span class="line">    beta2cap = sample[<span class="string">'xy'</span>].sum() / sample[<span class="string">'x_sq'</span>].sum()</span><br><span class="line">    beta1cap = Ybar - (beta2cap * Xbar)</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'Ycap'</span>] = sample[<span class="string">'X'</span>].apply(<span class="keyword">lambda</span> X: beta1cap + (beta2cap * X))</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'ucap'</span>] = sample[[<span class="string">'Y'</span>, <span class="string">'Ycap'</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">'Y'</span>] - row[<span class="string">'Ycap'</span>], axis=<span class="string">'columns'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta1cap, beta2cap</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><figcaption><span>regression.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">ols</span>(<span class="params">sample</span>):</span><br><span class="line">    Xbar = sample[<span class="string">&#x27;X&#x27;</span>].mean()</span><br><span class="line">    Ybar = sample[<span class="string">&#x27;Y&#x27;</span>].mean()</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">&#x27;x&#x27;</span>] = sample[<span class="string">&#x27;X&#x27;</span>].apply(<span class="keyword">lambda</span> Xi: Xi - Xbar)</span><br><span class="line">    sample[<span class="string">&#x27;x_sq&#x27;</span>] = sample[<span class="string">&#x27;x&#x27;</span>].apply(<span class="keyword">lambda</span> x: x ** <span class="number">2</span>)</span><br><span class="line">    sample[<span class="string">&#x27;y&#x27;</span>] = sample[<span class="string">&#x27;Y&#x27;</span>].apply(<span class="keyword">lambda</span> Yi: Yi - Ybar)</span><br><span class="line">    sample[<span class="string">&#x27;xy&#x27;</span>] = sample[[<span class="string">&#x27;x&#x27;</span>, <span class="string">&#x27;y&#x27;</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">&#x27;x&#x27;</span>] * row[<span class="string">&#x27;y&#x27;</span>], axis=<span class="string">&#x27;columns&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    beta2cap = sample[<span class="string">&#x27;xy&#x27;</span>].<span class="built_in">sum</span>() / sample[<span class="string">&#x27;x_sq&#x27;</span>].<span class="built_in">sum</span>()</span><br><span class="line">    beta1cap = Ybar - (beta2cap * Xbar)</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">&#x27;Ycap&#x27;</span>] = sample[<span class="string">&#x27;X&#x27;</span>].apply(<span class="keyword">lambda</span> X: beta1cap + (beta2cap * X))</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">&#x27;ucap&#x27;</span>] = sample[[<span class="string">&#x27;Y&#x27;</span>, <span class="string">&#x27;Ycap&#x27;</span>]].apply(<span class="keyword">lambda</span> row: row[<span class="string">&#x27;Y&#x27;</span>] - row[<span class="string">&#x27;Ycap&#x27;</span>], axis=<span class="string">&#x27;columns&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta1cap, beta2cap</span><br></pre></td></tr></table></figure>
 <p>On calling the function, these are the results I get:  </p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>ols(sample)</span><br><span class="line">(<span class="number">9.696969696969703</span>, <span class="number">0.6306060606060606</span>)</span><br></pre></td></tr></table></figure>
 <p>and the intermediate calculations are the following:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">     X    Y     x    x_sq     y      xy        Ycap       ucap</span><br><span class="line">0   80   65 -90.0  8100.0 -51.9  4671.0   60.145455   4.854545</span><br><span class="line">1  100   70 -70.0  4900.0 -46.9  3283.0   72.757576  -2.757576</span><br><span class="line">2  120   84 -50.0  2500.0 -32.9  1645.0   85.369697  -1.369697</span><br><span class="line">3  140   80 -30.0   900.0 -36.9  1107.0   97.981818 -17.981818</span><br><span class="line">4  160  118 -10.0   100.0   1.1   -11.0  110.593939   7.406061</span><br><span class="line">5  180  130  10.0   100.0  13.1   131.0  123.206061   6.793939</span><br><span class="line">6  200  144  30.0   900.0  27.1   813.0  135.818182   8.181818</span><br><span class="line">7  220  137  50.0  2500.0  20.1  1005.0  148.430303 -11.430303</span><br><span class="line">8  240  191  70.0  4900.0  74.1  5187.0  161.042424  29.957576</span><br><span class="line">9  260  150  90.0  8100.0  33.1  2979.0  173.654545 -23.654545</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">     X    Y     x    x_sq     y      xy        Ycap       ucap</span><br><span class="line">0   80   65 -90.0  8100.0 -51.9  4671.0   60.145455   4.854545</span><br><span class="line">1  100   70 -70.0  4900.0 -46.9  3283.0   72.757576  -2.757576</span><br><span class="line">2  120   84 -50.0  2500.0 -32.9  1645.0   85.369697  -1.369697</span><br><span class="line">3  140   80 -30.0   900.0 -36.9  1107.0   97.981818 -17.981818</span><br><span class="line">4  160  118 -10.0   100.0   1.1   -11.0  110.593939   7.406061</span><br><span class="line">5  180  130  10.0   100.0  13.1   131.0  123.206061   6.793939</span><br><span class="line">6  200  144  30.0   900.0  27.1   813.0  135.818182   8.181818</span><br><span class="line">7  220  137  50.0  2500.0  20.1  1005.0  148.430303 -11.430303</span><br><span class="line">8  240  191  70.0  4900.0  74.1  5187.0  161.042424  29.957576</span><br><span class="line">9  260  150  90.0  8100.0  33.1  2979.0  173.654545 -23.654545</span><br></pre></td></tr></table></figure>
 <p>Let’s plot the line we obtained as a result of this. </p>
-<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_2.png">
+<img src="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/Sample_2.png" class="">
 <h2 id="Interpreting-the-Results"><a href="#Interpreting-the-Results" class="headerlink" title="Interpreting the Results"></a>Interpreting the Results</h2><p>Our calculations gave us the results that $\hat{\beta}_1 = 9.6969$ and $\hat{\beta}_2 = 0.630$. Having a slope ($\hat{\beta}_2$) of $0.630$ means that for every unit increase in income, there’s an increase of $0.630$ in expenditure. The intercept $\hat{\beta}_1$ is where the regression line meets the Y axis. This means that even without any income, a persion would have an expenditure of $9.6969$. In a lot of cases, however, the intercept term doesn’t really matter as much as the slope and how to interpret the intercept depends upon what the Y axis represents.  </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it for this post on bivariate linear regression. We saw how to calculate $\hat{\beta}_1$ and $\hat{\beta}_2$ and worked on a sample problem. We also saw how to interpret the result of the calculations. In the coming post we’ll look at how to assess whether the regression line is a good fit.</p>
 <hr>  
@@ -131,13 +135,13 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" data-id="cl5fbesmv000e4vov9pffewvv" data-title="Bivariate Linear Regression" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" data-id="clmx1yhn3000ncsov9ueg6bsn" data-title="Bivariate Linear Regression" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
 
     </footer>
   </div>
@@ -168,7 +172,7 @@
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -243,7 +247,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -273,13 +277,19 @@
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -301,7 +311,7 @@
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -313,7 +323,7 @@
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

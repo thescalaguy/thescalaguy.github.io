@@ -1,0 +1,25 @@
+.takeaway-column-left {
+  float: left;
+  width: 10%;
+  vertical-align: top;
+}
+
+.takeaway-column-right {
+  float: left;
+  width: 90%;
+  vertical-align: top;
+}
+
+/* Clear floats after the columns */
+.takeaway-row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.takeaway-row {
+  border: 1px solid rgba(237, 231, 225, .5);;
+  padding: 10px;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+

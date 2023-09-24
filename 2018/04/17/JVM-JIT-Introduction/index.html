@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>JVM JIT - Introduction | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="MotivationMy day job requires me to write code in Clojure. This means the code is eventually compiled to bytecode and run on the JVM. Intrigued by how the JVM does what it does, I decided to dig a lit">
-<meta name="keywords" content="compilers">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM JIT - Introduction">
 <meta property="og:url" content="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="MotivationMy day job requires me to write code in Clojure. This means the code is eventually compiled to bytecode and run on the JVM. Intrigued by how the JVM does what it does, I decided to dig a lit">
-<meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.854Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2018-04-17T15:01:00.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.854Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="compilers">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JVM JIT - Introduction">
-<meta name="twitter:description" content="MotivationMy day job requires me to write code in Clojure. This means the code is eventually compiled to bytecode and run on the JVM. Intrigued by how the JVM does what it does, I decided to dig a lit">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
   
@@ -27,11 +27,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -43,10 +51,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -95,27 +99,27 @@
       
         <h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><p>My day job requires me to write code in Clojure. This means the code is eventually compiled to bytecode and run on the JVM. Intrigued by how the JVM does what it does, I decided to dig a little deeper and look at how it optimizes the code on the fly. In this series of posts I will be looking at JVM JIT (Just-In-Time) compiler.</p>
 <h2 id="Myriad-ways-to-run-a-program"><a href="#Myriad-ways-to-run-a-program" class="headerlink" title="Myriad ways to run a program"></a>Myriad ways to run a program</h2><p>Before I go into how JVM JIT works, I want to take a quick look at how interpreted and compiled languages work. For this post, I’ll take a look at the working of Python (an interpreted language) and C (a compiled language).</p>
-<h3 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h3><p>Python, by default, ships with <a href="https://github.com/python/cpython" target="_blank" rel="noopener">CPython</a> - the original Python interpreter that runs C code for every bytecode. There’s other implementations like <a href="http://ironpython.net/" target="_blank" rel="noopener">IronPython</a> or <a href="https://pypy.org" target="_blank" rel="noopener">PyPy</a>. IronPython turns Python into a fully compiled language running on top of Microsoft’s .NET Common Language Runtime (CLR) whereas PyPy turns Python into a JIT compiled language. For the sake of this post, however, I will look at CPython and how it works.</p>
+<h3 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h3><p>Python, by default, ships with <a target="_blank" rel="noopener" href="https://github.com/python/cpython">CPython</a> - the original Python interpreter that runs C code for every bytecode. There’s other implementations like <a target="_blank" rel="noopener" href="http://ironpython.net/">IronPython</a> or <a target="_blank" rel="noopener" href="https://pypy.org">PyPy</a>. IronPython turns Python into a fully compiled language running on top of Microsoft’s .NET Common Language Runtime (CLR) whereas PyPy turns Python into a JIT compiled language. For the sake of this post, however, I will look at CPython and how it works.</p>
 <p>I’ll start with some code which will print the bytecodes for another Python file that is passed to it. </p>
-<figure class="highlight python"><figcaption><span>bytecode.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sys <span class="keyword">import</span> argv</span><br><span class="line"><span class="keyword">from</span> dis <span class="keyword">import</span> dis</span><br><span class="line"></span><br><span class="line">script, path = argv</span><br><span class="line">source_file = open(path)</span><br><span class="line">source_code = source_file.read()</span><br><span class="line">compiled = compile(source_code, <span class="string">"&lt;string&gt;"</span>, <span class="string">"exec"</span>)</span><br><span class="line">bytecodes = dis(compiled)</span><br><span class="line"></span><br><span class="line">print(bytecodes)</span><br><span class="line">source_file.close()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><figcaption><span>bytecode.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sys <span class="keyword">import</span> argv</span><br><span class="line"><span class="keyword">from</span> dis <span class="keyword">import</span> dis</span><br><span class="line"></span><br><span class="line">script, path = argv</span><br><span class="line">source_file = <span class="built_in">open</span>(path)</span><br><span class="line">source_code = source_file.read()</span><br><span class="line">compiled = <span class="built_in">compile</span>(source_code, <span class="string">&quot;&lt;string&gt;&quot;</span>, <span class="string">&quot;exec&quot;</span>)</span><br><span class="line">bytecodes = dis(compiled)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(bytecodes)</span><br><span class="line">source_file.close()</span><br></pre></td></tr></table></figure>
 <p>Next, here’s some code that’ll print numbers.</p>
-<figure class="highlight python"><figcaption><span>print_numbers.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> [<span class="number">101</span>, <span class="number">102</span>, <span class="number">103</span>]:</span><br><span class="line">    print(n)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><figcaption><span>print_numbers.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> [<span class="number">101</span>, <span class="number">102</span>, <span class="number">103</span>]:</span><br><span class="line">    <span class="built_in">print</span>(n)</span><br></pre></td></tr></table></figure>
 <p>Now, let’s run the code and see the bytecodes we get.</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 bytecode.py print_numbers.py</span><br></pre></td></tr></table></figure>
 <p>Output:</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">  1           0 SETUP_LOOP              20 (to 22)</span><br><span class="line">              2 LOAD_CONST               4 ((101, 102, 103))</span><br><span class="line">              4 GET_ITER</span><br><span class="line">        &gt;&gt;    6 FOR_ITER                12 (to 20)</span><br><span class="line">              8 STORE_NAME               0 (n)</span><br><span class="line"></span><br><span class="line">  2          10 LOAD_NAME                1 (print)</span><br><span class="line">             12 LOAD_NAME                0 (n)</span><br><span class="line">             14 CALL_FUNCTION            1</span><br><span class="line">             16 POP_TOP</span><br><span class="line">             18 JUMP_ABSOLUTE            6</span><br><span class="line">        &gt;&gt;   20 POP_BLOCK</span><br><span class="line">        &gt;&gt;   22 LOAD_CONST               3 (None)</span><br><span class="line">             24 RETURN_VALUE</span><br><span class="line">None</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">  1           0 SETUP_LOOP              20 (to 22)</span><br><span class="line">              2 LOAD_CONST               4 ((101, 102, 103))</span><br><span class="line">              4 GET_ITER</span><br><span class="line">        &gt;&gt;    6 FOR_ITER                12 (to 20)</span><br><span class="line">              8 STORE_NAME               0 (n)</span><br><span class="line"></span><br><span class="line">  2          10 LOAD_NAME                1 (print)</span><br><span class="line">             12 LOAD_NAME                0 (n)</span><br><span class="line">             14 CALL_FUNCTION            1</span><br><span class="line">             16 POP_TOP</span><br><span class="line">             18 JUMP_ABSOLUTE            6</span><br><span class="line">        &gt;&gt;   20 POP_BLOCK</span><br><span class="line">        &gt;&gt;   22 LOAD_CONST               3 (None)</span><br><span class="line">             24 RETURN_VALUE</span><br><span class="line">None</span><br></pre></td></tr></table></figure>
 <p>The loop starts on line #4. For every element in the list, we’re pushing <code>print</code> and <code>n</code> onto the stack, calling the function, popping the stack, and repeating the loop. For each of the bytecodes, there’s associated C code i.e. <code>FOR_ITER</code>, <code>STORE_NAME</code>, etc. have associated C code.   </p>
 <p>This is a very simple way to run a program and also a very inefficient one. We’re repeating the stack operations and jumps over and over again. There’s no scope for optimizations like loop unrolling.</p>
 <h3 id="C"><a href="#C" class="headerlink" title="C"></a>C</h3><p>In contrast to Python is C. All the C code is compiled to assembly ahead-of-time. Here’s a simple C program which will print “EVEN” if a number is even. </p>
-<figure class="highlight c"><figcaption><span>numbers.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10000</span>; i += <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span>( i % <span class="number">2</span> == <span class="number">0</span> ) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">"EVEN!"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">""</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><figcaption><span>numbers.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> &#123;</span><br><span class="line">  <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10000</span>; i += <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span>( i % <span class="number">2</span> == <span class="number">0</span> ) &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;EVEN!&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Next, let’s compile this code.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -S numbers.c</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -S numbers.c</span><br></pre></td></tr></table></figure>
 <p>This will generate <code>numbers.s</code>. The assembly is fairly long so I’ll just cover the relevant parts.</p>
-<figure class="highlight plain"><figcaption><span>numbers.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">LBB0_1:</span><br><span class="line">        cmpl    $10000, -8(%rbp) </span><br><span class="line">        jge     LBB0_7</span><br><span class="line">        ...</span><br><span class="line">        idivl   %ecx</span><br><span class="line">        cmpl    $0, %edx</span><br><span class="line">        jne     LBB0_4</span><br><span class="line">        leaq    L_.str(%rip), %rdi</span><br><span class="line">        ...</span><br><span class="line">        callq   _printf</span><br><span class="line">        movl    %eax, -16(%rbp)</span><br><span class="line">        jmp     LBB0_5</span><br><span class="line">LBB0_4:</span><br><span class="line">        leaq    L_.str.1(%rip), %rdi</span><br><span class="line">        movb    $0, %al</span><br><span class="line">        callq   _printf</span><br><span class="line">        ...</span><br><span class="line">LBB0_5:</span><br><span class="line">        jmp     LBB0_6</span><br><span class="line">LBB0_6:</span><br><span class="line">        ...</span><br><span class="line">        addl    $2, %eax</span><br><span class="line">        ...</span><br><span class="line">        jmp     LBB0_1</span><br><span class="line">        ...</span><br><span class="line">LBB0_7:</span><br><span class="line">        ...</span><br><span class="line">        retq</span><br><span class="line">        ...</span><br><span class="line">L_.str:</span><br><span class="line">        .asciz  &quot;EVEN!&quot;</span><br><span class="line">L_.str.1:</span><br><span class="line">        .space  1</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><figcaption><span>numbers.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">LBB0_1:</span><br><span class="line">        cmpl    $10000, -8(%rbp) </span><br><span class="line">        jge     LBB0_7</span><br><span class="line">        ...</span><br><span class="line">        idivl   %ecx</span><br><span class="line">        cmpl    $0, %edx</span><br><span class="line">        jne     LBB0_4</span><br><span class="line">        leaq    L_.str(%rip), %rdi</span><br><span class="line">        ...</span><br><span class="line">        callq   _printf</span><br><span class="line">        movl    %eax, -16(%rbp)</span><br><span class="line">        jmp     LBB0_5</span><br><span class="line">LBB0_4:</span><br><span class="line">        leaq    L_.str.1(%rip), %rdi</span><br><span class="line">        movb    $0, %al</span><br><span class="line">        callq   _printf</span><br><span class="line">        ...</span><br><span class="line">LBB0_5:</span><br><span class="line">        jmp     LBB0_6</span><br><span class="line">LBB0_6:</span><br><span class="line">        ...</span><br><span class="line">        addl    $2, %eax</span><br><span class="line">        ...</span><br><span class="line">        jmp     LBB0_1</span><br><span class="line">        ...</span><br><span class="line">LBB0_7:</span><br><span class="line">        ...</span><br><span class="line">        retq</span><br><span class="line">        ...</span><br><span class="line">L_.str:</span><br><span class="line">        .asciz  &quot;EVEN!&quot;</span><br><span class="line">L_.str.1:</span><br><span class="line">        .space  1</span><br></pre></td></tr></table></figure>
 <p>Lines #2 - #3 show that if we’ve reached the limit of 10k, we’ll jump to <code>LBB0_7</code> and the program ends.<br>If not, on line #5 we perform a signed division (<code>idivl</code>) and check if it is not zero. If it is not zero, we jump to <code>LBB0_4</code> and print <code>L_.str.1</code> which is just a whitespace.  </p>
 <p>We will always end up making this jump because we’ll never reach the condition where we have an even number. This is the problem with ahead-of-time compilation where you cannot speculate what the data is going to be and therefore you have to be ready to handle all the possibilities.  </p>
 <h3 id="JVM-JIT"><a href="#JVM-JIT" class="headerlink" title="JVM JIT"></a>JVM JIT</h3><p>JVM JIT combines the best of both the worlds. When you execute your program the first time, the bytecodes are interpreted. As the code continues to execute, JVM collects statistics about it and the more frequently used code (“hot” code) is compiled to assembly. In addition, there are optimizations like loop unrolling. Loop unrolling looks like this:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Plain ol' loop</span></span><br><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">    System.out.println(arr[i]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Unrolled</span></span><br><span class="line">System.out.println(arr[<span class="number">0</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">1</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">2</span>]);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Plain ol&#x27; loop</span></span><br><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) &#123;</span><br><span class="line">    System.out.println(arr[i]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Unrolled</span></span><br><span class="line">System.out.println(arr[<span class="number">0</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">1</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">2</span>]);</span><br></pre></td></tr></table></figure>
 <p>Unrolling a loop helps avoid jumps and thus makes execution faster. </p>
 <p>Also, since JVM collects statistics about code, it can make optimizations on the fly. For example, in the case where an even number is never reached, JVM can generate assembly code that’ll only have the <code>else</code> part of the branch.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>JVM does some fairly intersting optimizations under the hood. The aim of this series of posts is to cover as much of this as possible. We’ll start simple and build upon this as we go. </p>
@@ -123,13 +127,13 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cl5fbesmp00074vovt7dqj21t" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="clmx1yhmz000ecsovau4c0si2" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/">compilers</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/" rel="tag">compilers</a></li></ul>
 
     </footer>
   </div>
@@ -160,7 +164,7 @@
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -235,7 +239,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -265,13 +269,19 @@
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -293,7 +303,7 @@
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -305,7 +315,7 @@
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

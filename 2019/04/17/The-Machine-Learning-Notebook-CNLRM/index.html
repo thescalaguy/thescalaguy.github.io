@@ -1,23 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Classic Normal Linear Regression Model | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
-<meta name="keywords" content="machine learning">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Classic Normal Linear Regression Model">
 <meta property="og:url" content="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
-<meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-04-17T05:32:08.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.858Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="machine learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Classic Normal Linear Regression Model">
-<meta name="twitter:description" content="The posts so far have covered estimators. An estimator looks at the sample data and comes up with an estimate for some true population parameter. However, how do we know how close, say $\hat{\beta}_2$">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
   
@@ -27,11 +27,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -43,10 +51,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -135,13 +139,13 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" data-id="cl5fbesmw000h4vovx21k5gwo" data-title="Classic Normal Linear Regression Model" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" data-id="clmx1yhn4000pcsove7wj5w1j" data-title="Classic Normal Linear Regression Model" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
 
     </footer>
   </div>
@@ -172,7 +176,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -247,7 +251,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -277,13 +281,19 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -305,7 +315,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -317,7 +327,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

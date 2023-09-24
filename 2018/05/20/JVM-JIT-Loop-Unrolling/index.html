@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>JVM JIT - Loop Unrolling | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="In the previous post we looked at how JVM generates assembly code and how we can take a look at it. In this post we will look at yet another optimization technique called loop unrolling.  What is loop">
-<meta name="keywords" content="compilers">
 <meta property="og:type" content="article">
 <meta property="og:title" content="JVM JIT - Loop Unrolling">
 <meta property="og:url" content="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="In the previous post we looked at how JVM generates assembly code and how we can take a look at it. In this post we will look at yet another optimization technique called loop unrolling.  What is loop">
-<meta property="og:locale" content="default">
+<meta property="og:locale">
 <meta property="og:image" content="http://fasihkhatib.com/images/SLP.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.854Z">
+<meta property="article:published_time" content="2018-05-20T17:48:06.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.854Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="compilers">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="JVM JIT - Loop Unrolling">
-<meta name="twitter:description" content="In the previous post we looked at how JVM generates assembly code and how we can take a look at it. In this post we will look at yet another optimization technique called loop unrolling.  What is loop">
 <meta name="twitter:image" content="http://fasihkhatib.com/images/SLP.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -29,11 +29,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -45,10 +53,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -96,26 +100,26 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>In the <a href="/2018/05/10/JVM-JIT-Compiling-to-Assembly/">previous post</a> we looked at how JVM generates assembly code and how we can take a look at it. In this post we will look at yet another optimization technique called loop unrolling. </p>
-<h3 id="What-is-loop-unrolling"><a href="#What-is-loop-unrolling" class="headerlink" title="What is loop unrolling?"></a>What is loop unrolling?</h3><p>To quote <a href="http://www.oracle.com/technetwork/java/whitepaper-135217.html" target="_blank" rel="noopener">The Java HotSpot Performance Engine Architecture</a>,</p>
+<h3 id="What-is-loop-unrolling"><a href="#What-is-loop-unrolling" class="headerlink" title="What is loop unrolling?"></a>What is loop unrolling?</h3><p>To quote <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/java/whitepaper-135217.html">The Java HotSpot Performance Engine Architecture</a>,</p>
 <blockquote>
 <p>the Server VM features loop unrolling, a standard compiler optimization that enables faster loop execution. Loop unrolling increases the loop body size while simultaneously decreasing the number of iterations.</p>
 </blockquote>
 <p>Okay so it is an optimization that makes our loops faster by increasing the body size, and reducing the iterations. This is much better explained by example.</p>
 <p>A loop like this:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    S(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++) &#123;</span><br><span class="line">    S(i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>can be unrolled into this:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; N; i += <span class="number">4</span>) &#123;</span><br><span class="line">    S(i);</span><br><span class="line">    S(i+<span class="number">1</span>);</span><br><span class="line">    S(i+<span class="number">2</span>);</span><br><span class="line">    S(i+<span class="number">3</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>  
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i += <span class="number">4</span>) &#123;</span><br><span class="line">    S(i);</span><br><span class="line">    S(i+<span class="number">1</span>);</span><br><span class="line">    S(i+<span class="number">2</span>);</span><br><span class="line">    S(i+<span class="number">3</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>  
 <p>So the size of the loop has increased because instead of calling method <code>S</code> just once per iteration, we call it 4x. The iterations have reduced because we now have a stride of 4 (<code>i += 4</code>). This is a space-time tradeoff because you gain speed by increasing the size of the program. If this <code>for</code> loop were to be a part of a hot method that got compiled to assembly, more code cache would be consumed because of unrolling.   </p>
 <p>Loop unrolling, however, wins at a different front — speed. By increasing the stride of the loop, we’re reducing the number of jumps that the CPU has to make. Jumps are costly and a reduction in jumps is a huge performance boost.  </p>
-<h3 id="Loop-unrolling-in-action"><a href="#Loop-unrolling-in-action" class="headerlink" title="Loop unrolling in action"></a>Loop unrolling in action</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.openjdk.jmh.annotations.*;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Warmup</span>(iterations = <span class="number">10</span>, time = <span class="number">1</span>, timeUnit = TimeUnit.SECONDS)</span><br><span class="line"><span class="meta">@Measurement</span>(iterations = <span class="number">5</span>, time = <span class="number">1</span>, timeUnit = TimeUnit.SECONDS)</span><br><span class="line"><span class="meta">@Fork</span>(value = <span class="number">1</span>, jvmArgsPrepend = &#123;<span class="string">"-XX:+UnlockDiagnosticVMOptions"</span>, <span class="string">"-XX:+PrintAssembly"</span>&#125;)</span><br><span class="line"><span class="meta">@BenchmarkMode</span>(Mode.AverageTime)</span><br><span class="line"><span class="meta">@OutputTimeUnit</span>(TimeUnit.NANOSECONDS)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyBenchmark</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="meta">@CompilerControl</span>(CompilerControl.Mode.DONT_INLINE)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testMethod</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] nums = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            nums[i] = <span class="number">0x42</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
+<h3 id="Loop-unrolling-in-action"><a href="#Loop-unrolling-in-action" class="headerlink" title="Loop unrolling in action"></a>Loop unrolling in action</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.openjdk.jmh.annotations.*;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)</span></span><br><span class="line"><span class="meta">@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)</span></span><br><span class="line"><span class="meta">@Fork(value = 1, jvmArgsPrepend = &#123;&quot;-XX:+UnlockDiagnosticVMOptions&quot;, &quot;-XX:+PrintAssembly&quot;&#125;)</span></span><br><span class="line"><span class="meta">@BenchmarkMode(Mode.AverageTime)</span></span><br><span class="line"><span class="meta">@OutputTimeUnit(TimeUnit.NANOSECONDS)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyBenchmark</span> &#123;</span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="meta">@CompilerControl(CompilerControl.Mode.DONT_INLINE)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testMethod</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">int</span>[] nums = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) &#123;</span><br><span class="line">            nums[i] = <span class="number">0x42</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure> 
 <p>The code above is a JMH benchmark which will fork 1 JVM (<code>@Fork</code>), warm it for 10 iterations (<code>@Warmup</code>), then run our benchmark for 5 iterations (<code>@Measurement</code>). The generated assembly looks like this:  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">0x00000001296ac845: cmp    %r10d,%ebp</span><br><span class="line">0x00000001296ac848: jae    0x00000001296ac8b4</span><br><span class="line">0x00000001296ac84a: movl   $0x42,0x10(%rbx,%rbp,4)</span><br><span class="line">0x00000001296ac852: inc    %ebp               </span><br><span class="line">0x00000001296ac854: cmp    %r11d,%ebp</span><br><span class="line">0x00000001296ac857: jl     0x00000001296ac845</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">0x00000001296ac880: vmovdqu %xmm0,0x10(%rbx,%rbp,4)  </span><br><span class="line">0x00000001296ac886: add    $0x4,%ebp          </span><br><span class="line">0x00000001296ac889: cmp    %r8d,%ebp</span><br><span class="line">0x00000001296ac88c: jl     0x00000001296ac880 </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">0x00000001296ac845: cmp    %r10d,%ebp</span><br><span class="line">0x00000001296ac848: jae    0x00000001296ac8b4</span><br><span class="line">0x00000001296ac84a: movl   $0x42,0x10(%rbx,%rbp,4)</span><br><span class="line">0x00000001296ac852: inc    %ebp               </span><br><span class="line">0x00000001296ac854: cmp    %r11d,%ebp</span><br><span class="line">0x00000001296ac857: jl     0x00000001296ac845</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">0x00000001296ac880: vmovdqu %xmm0,0x10(%rbx,%rbp,4)  </span><br><span class="line">0x00000001296ac886: add    $0x4,%ebp          </span><br><span class="line">0x00000001296ac889: cmp    %r8d,%ebp</span><br><span class="line">0x00000001296ac88c: jl     0x00000001296ac880 </span><br></pre></td></tr></table></figure>
 <p>So the first block of code is moving <code>0x42</code> to some memory location (line #3), incrementing the counter <code>%ebp</code> (line #4), and jumping back to the start of the loop for the next iteration (line #6). Then there is the second block which increments the counter by 4 (line #11) and uses <code>vmovdqu</code> (line #10).  </p>
 <p>In the second block, <code>vmovdqu</code> moves <code>%xmm0</code> (a 128-bit register) to some memory location (line #10) i.e. we’re writing 4 32-bit numbers in one go. This is equivalent of writing <code>nums[0 .. 3]</code> in one iteration.  </p>
 <p>This means that our entire loop which writes 10 array elements will not run for 10 iterations at all. It  will run for 4 — 2 iterations to write 8 elements in groups of 4 each (block 2), and 2 more to write the remaining 2 elements (block 1). </p>
 <p>What we saw above was loop unrolling to enable vectorization. Since this happened without any effort on our part, it’s called auto-vectorization.</p>
 <h3 id="What-is-vectorization"><a href="#What-is-vectorization" class="headerlink" title="What is vectorization?"></a>What is vectorization?</h3><p>There are certain CPU instructions which are capable of operating on multiple data elements simultaneously. Such instructions are called SIMD instructions — Single Instruction Multiple Data or vectorized instructions. In the example above, all 4 elements were packed into a single register <code>XMM0</code> and then moved to their memory location with <code>vmovdqu</code>. This results in faster processing by saving jumps and clock cycles. </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+--------|--------|--------|--------+</span><br><span class="line">|  0x42  |  0x42  |  0x42  |  0x42  | xmm0</span><br><span class="line">+--------|--------|--------|--------+</span><br><span class="line">     ↓       ↓         ↓        ↓     </span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+--------|--------|--------|--------+</span><br><span class="line">|  0x42  |  0x42  |  0x42  |  0x42  | xmm0</span><br><span class="line">+--------|--------|--------|--------+</span><br><span class="line">     ↓       ↓         ↓        ↓     </span><br></pre></td></tr></table></figure>
 <p>Auto-vectorization is when the compiler converts the scalar instructions (which operate on a single data element at a time) to vector instructions (which operate on multiple data elements at a time) without any effort on the part of the programmer.  </p>
 <p>Vectorizing the code enables superword level parallelism (SLP). SLP is a type of SIMD parallelism in which source and result operands are packed in a storage location. </p>
 <p><img src="/images/SLP.png" alt="An example of SLP">  </p>
@@ -131,24 +135,24 @@
 <h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Loop unrolling makes your code faster by doing more per iteration and increasing the stride. It’s a space-time trade off where you make your code larger so that the execution takes less time. Loop unrolling can be taken a step further to make scalar instructions into vector instructions. These instructions operate on packed data and achieve more per instruction than their scalar counterparts.  </p>
 <p>The conversion from scalar instructions to vector instructions is called vectorization. Since this happens transparently to the programmer, it is called auto-vectorization.</p>
 <h3 id="Recommended-reading"><a href="#Recommended-reading" class="headerlink" title="Recommended reading"></a>Recommended reading</h3><p>There are a few blog posts that I recommend you read.</p>
-<p><a href="https://web.archive.org/web/20180309233206/https://www.nayuki.io/page/a-fundamental-introduction-to-x86-assembly-programming" target="_blank" rel="noopener">A fundamental introduction to x86 assembly programming</a><br>This post provides a brief introduction to x86 assembly programming. Having studied assembly programming in university a long time ago, the post is quick refresher on the basic concepts of assembly programming like addresing modes, registers, etc. I keep it handy and refer to it when I have to read the assembly code generated by JVM. </p>
-<p><a href="https://web.archive.org/web/20170501051527/http://tutorials.jenkov.com:80/java-performance/jmh.html" target="_blank" rel="noopener">JMH - Java Microbenchmark Harness</a><br>This post provides a brief introduction to JMH (Java Mirobenchmark Harness). What does JMH do?   </p>
+<p><a target="_blank" rel="noopener" href="https://web.archive.org/web/20180309233206/https://www.nayuki.io/page/a-fundamental-introduction-to-x86-assembly-programming">A fundamental introduction to x86 assembly programming</a><br>This post provides a brief introduction to x86 assembly programming. Having studied assembly programming in university a long time ago, the post is quick refresher on the basic concepts of assembly programming like addresing modes, registers, etc. I keep it handy and refer to it when I have to read the assembly code generated by JVM. </p>
+<p><a target="_blank" rel="noopener" href="https://web.archive.org/web/20170501051527/http://tutorials.jenkov.com:80/java-performance/jmh.html">JMH - Java Microbenchmark Harness</a><br>This post provides a brief introduction to JMH (Java Mirobenchmark Harness). What does JMH do?   </p>
 <blockquote>
 <p>JMH is a Java harness for building, running, and analysing nano/micro/milli/macro benchmarks written in Java and other languages targetting the JVM.  </p>
 </blockquote>
 <p>The post will show you how to write a simple benchmark, how to avoid common pitfalls, etc. It is a good read regardless of this series for two reasons: one, microbenchmarking is coming to Java 9 out-of-the-box and two, microbenchmarking is hard to get right.</p>
-<p><a href="http://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf" target="_blank" rel="noopener">Exploiting Superword Level Parallelism with Multimedia Instruction Sets</a><br>This is the research paper on superword level parallelism. I’ve borrowed examples and diagrams from this paper. The paper will introduce you to what SLP is, and also provide an algorithm on how to find parts of code which are amenable to SLP.</p>
+<p><a target="_blank" rel="noopener" href="http://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf">Exploiting Superword Level Parallelism with Multimedia Instruction Sets</a><br>This is the research paper on superword level parallelism. I’ve borrowed examples and diagrams from this paper. The paper will introduce you to what SLP is, and also provide an algorithm on how to find parts of code which are amenable to SLP.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/" data-id="cl5fbesmr000a4vovb2245m1k" data-title="JVM JIT - Loop Unrolling" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/" data-id="clmx1yhn0000gcsovezgf0539" data-title="JVM JIT - Loop Unrolling" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/">compilers</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/" rel="tag">compilers</a></li></ul>
 
     </footer>
   </div>
@@ -179,7 +183,7 @@
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -254,7 +258,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -284,13 +288,19 @@
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -312,7 +322,7 @@
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -324,7 +334,7 @@
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

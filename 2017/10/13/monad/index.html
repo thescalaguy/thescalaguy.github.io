@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Monad | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
-<meta name="keywords" content="category theory,scala,functional programming">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Monad">
 <meta property="og:url" content="http://fasihkhatib.com/2017/10/13/monad/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
-<meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-10-13T00:50:09.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.862Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="category theory">
+<meta property="article:tag" content="scala">
+<meta property="article:tag" content="functional programming">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Monad">
-<meta name="twitter:description" content="So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
   
@@ -27,11 +29,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -43,10 +53,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -97,7 +103,7 @@
 <h2 id="Definition"><a href="#Definition" class="headerlink" title="Definition"></a>Definition</h2><p>A monad has more structure than a functor. This means that you can call <code>map</code> on it and that it obeys all the functor laws. In addition, a monad has a <code>flatMap</code> function which you can use to chain monads together. In essence, monads represent units of computation that you can chain together and the result of this chaining is also a monad.</p>
 <p>Let’s look at a few examples.</p>
 <h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> first = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line"><span class="keyword">val</span> next = <span class="type">List</span>(<span class="number">8</span>, <span class="number">9</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">  i &lt;- first</span><br><span class="line">  j &lt;- next</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">yield</span>(i * j)</span><br></pre></td></tr></table></figure>
-<p>The above code<sup><a href="http://debasishg.blogspot.in/2008/03/monads-another-way-to-abstract.html" target="_blank" rel="noopener">[1]</a></sup> uses a <code>for</code> comprehension to muliply elements of the list together. Under the hood, this gets translated to:</p>
+<p>The above code<sup><a target="_blank" rel="noopener" href="http://debasishg.blogspot.in/2008/03/monads-another-way-to-abstract.html">[1]</a></sup> uses a <code>for</code> comprehension to muliply elements of the list together. Under the hood, this gets translated to:</p>
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">first flatMap &#123;</span><br><span class="line">  f =&gt; next map &#123;</span><br><span class="line">    n =&gt; f * n</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>The compiler is making use of the <code>List</code> monad to chain operations together. Let’s break this down. </p>
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">next map &#123;</span><br><span class="line">  n =&gt; f * n</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -122,13 +128,13 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cl5fbesn300114vov3hpcz81v" data-title="Monad" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="clmx1yhnb001bcsov47wn3unf" data-title="Monad" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/">scala</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/" rel="tag">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li></ul>
 
     </footer>
   </div>
@@ -159,7 +165,7 @@
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -234,7 +240,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -264,13 +270,19 @@
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -292,7 +304,7 @@
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -304,7 +316,7 @@
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

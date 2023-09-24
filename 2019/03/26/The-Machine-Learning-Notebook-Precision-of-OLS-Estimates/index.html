@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Precision of OLS Estimates | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="The calculation of the estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ is based on sample data. As the sample drawn changes, the value of these estimators also changes. This leaves us with the question">
-<meta name="keywords" content="machine learning">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Precision of OLS Estimates">
 <meta property="og:url" content="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="The calculation of the estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ is based on sample data. As the sample drawn changes, the value of these estimators also changes. This leaves us with the question">
-<meta property="og:locale" content="default">
+<meta property="og:locale">
 <meta property="og:image" content="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/boston_scatter.png">
 <meta property="og:image" content="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/regression_curve.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.862Z">
+<meta property="article:published_time" content="2019-03-26T10:11:57.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.862Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="machine learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Precision of OLS Estimates">
-<meta name="twitter:description" content="The calculation of the estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ is based on sample data. As the sample drawn changes, the value of these estimators also changes. This leaves us with the question">
 <meta name="twitter:image" content="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/boston_scatter.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -30,11 +30,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -46,10 +54,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -116,20 +120,20 @@ se(\hat{\beta}_1) &= \sqrt{\frac{\sum{X_i^2}}{n\sum{x_i^2}}}\sigma
 <script type="math/tex; mode=display">\hat{\sigma} = \sqrt{\frac{\sum{\hat{u}_i^2}}{n-2}}</script><p>This is the positive square root of the estimator of homoscedastic variance. This is the standard deviation of the $Y$ values about the regerssion curve.  </p>
 <p>The standard errors of the estimators $\hat{\beta}_1$ and $\hat{\beta}_2$ will show you how much they fluctuate as you draw the samples. The lesser their standard error, the better. </p>
 <p>The square of the standard error is called the mean squared error.</p>
-<h2 id="Let’s-see-some-code"><a href="#Let’s-see-some-code" class="headerlink" title="Let’s see some code"></a>Let’s see some code</h2><p>To start off, let’s load the <a href="https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html" target="_blank" rel="noopener">Boston housing</a> dataset.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> datasets</span><br><span class="line">boston = datasets.load_boston()</span><br><span class="line">data, target = boston.data, boston.target</span><br><span class="line">df = pd.DataFrame(data=data, columns=boston.feature_names)</span><br><span class="line">df = df[[<span class="string">'RM'</span>]]</span><br><span class="line">df[<span class="string">'RM'</span>] = df[<span class="string">'RM'</span>].apply(round)</span><br><span class="line">df[<span class="string">'price'</span>] = target </span><br></pre></td></tr></table></figure>
+<h2 id="Let’s-see-some-code"><a href="#Let’s-see-some-code" class="headerlink" title="Let’s see some code"></a>Let’s see some code</h2><p>To start off, let’s load the <a target="_blank" rel="noopener" href="https://www.cs.toronto.edu/~delve/data/boston/bostonDetail.html">Boston housing</a> dataset.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> datasets</span><br><span class="line">boston = datasets.load_boston()</span><br><span class="line">data, target = boston.data, boston.target</span><br><span class="line">df = pd.DataFrame(data=data, columns=boston.feature_names)</span><br><span class="line">df = df[[<span class="string">&#x27;RM&#x27;</span>]]</span><br><span class="line">df[<span class="string">&#x27;RM&#x27;</span>] = df[<span class="string">&#x27;RM&#x27;</span>].apply(<span class="built_in">round</span>)</span><br><span class="line">df[<span class="string">&#x27;price&#x27;</span>] = target </span><br></pre></td></tr></table></figure>
 <p>I’m choosing to use the average number of rooms as the variable to see how it affects price. I’ve rounded it off to make the calculations easier. The scatter plot of the data looks the following:  </p>
-<img src="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/boston_scatter.png" title="[Population Scatter Plot]">
+<img src="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/boston_scatter.png" class="" title="[Population Scatter Plot]">
 <p>This, ofcourse, is the entire population data so let’s draw a sample.  </p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sample = df.sample(n=<span class="number">100</span>)</span><br></pre></td></tr></table></figure>
 <p>Now let’s bring back our function that calculates the OLS estimates:  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ols</span><span class="params">(sample)</span>:</span></span><br><span class="line">    Xbar = sample[<span class="string">'X'</span>].mean()</span><br><span class="line">    Ybar = sample[<span class="string">'Y'</span>].mean()</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'x'</span>] = sample[<span class="string">'X'</span>] - Xbar</span><br><span class="line">    sample[<span class="string">'x_sq'</span>] = sample[<span class="string">'x'</span>] ** <span class="number">2</span></span><br><span class="line">    sample[<span class="string">'y'</span>] = sample[<span class="string">'Y'</span>] - Ybar</span><br><span class="line">    sample[<span class="string">'xy'</span>] = sample[<span class="string">'x'</span>] * sample[<span class="string">'y'</span>]</span><br><span class="line"></span><br><span class="line">    beta2cap = sample[<span class="string">'xy'</span>].sum() / sample[<span class="string">'x_sq'</span>].sum()</span><br><span class="line">    beta1cap = Ybar - (beta2cap * Xbar)</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">'Ycap'</span>] = beta1cap + beta2cap * sample[<span class="string">'X'</span>]</span><br><span class="line">    sample[<span class="string">'ucap'</span>] = sample[<span class="string">'Y'</span>] - sample[<span class="string">'Ycap'</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta1cap, beta2cap</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">ols</span>(<span class="params">sample</span>):</span><br><span class="line">    Xbar = sample[<span class="string">&#x27;X&#x27;</span>].mean()</span><br><span class="line">    Ybar = sample[<span class="string">&#x27;Y&#x27;</span>].mean()</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">&#x27;x&#x27;</span>] = sample[<span class="string">&#x27;X&#x27;</span>] - Xbar</span><br><span class="line">    sample[<span class="string">&#x27;x_sq&#x27;</span>] = sample[<span class="string">&#x27;x&#x27;</span>] ** <span class="number">2</span></span><br><span class="line">    sample[<span class="string">&#x27;y&#x27;</span>] = sample[<span class="string">&#x27;Y&#x27;</span>] - Ybar</span><br><span class="line">    sample[<span class="string">&#x27;xy&#x27;</span>] = sample[<span class="string">&#x27;x&#x27;</span>] * sample[<span class="string">&#x27;y&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    beta2cap = sample[<span class="string">&#x27;xy&#x27;</span>].<span class="built_in">sum</span>() / sample[<span class="string">&#x27;x_sq&#x27;</span>].<span class="built_in">sum</span>()</span><br><span class="line">    beta1cap = Ybar - (beta2cap * Xbar)</span><br><span class="line"></span><br><span class="line">    sample[<span class="string">&#x27;Ycap&#x27;</span>] = beta1cap + beta2cap * sample[<span class="string">&#x27;X&#x27;</span>]</span><br><span class="line">    sample[<span class="string">&#x27;ucap&#x27;</span>] = sample[<span class="string">&#x27;Y&#x27;</span>] - sample[<span class="string">&#x27;Ycap&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> beta1cap, beta2cap</span><br></pre></td></tr></table></figure>
 <p>and now let’s see coefficients</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sample.rename(columns=&#123;<span class="string">'RM'</span>: <span class="string">'X'</span>, <span class="string">'price'</span>: <span class="string">'Y'</span>&#125;, inplace=<span class="literal">True</span>)</span><br><span class="line">intercept, slope = ols(sample)</span><br></pre></td></tr></table></figure> 
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sample.rename(columns=&#123;<span class="string">&#x27;RM&#x27;</span>: <span class="string">&#x27;X&#x27;</span>, <span class="string">&#x27;price&#x27;</span>: <span class="string">&#x27;Y&#x27;</span>&#125;, inplace=<span class="literal">True</span>)</span><br><span class="line">intercept, slope = ols(sample)</span><br></pre></td></tr></table></figure> 
 <p>The plot of the regression curve on the sample data looks the following:  </p>
-<img src="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/regression_curve.png" title="[Regression Curve]">
+<img src="/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/regression_curve.png" class="" title="[Regression Curve]">
 <p>The <code>sample</code> DataFrame has our intermediate calculation and we can use that to calculate the standard error. Let’s write a function which does that.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> math <span class="keyword">import</span> sqrt</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">standard_error</span><span class="params">(sample)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> sqrt((sample[<span class="string">'ucap'</span>] ** <span class="number">2</span>).sum() / (len(sample) - <span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> math <span class="keyword">import</span> sqrt</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">standard_error</span>(<span class="params">sample</span>):</span><br><span class="line">    <span class="keyword">return</span> sqrt((sample[<span class="string">&#x27;ucap&#x27;</span>] ** <span class="number">2</span>).<span class="built_in">sum</span>() / (<span class="built_in">len</span>(sample) - <span class="number">2</span>))</span><br></pre></td></tr></table></figure>
 <p>Finally, let’s see how much standard deviation we have around the regression line.  </p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">standard_error(sample)</span><br><span class="line"><span class="number">7.401174774558201</span></span><br></pre></td></tr></table></figure>
 <h2 id="Coefficient-of-Determination"><a href="#Coefficient-of-Determination" class="headerlink" title="Coefficient of Determination"></a>Coefficient of Determination</h2><p>The coefficient of determination denoted by $r^2$ (for bivariate regression) or $R^2$ (for multivariate regression) is a ratio of the explained variance to the total variance of the data. The higher the coefficient of determination, the more accurately the regressors (average number of rooms in the house) explain the regressand (the price of the house) i.e. the better your regression model is. </p>
@@ -137,23 +141,23 @@ se(\hat{\beta}_1) &= \sqrt{\frac{\sum{X_i^2}}{n\sum{x_i^2}}}\sigma
 <script type="math/tex; mode=display">
 r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$r^2$ can take on a value between 0 and 1.</p>
 <p>Turning this into code, we have:  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">coeff_of_determination</span><span class="params">(sample)</span>:</span></span><br><span class="line">    Ybar = sample[<span class="string">'Y'</span>].mean()</span><br><span class="line">    <span class="keyword">return</span> ((sample[<span class="string">'Ycap'</span>] - Ybar) ** <span class="number">2</span>).sum() / ((sample[<span class="string">'Y'</span>] - Ybar) ** <span class="number">2</span>).sum()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">coeff_of_determination</span>(<span class="params">sample</span>):</span><br><span class="line">    Ybar = sample[<span class="string">&#x27;Y&#x27;</span>].mean()</span><br><span class="line">    <span class="keyword">return</span> ((sample[<span class="string">&#x27;Ycap&#x27;</span>] - Ybar) ** <span class="number">2</span>).<span class="built_in">sum</span>() / ((sample[<span class="string">&#x27;Y&#x27;</span>] - Ybar) ** <span class="number">2</span>).<span class="built_in">sum</span>()</span><br></pre></td></tr></table></figure>
 <p>For the sample we’ve drawn, the $r^2$ value comes out to be <code>0.327</code>. This means that only 32.7% of the variance in the total data is explained by the regression model.</p>
 <p>Finito.</p>
-<hr> 
+<hr /> 
 
 <p>[1] A “statistic” is a numerical quantity such as mean, or median. </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" data-id="cl5fbesn1000w4vovc0knuvl1" data-title="Precision of OLS Estimates" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" data-id="clmx1yhn90014csovc51b6twl" data-title="Precision of OLS Estimates" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
 
     </footer>
   </div>
@@ -184,7 +188,7 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -259,7 +263,7 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -289,13 +293,19 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -317,7 +327,7 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -329,7 +339,7 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p>$
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Assumptions Underlying Ordinary Least Squares | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
-<meta name="keywords" content="machine learning">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Assumptions Underlying Ordinary Least Squares">
 <meta property="og:url" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
-<meta property="og:locale" content="default">
+<meta property="og:locale">
 <meta property="og:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
 <meta property="og:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_2.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.854Z">
+<meta property="article:published_time" content="2018-11-12T03:32:15.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.854Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="machine learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Assumptions Underlying Ordinary Least Squares">
-<meta name="twitter:description" content="In the previous post we calculated the values of $\hat{\beta}_1$ and $\hat{\beta}_2$ from a given sample and in closing I mentioned that we’ll take a look at finding out whether the sample regression">
 <meta name="twitter:image" content="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -30,11 +30,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -46,10 +54,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -121,8 +125,8 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
 <p>These are the 7 assumptions underlying OLS. In the next section, I’d like to elucidate on assumption 3 and 5 a little more.  </p>
 <h2 id="More-on-Assumption-3-and-5"><a href="#More-on-Assumption-3-and-5" class="headerlink" title="More on Assumption 3. and 5."></a>More on Assumption 3. and 5.</h2><p>In assumption 3. we state that $E(u_i|X_i) = 0$ i.e. on average the disturbance term is zero. For the expected value of a variable $u_i$ given another variable $X_i$ be zero means the two variables are uncorrelated. We assume these two variables to be uncorrelated so that we can assess the impact each has on the predicted value of $Y_i$. If the disturbance $u_i$ and the explanatory variable $X_i$ were correlated positively or negatively then it means that $u_i$ contains some factor that affects the predicted value of $Y_i$ i.e. we’ve skipped an important explanatory variable that should’ve been included in the regression model. This means we have functionally misspecified our regression model and introduced specification bias.  </p>
 <p>Functionally misspecifying our regression model will also introduce autocorrelation in our model. Consider the two plots shown below.  </p>
-<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png">
-<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_2.png">
+<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_1.png" class="">
+<img src="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/Fit_2.png" class="">
 <p>In the first plot the line fits the sample points properly. In the second one, it doesn’t fit properly. The sample points seem to form a curve of some sort while we try to fit a straight line through it. What we get is runs of negative residuals followed by positive residuals which indicates autocorrelation.  </p>
 <p>Autocorrelation can also be introduced not just by functionally misspecifying the regression model but also by the nature of data itself. For example, consider timeseries data representing stock market movement. The value of $X_t$ depends on $X_{t-1}$ i.e. the two are correlated.   </p>
 <p>When there is autocorrelation, the OLS estimators are no longer the best estimators for predicting the value of $Y_i$.  </p>
@@ -134,13 +138,13 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" data-id="cl5fbesmu000d4vovbpkdqkao" data-title="Assumptions Underlying Ordinary Least Squares" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" data-id="clmx1yhn2000kcsov7ke5bbkg" data-title="Assumptions Underlying Ordinary Least Squares" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
 
     </footer>
   </div>
@@ -171,7 +175,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -246,7 +250,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -276,13 +280,19 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -304,7 +314,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -316,7 +326,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->

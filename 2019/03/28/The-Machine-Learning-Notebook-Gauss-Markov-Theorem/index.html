@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
   <title>Gauss-Markov Theorem | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta name="description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
-<meta name="keywords" content="machine learning">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Gauss-Markov Theorem">
 <meta property="og:url" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
-<meta property="og:locale" content="default">
+<meta property="og:locale">
 <meta property="og:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
-<meta property="og:updated_time" content="2020-07-17T12:01:05.858Z">
+<meta property="article:published_time" content="2019-03-28T09:10:03.000Z">
+<meta property="article:modified_time" content="2020-07-17T12:01:05.858Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="machine learning">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Gauss-Markov Theorem">
-<meta name="twitter:description" content="In one of the previous posts we looked at the assumptions underlying the classic linear regression model. In this post we’ll take a look at the Gauss-Markov theorem which uses these assumptions to sta">
 <meta name="twitter:image" content="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -29,11 +29,19 @@
   
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
-  <link rel="stylesheet" href="/css/style.css">
   
-    <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css"><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+<link rel="stylesheet" href="/css/style.css">
+
   
-</head>
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+
+  
+<link rel="stylesheet" href="/css/takeaway.css">
+
+<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -45,10 +53,6 @@
       <h1 id="logo-wrap">
         <a href="/" id="logo">Fasih Khatib</a>
       </h1>
-      
-        <h2 id="subtitle-wrap">
-          <a href="/" id="subtitle">☕</a>
-        </h2>
       
     </div>
     <div id="header-inner" class="inner">
@@ -108,7 +112,7 @@
 <p>Given the assumptions underlying the CLRM, the OLS estimators, in the class of linear unbiased estimators, have minimum variance. That is, they are BLUE (Best Linear Unbiased Estimators).  </p>
 </blockquote>
 <p>We’ll go over what it means for an estimator to be best, linear, and unbiased.  </p>
-<img src="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png">
+<img src="/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/unbiased.png" class="">
 <h2 id="Linear"><a href="#Linear" class="headerlink" title="Linear"></a>Linear</h2><p>The dependent variable $Y$ is a linear function of the variables in the model. The model must be linear in parameters. Under this assumption $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i + \hat{u}_i$ and $Y_i = \hat{\beta}_1 + \hat{\beta}_2 X_i^2 + \hat{u}_i$ are both valid models since the estimators are linear in both of them. </p>
 <h2 id="Unbiased"><a href="#Unbiased" class="headerlink" title="Unbiased"></a>Unbiased</h2><p>This means that on average, the value of the estimator is the same as the parameter it is estimating i.e. $E(\hat{\beta}_1) = \beta_1$.</p>
 <h2 id="Best"><a href="#Best" class="headerlink" title="Best"></a>Best</h2><p>This means that among the class of linear estimators, the OLS estimators will have the least variance. Consider the two normal distributions shown in the graph above for two linear, unbiased estimators $\hat{\beta}_1$ (represented by orange) and $\beta_1^*$ (represented by blue). Also let’s assume that the true value of $\beta_1$ is zero. This means that both of these are unbiased since, on average, their value is the same as the true value of the parameter. However, the OLS estimator $\hat{\beta}_1$ is better since it has lesser variance compared to the other estimator. </p>
@@ -117,13 +121,13 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="cl5fbesmy000m4vovxqeqvr61" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="clmx1yhn6000ucsovhp4t7xwx" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/">machine learning</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
 
     </footer>
   </div>
@@ -154,7 +158,7 @@
 
 <section id="comments">
   <div id="disqus_thread">
-    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
 </section>
 
@@ -229,7 +233,7 @@
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2022 Fasih Khatib<br>
+      &copy; 2023 Fasih Khatib<br>
       Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -259,13 +263,19 @@
 </script>
 
 
+
 <script src="/js/jquery-3.4.1.min.js"></script>
 
 
-  <script src="/fancybox/jquery.fancybox.min.js"></script>
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
@@ -287,7 +297,7 @@
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
 <script type="text/x-mathjax-config">
-  MathJax.Hub.Config("");
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
 </script>
 
 <script type="text/x-mathjax-config">
@@ -299,7 +309,7 @@
   });
 </script>
 
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+<script type="text/javascript" src="{{ src }}">
 </script>
 <!-- End: Injected MathJax -->
 <!-- hexo-inject:end -->
