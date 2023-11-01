@@ -41,7 +41,119 @@
   
 <link rel="stylesheet" href="/css/takeaway.css">
 
-<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -101,17 +213,17 @@
       
         <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/OptionOps.scala"><code>OptionOps</code></a> and the goodies it provides to work with <code>Option</code>s. We’ll jump straight into examples.  </p>
 <h3 id="Creating-Options"><a href="#Creating-Options" class="headerlink" title="Creating Options"></a>Creating Options</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="comment">// Some</span></span><br><span class="line">@ some(<span class="number">13</span>)</span><br><span class="line">res2: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">13</span>)</span><br><span class="line"><span class="comment">// Calling some on a value</span></span><br><span class="line"><span class="comment">// Notice something about res variable? ;)</span></span><br><span class="line">@ <span class="number">13.</span>some</span><br><span class="line">res9: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">13</span>)</span><br><span class="line"><span class="comment">// None</span></span><br><span class="line">@ none</span><br><span class="line">res3: <span class="type">Option</span>[<span class="type">Nothing</span>] = <span class="type">None</span></span><br><span class="line">@ none[<span class="type">Int</span>]</span><br><span class="line">res4: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">None</span></span><br></pre></td></tr></table></figure>  
-<h3 id="Extracting-Values"><a href="#Extracting-Values" class="headerlink" title="Extracting Values"></a>Extracting Values</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// using unary ~ operator</span></span><br><span class="line">@ ~ res2</span><br><span class="line">res5: <span class="type">Int</span> = <span class="number">13</span></span><br><span class="line"><span class="comment">// using some / none</span></span><br><span class="line">@ res2 some &#123; _ * <span class="number">2</span> &#125; none &#123; <span class="number">0</span> &#125;</span><br><span class="line">res6: <span class="type">Int</span> = <span class="number">26</span></span><br><span class="line"><span class="comment">// using | operator</span></span><br><span class="line">@ res2 | <span class="number">0</span></span><br><span class="line">res7: <span class="type">Int</span> = <span class="number">13</span></span><br><span class="line"><span class="comment">// extracting value from none</span></span><br><span class="line">@ ~ res4</span><br><span class="line">res8: <span class="type">Int</span> = <span class="number">0</span></span><br></pre></td></tr></table></figure>  
-<p>The unary <code>~</code> extracts the value from the <code>Option</code> or returns the zero value for that type. For example, in case of <code>Int</code> it’ll return the value in the <code>Option</code> or return 0. The <code>some&#123; .. &#125; none &#123; .. &#125;</code> construct lets you specify what value to return in case of <code>Some</code> and <code>None</code>. I am multiplying the value by 2 and thus returning 26. As you can see, Scalaz provides with more expressive and type-safe way to create and extract values from <code>Option</code>.   </p>
+<h3 id="Extracting-Values"><a href="#Extracting-Values" class="headerlink" title="Extracting Values"></a>Extracting Values</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// using unary ~ operator</span></span><br><span class="line">@ ~ res2</span><br><span class="line">res5: <span class="type">Int</span> = <span class="number">13</span></span><br><span class="line"><span class="comment">// using some / none</span></span><br><span class="line">@ res2 some { _ * <span class="number">2</span> } none { <span class="number">0</span> }</span><br><span class="line">res6: <span class="type">Int</span> = <span class="number">26</span></span><br><span class="line"><span class="comment">// using | operator</span></span><br><span class="line">@ res2 | <span class="number">0</span></span><br><span class="line">res7: <span class="type">Int</span> = <span class="number">13</span></span><br><span class="line"><span class="comment">// extracting value from none</span></span><br><span class="line">@ ~ res4</span><br><span class="line">res8: <span class="type">Int</span> = <span class="number">0</span></span><br></pre></td></tr></table></figure>  
+<p>The unary <code>~</code> extracts the value from the <code>Option</code> or returns the zero value for that type. For example, in case of <code>Int</code> it’ll return the value in the <code>Option</code> or return 0. The <code>some{ .. } none { .. }</code> construct lets you specify what value to return in case of <code>Some</code> and <code>None</code>. I am multiplying the value by 2 and thus returning 26. As you can see, Scalaz provides with more expressive and type-safe way to create and extract values from <code>Option</code>.   </p>
 <p>Notice that the type of all the resulting variables is <code>Option</code> instead of <code>Some</code> or <code>None</code>. This is more type-safe than using <code>None</code> because you’d get <code>None.type</code>, and the type inferencer would allow the type to be <code>Option[Int]</code> or <code>Option[String]</code> whereas <code>none[Int]</code> is guaranteed to be an <code>Option[Int]</code>. The type inferencer will enforce this. </p>
-<h3 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// we&#x27;ll have fun with these values</span></span><br><span class="line">@ <span class="keyword">val</span> o = some(<span class="string">&quot;option&quot;</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">&quot;option&quot;</span>)</span><br><span class="line">@ <span class="keyword">val</span> n = none[<span class="type">String</span>]</span><br><span class="line">n: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// None to right disjunction</span></span><br><span class="line">@ n toRightDisjunction <span class="string">&quot;onTheLeft&quot;</span></span><br><span class="line">res10: <span class="type">String</span> \/ <span class="type">String</span> = -\/(<span class="string">&quot;onTheLeft&quot;</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the left</span></span><br><span class="line">@ res10 fold(l =&gt; <span class="string">s&quot;Left: <span class="subst">$l</span>&quot;</span>.println, r =&gt; <span class="string">s&quot;Right: <span class="subst">$r</span>&quot;</span>.println)</span><br><span class="line"><span class="string">&quot;Left: onTheLeft&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Some to right disjunction</span></span><br><span class="line">@ o toRightDisjunction <span class="string">&quot;onTheLeft&quot;</span></span><br><span class="line">res11: <span class="type">String</span> \/ <span class="type">String</span> = \/-(<span class="string">&quot;option&quot;</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the right</span></span><br><span class="line">@ res11 fold(l =&gt; <span class="string">s&quot;Left: <span class="subst">$l</span>&quot;</span>.println, r =&gt; <span class="string">s&quot;Right: <span class="subst">$r</span>&quot;</span>.println)</span><br><span class="line"><span class="string">&quot;Right: option&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// default values, similar to unary ~</span></span><br><span class="line">@ n.orZero</span><br><span class="line">res12: <span class="type">String</span> = <span class="string">&quot;&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ternary operator</span></span><br><span class="line">@ o ? <span class="string">&quot;some&quot;</span> | <span class="string">&quot;none&quot;</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">&quot;some&quot;</span></span><br></pre></td></tr></table></figure>  
+<h3 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// we'll have fun with these values</span></span><br><span class="line">@ <span class="keyword">val</span> o = some(<span class="string">"option"</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">"option"</span>)</span><br><span class="line">@ <span class="keyword">val</span> n = none[<span class="type">String</span>]</span><br><span class="line">n: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// None to right disjunction</span></span><br><span class="line">@ n toRightDisjunction <span class="string">"onTheLeft"</span></span><br><span class="line">res10: <span class="type">String</span> \/ <span class="type">String</span> = -\/(<span class="string">"onTheLeft"</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the left</span></span><br><span class="line">@ res10 fold(l =&gt; <span class="string">s"Left: <span class="subst">$l</span>"</span>.println, r =&gt; <span class="string">s"Right: <span class="subst">$r</span>"</span>.println)</span><br><span class="line"><span class="string">"Left: onTheLeft"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Some to right disjunction</span></span><br><span class="line">@ o toRightDisjunction <span class="string">"onTheLeft"</span></span><br><span class="line">res11: <span class="type">String</span> \/ <span class="type">String</span> = \/-(<span class="string">"option"</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the right</span></span><br><span class="line">@ res11 fold(l =&gt; <span class="string">s"Left: <span class="subst">$l</span>"</span>.println, r =&gt; <span class="string">s"Right: <span class="subst">$r</span>"</span>.println)</span><br><span class="line"><span class="string">"Right: option"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// default values, similar to unary ~</span></span><br><span class="line">@ n.orZero</span><br><span class="line">res12: <span class="type">String</span> = <span class="string">""</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ternary operator</span></span><br><span class="line">@ o ? <span class="string">"some"</span> | <span class="string">"none"</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">"some"</span></span><br></pre></td></tr></table></figure>  
 <p>Scalaz provides us with a disjunction which is a replacement for Scala <code>Either</code>. I’ve only introduced disjunction here and will cover it later in a post of its own. Trying to convert a <code>None</code> to a right disjunction doesn’t work. We get back a left disjunction as indicated by <code>-\/</code>. Similarly, converting a <code>Some</code> to right disjunction works, as indicated by <code>\/-</code>. Scalaz also provides a ternary operator to work with <code>Option</code>s. </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This sums up, non-exhaustively, how we can use the convenience methods that Scalaz provides on top of <code>Option</code>s that lets us code in more expressive and type-safe way. </p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clmx3u1y5002jvuov2v99du4x" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cloftkpye001st4ovg6om7ozn" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       

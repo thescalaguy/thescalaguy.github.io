@@ -41,7 +41,119 @@
   
 <link rel="stylesheet" href="/css/takeaway.css">
 
-<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -110,7 +222,7 @@
 <p>I’ll provide a quick example of each of these without going into any details.  </p>
 <h2 id="New-Datatypes"><a href="#New-Datatypes" class="headerlink" title="New Datatypes"></a>New Datatypes</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">NonEmptyList</span>.nels(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res0: scalaz.<span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>  
 <p>Here we are creating a <code>NonEmptyList</code> which is a list that is guaranteed to have atleast one element i.e. it’s never empty.</p>
-<h2 id="New-Operations-on-Existing-Types"><a href="#New-Operations-on-Existing-Types" class="headerlink" title="New Operations on Existing Types"></a>New Operations on Existing Types</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">val</span> o = <span class="type">Option</span>(<span class="number">3</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">scala&gt; o some &#123; _ + <span class="number">1</span> &#125; none &#123; <span class="number">0</span> &#125;</span><br><span class="line">res0: <span class="type">Int</span> = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">scala&gt; o.fold(<span class="number">0</span>)( _ + <span class="number">1</span> )</span><br><span class="line">res1: <span class="type">Int</span> = <span class="number">4</span></span><br></pre></td></tr></table></figure>
+<h2 id="New-Operations-on-Existing-Types"><a href="#New-Operations-on-Existing-Types" class="headerlink" title="New Operations on Existing Types"></a>New Operations on Existing Types</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">val</span> o = <span class="type">Option</span>(<span class="number">3</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">scala&gt; o some { _ + <span class="number">1</span> } none { <span class="number">0</span> }</span><br><span class="line">res0: <span class="type">Int</span> = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">scala&gt; o.fold(<span class="number">0</span>)( _ + <span class="number">1</span> )</span><br><span class="line">res1: <span class="type">Int</span> = <span class="number">4</span></span><br></pre></td></tr></table></figure>
 <p>The first way of extracting value from an <code>Option</code> comes from Scalaz and is much more expressive compared to using <code>fold</code> from Scala standard library.  </p>
 <h2 id="General-Purpose-Functions"><a href="#General-Purpose-Functions" class="headerlink" title="General-Purpose Functions"></a>General-Purpose Functions</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) |+| <span class="type">List</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line">res0: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br></pre></td></tr></table></figure>
 <p>The <code>|+|</code> operator from Scalaz conveniently concatenated the two <code>List</code>s together.  </p>
@@ -118,7 +230,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clmx3u1xz0027vuov3p4a2m2r" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cloftkpya001it4ov8f5eb7fg" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       

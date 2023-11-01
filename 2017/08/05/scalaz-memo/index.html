@@ -41,7 +41,119 @@
   
 <link rel="stylesheet" href="/css/takeaway.css">
 
-<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -101,16 +213,16 @@
       
         <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fab6f1f97664590652bf37d64750e229c0524000/core/src/main/scala/scalaz/Memo.scala">Memo</a> which is a Scalaz goodie to add memoization to your program. We’ll recap what memoization is, write a recursive function to calculate Fibonacci numbers, and then add memoization to it using <code>Memo</code>.  </p>
 <h2 id="What-is-Memoization"><a href="#What-is-Memoization" class="headerlink" title="What is Memoization?"></a>What is Memoization?</h2><p>In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again.<sup><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Memoization">[1]</a></sup> </p>
-<h2 id="Fibonacci-without-Memo"><a href="#Fibonacci-without-Memo" class="headerlink" title="Fibonacci (without Memo)"></a>Fibonacci (without Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">fibo</span></span>(n: <span class="type">Int</span>): <span class="type">Int</span> = &#123;</span><br><span class="line">    n <span class="keyword">match</span> &#123;</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span> | <span class="number">1</span> =&gt; n</span><br><span class="line">      <span class="keyword">case</span> _: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">defined function fibo</span><br></pre></td></tr></table></figure>
+<h2 id="Fibonacci-without-Memo"><a href="#Fibonacci-without-Memo" class="headerlink" title="Fibonacci (without Memo)"></a>Fibonacci (without Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">fibo</span></span>(n: <span class="type">Int</span>): <span class="type">Int</span> = {</span><br><span class="line">    n <span class="keyword">match</span> {</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span> | <span class="number">1</span> =&gt; n</span><br><span class="line">      <span class="keyword">case</span> _: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined function fibo</span><br></pre></td></tr></table></figure>
 <p>So here’s the non-memoized recursive <code>fibo</code> which calculates the n<sup>th</sup> Fibonacci number. The issue here is that it’ll recalculate the Fibonacci numbers a lot of times and therefore cannot be used for large values of n. </p>
-<h2 id="Fibonacci-with-Memo"><a href="#Fibonacci-with-Memo" class="headerlink" title="Fibonacci (with Memo)"></a>Fibonacci (with Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = <span class="type">Memo</span>.immutableHashMapMemo &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="number">0</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="number">1</span></span><br><span class="line">    <span class="keyword">case</span> n: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">  &#125;</span><br><span class="line">fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = scalaz.<span class="type">Memo</span>$$$<span class="type">Lambda</span>$<span class="number">2233</span>/<span class="number">1055106802</span>@<span class="number">48649202</span></span><br></pre></td></tr></table></figure> 
+<h2 id="Fibonacci-with-Memo"><a href="#Fibonacci-with-Memo" class="headerlink" title="Fibonacci (with Memo)"></a>Fibonacci (with Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = <span class="type">Memo</span>.immutableHashMapMemo {</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="number">0</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="number">1</span></span><br><span class="line">    <span class="keyword">case</span> n: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">  }</span><br><span class="line">fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = scalaz.<span class="type">Memo</span>$$$<span class="type">Lambda</span>$<span class="number">2233</span>/<span class="number">1055106802</span>@<span class="number">48649202</span></span><br></pre></td></tr></table></figure> 
 <p>Here’s the memoized version using Scalaz <code>Memo</code>. We are using an immutable, hash map-backed memo. The <code>immutableHashMapMemo</code> method takes a partial function defining how we construct the memo. In our case, if the value of n is not 0 or 1, we try looking up the value in the memo again. We recurse until we reach 0 or 1. Once that happens and our recursion returns, the resultant value is cached in an <code>immutable.HashMap</code>.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Memoization is a great way to optimize your programs. In this post we used an immutable hash map memo. There are other types of memos applying different strategies to cache their results. The <code>Memo</code> companion object is the place to look for an appropriate memo that suits your needs.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="clmx3u1y3002fvuov5hokfbk4" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cloftkpyc001pt4ov7gj4elrd" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
       

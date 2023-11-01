@@ -41,7 +41,119 @@
   
 <link rel="stylesheet" href="/css/takeaway.css">
 
-<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -100,19 +212,19 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/BooleanOps.scala"><code>BooleanOps</code></a> and the goodies it provides to work with <code>Boolean</code>s. As always, we’ll go straight to examples.  </p>
-<h3 id="Unless"><a href="#Unless" class="headerlink" title="Unless"></a>Unless</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> t = <span class="literal">true</span></span><br><span class="line">t: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ <span class="keyword">val</span> f = <span class="literal">false</span></span><br><span class="line">f: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line"><span class="comment">// executes the given side-effect if this boolean value is false</span></span><br><span class="line">@ t unless <span class="string">&quot;this won&#x27;t print&quot;</span>.println</span><br><span class="line"></span><br><span class="line">@ f unless <span class="string">&quot;this will print&quot;</span>.println</span><br><span class="line"><span class="string">&quot;this will print&quot;</span></span><br></pre></td></tr></table></figure>  
+<h3 id="Unless"><a href="#Unless" class="headerlink" title="Unless"></a>Unless</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> t = <span class="literal">true</span></span><br><span class="line">t: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ <span class="keyword">val</span> f = <span class="literal">false</span></span><br><span class="line">f: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line"><span class="comment">// executes the given side-effect if this boolean value is false</span></span><br><span class="line">@ t unless <span class="string">"this won't print"</span>.println</span><br><span class="line"></span><br><span class="line">@ f unless <span class="string">"this will print"</span>.println</span><br><span class="line"><span class="string">"this will print"</span></span><br></pre></td></tr></table></figure>  
 <p>As the comment for <code>unless</code> states:  </p>
 <p><em>Executes the given side-effect if this boolean value is false.</em>  </p>
 <p>A mnemonic to remember the working is: “Unless the value is true, execute the side-effecting function”.  </p>
-<h3 id="When"><a href="#When" class="headerlink" title="When"></a>When</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// executes the given side-effect if this boolean value is true</span></span><br><span class="line">@ t when <span class="string">&quot;this will print&quot;</span>.println</span><br><span class="line"><span class="string">&quot;this will print&quot;</span></span><br><span class="line"></span><br><span class="line">@ f when <span class="string">&quot;this won&#x27;t print&quot;</span>.println</span><br></pre></td></tr></table></figure>  
+<h3 id="When"><a href="#When" class="headerlink" title="When"></a>When</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// executes the given side-effect if this boolean value is true</span></span><br><span class="line">@ t when <span class="string">"this will print"</span>.println</span><br><span class="line"><span class="string">"this will print"</span></span><br><span class="line"></span><br><span class="line">@ f when <span class="string">"this won't print"</span>.println</span><br></pre></td></tr></table></figure>  
 <p>The “opposite” of <code>unless</code> is <code>when</code> which executes the function when the value is true. As the comment for <code>when</code> states:  </p>
 <p><em>Executes the given side-effect if this boolean value is true.</em>   </p>
 <p>A mnemonic to remember the working is: “When the value is true, execute the side-effecting function”.  </p>
-<h3 id="Folding-a-Boolean"><a href="#Folding-a-Boolean" class="headerlink" title="Folding a Boolean"></a>Folding a Boolean</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t fold[<span class="type">String</span>](<span class="string">&quot;this will be returned when true&quot;</span>, <span class="string">&quot;this will be returned when false&quot;</span>)</span><br><span class="line">res8: <span class="type">String</span> = <span class="string">&quot;this will be returned when true&quot;</span></span><br><span class="line">@ f fold[<span class="type">String</span>](<span class="string">&quot;this will be returned when true&quot;</span>, <span class="string">&quot;this will be returned when false&quot;</span>)</span><br><span class="line">res9: <span class="type">String</span> = <span class="string">&quot;this will be returned when false&quot;</span></span><br></pre></td></tr></table></figure>  
+<h3 id="Folding-a-Boolean"><a href="#Folding-a-Boolean" class="headerlink" title="Folding a Boolean"></a>Folding a Boolean</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t fold[<span class="type">String</span>](<span class="string">"this will be returned when true"</span>, <span class="string">"this will be returned when false"</span>)</span><br><span class="line">res8: <span class="type">String</span> = <span class="string">"this will be returned when true"</span></span><br><span class="line">@ f fold[<span class="type">String</span>](<span class="string">"this will be returned when true"</span>, <span class="string">"this will be returned when false"</span>)</span><br><span class="line">res9: <span class="type">String</span> = <span class="string">"this will be returned when false"</span></span><br></pre></td></tr></table></figure>  
 <p><code>fold</code> lets you decide what value to return depending on whether it is true or false.   </p>
-<h3 id="Converting-to-an-Option"><a href="#Converting-to-an-Option" class="headerlink" title="Converting to an Option"></a>Converting to an Option</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t option <span class="string">&quot;this will create a Some() with this string in it&quot;</span></span><br><span class="line">res10: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">&quot;this will create a Some() with this string in it&quot;</span>)</span><br><span class="line">@ f option <span class="string">&quot;this will result in a None&quot;</span></span><br><span class="line">res11: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br></pre></td></tr></table></figure>  
+<h3 id="Converting-to-an-Option"><a href="#Converting-to-an-Option" class="headerlink" title="Converting to an Option"></a>Converting to an Option</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t option <span class="string">"this will create a Some() with this string in it"</span></span><br><span class="line">res10: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">"this will create a Some() with this string in it"</span>)</span><br><span class="line">@ f option <span class="string">"this will result in a None"</span></span><br><span class="line">res11: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br></pre></td></tr></table></figure>  
 <p><code>option</code> lets us convert a <code>Boolean</code> into an <code>Option</code> in a type-safe manner. A true results in a <code>Some</code> containing the value passed to <code>option</code> whereas a false results in an <code>Option</code> of whatever the type of the argument is.  </p>
-<h3 id="Ternary-Operator"><a href="#Ternary-Operator" class="headerlink" title="Ternary Operator"></a>Ternary Operator</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t ? <span class="string">&quot;true&quot;</span> | <span class="string">&quot;false&quot;</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">&quot;true&quot;</span></span><br><span class="line">@ f ? <span class="string">&quot;true&quot;</span> | <span class="string">&quot;false&quot;</span></span><br><span class="line">res14: <span class="type">String</span> = <span class="string">&quot;false&quot;</span></span><br></pre></td></tr></table></figure>  
+<h3 id="Ternary-Operator"><a href="#Ternary-Operator" class="headerlink" title="Ternary Operator"></a>Ternary Operator</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t ? <span class="string">"true"</span> | <span class="string">"false"</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">"true"</span></span><br><span class="line">@ f ? <span class="string">"true"</span> | <span class="string">"false"</span></span><br><span class="line">res14: <span class="type">String</span> = <span class="string">"false"</span></span><br></pre></td></tr></table></figure>  
 <p>Scalaz also provides a ternary operator to work with <code>Boolean</code>s. The ternary operator is actually a combination of <code>?</code> and <code>|</code>. <code>?</code> is the conditional operator that results in the creation of an object of <code>Conditional</code> and <code>|</code> is a method of that object.  </p>
 <h3 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t ?? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res15: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">@ f ?? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res16: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>()</span><br></pre></td></tr></table></figure>  
 <p><code>??</code> returns the given argument if the value is true, otherwise, the zero element for the type of the given argument. In our case, the “zero” element for <code>List</code> is an empty <code>List</code>.  </p>
@@ -123,7 +235,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="clmx3u1xw001yvuov14h4eyu0" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cloftkpy60018t4ovdv1n9mi5" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
       

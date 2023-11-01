@@ -39,7 +39,119 @@
   
 <link rel="stylesheet" href="/css/takeaway.css">
 
-<meta name="generator" content="Hexo 6.3.0"><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
 
 <body>
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
@@ -104,11 +216,11 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=./hsdis/build/macosx-amd64</span><br></pre></td></tr></table></figure>
 <p>Now we’re all set to see how JVM generates assembly code. </p>
 <h2 id="Printing-assembly-code"><a href="#Printing-assembly-code" class="headerlink" title="Printing assembly code"></a>Printing assembly code</h2><p>We’ll reuse the same inlining code from last time:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Inline</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">long</span> <span class="variable">upto</span> <span class="operator">=</span> Long.parseLong(args[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; upto; i++) &#123;</span><br><span class="line">            <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> inline1();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline1</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> inline2();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline2</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> inline3();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline3</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Inline</span> {</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> {</span><br><span class="line">        <span class="type">long</span> <span class="variable">upto</span> <span class="operator">=</span> Long.parseLong(args[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; upto; i++) {</span><br><span class="line">            <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> inline1();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline1</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> inline2();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline2</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> inline3();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline3</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
 <p><code>-XX:+PrintAssembly</code> is a diagnostic flag so we’ll need to unlock JVM’s disgnostic options first. Here’s how:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+UnlockDiagnosticVMOptions -XX:+PrintAssembly Inline 100000</span><br></pre></td></tr></table></figure>
 <p>This will generate a lot of assembly code. We will, however, look at the assembly code generated for <code>inline1</code>.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Decoding compiled method 0x000000010d6095d0:</span><br><span class="line">Code:</span><br><span class="line">[Disassembling for mach=&#x27;i386:x86-64&#x27;]</span><br><span class="line">[Entry Point]</span><br><span class="line">[Verified Entry Point]</span><br><span class="line">[Constants]</span><br><span class="line">  # &#123;method&#125; &#x27;inline1&#x27; &#x27;()I&#x27; in &#x27;Inline&#x27;</span><br><span class="line">  #           [sp+0x20]  (sp of caller)</span><br><span class="line">  0x000000010d609700: sub    $0x18,%rsp</span><br><span class="line">  0x000000010d609707: mov    %rbp,0x10(%rsp)    ;*synchronization entry</span><br><span class="line">                                                ; - Inline::inline1@-1 (line 11)</span><br><span class="line">  0x000000010d60970c: mov    $0x4,%eax</span><br><span class="line">  0x000000010d609711: add    $0x10,%rsp</span><br><span class="line">  0x000000010d609715: pop    %rbp</span><br><span class="line">  0x000000010d609716: test   %eax,-0x496b71c(%rip)        # 0x0000000108c9e000</span><br><span class="line">                                                ;   &#123;poll_return&#125;</span><br><span class="line">  0x000000010d60971c: retq</span><br><span class="line">  0x000000010d60971d: hlt</span><br><span class="line">  0x000000010d60971e: hlt</span><br><span class="line">  0x000000010d60971f: hlt</span><br><span class="line">[Exception Handler]</span><br><span class="line">[Stub Code]</span><br><span class="line">  0x000000010d609720: jmpq   0x000000010d6050a0  ;   &#123;no_reloc&#125;</span><br><span class="line">[Deopt Handler Code]</span><br><span class="line">  0x000000010d609725: callq  0x000000010d60972a</span><br><span class="line">  0x000000010d60972a: subq   $0x5,(%rsp)</span><br><span class="line">  0x000000010d60972f: jmpq   0x000000010d5deb00  ;   &#123;runtime_call&#125;</span><br><span class="line">  0x000000010d609734: hlt</span><br><span class="line">  0x000000010d609735: hlt</span><br><span class="line">  0x000000010d609736: hlt</span><br><span class="line">  0x000000010d609737: hlt    Decoding compiled method 0x000000010d6064d0:</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">Decoding compiled method 0x000000010d6095d0:</span><br><span class="line">Code:</span><br><span class="line">[Disassembling for mach='i386:x86-64']</span><br><span class="line">[Entry Point]</span><br><span class="line">[Verified Entry Point]</span><br><span class="line">[Constants]</span><br><span class="line">  # {method} 'inline1' '()I' in 'Inline'</span><br><span class="line">  #           [sp+0x20]  (sp of caller)</span><br><span class="line">  0x000000010d609700: sub    $0x18,%rsp</span><br><span class="line">  0x000000010d609707: mov    %rbp,0x10(%rsp)    ;*synchronization entry</span><br><span class="line">                                                ; - Inline::inline1@-1 (line 11)</span><br><span class="line">  0x000000010d60970c: mov    $0x4,%eax</span><br><span class="line">  0x000000010d609711: add    $0x10,%rsp</span><br><span class="line">  0x000000010d609715: pop    %rbp</span><br><span class="line">  0x000000010d609716: test   %eax,-0x496b71c(%rip)        # 0x0000000108c9e000</span><br><span class="line">                                                ;   {poll_return}</span><br><span class="line">  0x000000010d60971c: retq</span><br><span class="line">  0x000000010d60971d: hlt</span><br><span class="line">  0x000000010d60971e: hlt</span><br><span class="line">  0x000000010d60971f: hlt</span><br><span class="line">[Exception Handler]</span><br><span class="line">[Stub Code]</span><br><span class="line">  0x000000010d609720: jmpq   0x000000010d6050a0  ;   {no_reloc}</span><br><span class="line">[Deopt Handler Code]</span><br><span class="line">  0x000000010d609725: callq  0x000000010d60972a</span><br><span class="line">  0x000000010d60972a: subq   $0x5,(%rsp)</span><br><span class="line">  0x000000010d60972f: jmpq   0x000000010d5deb00  ;   {runtime_call}</span><br><span class="line">  0x000000010d609734: hlt</span><br><span class="line">  0x000000010d609735: hlt</span><br><span class="line">  0x000000010d609736: hlt</span><br><span class="line">  0x000000010d609737: hlt    Decoding compiled method 0x000000010d6064d0:</span><br></pre></td></tr></table></figure>
 <p>So this is the assembly code that we get when we run the program. It’s a lot to grok in one go so let’s break it down.  </p>
 <p>Line #7 and #8 are self explanatory; they show which method we’re looking at. Line #9 and #10 (and #13 to #17) are for thread synchronization. The JVM can get rid of thread synchronization if it sees that there is no need for it (lock eliding) but since we are using <code>static</code> methods here, it needs to add code for synchronization. It doesn’t know that we only have only one thread running.  </p>
 <p>Our actual program is on line #11 where we are moving the value <code>4</code> to <code>%eax</code> register. This is the register which holds, by convention, the return value for our methods. This shows that the JVM has optimized our code. Our call chain was <code>inline1</code> ⟶ <code>inline2</code> ⟶ <code>inline3</code> and it was <code>inline3</code> which returned <code>4</code>. However, JVM is smart enough to see that these method calls are superfluous and decided to get rid of them. Very nifty!  </p>
@@ -130,7 +242,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/" data-id="clmx3u1xe000bvuov3bwlbaq9" data-title="JVM JIT - Compiling to Assembly" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/" data-id="cloftkpxm0003t4ov7v8b843b" data-title="JVM JIT - Compiling to Assembly" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/#disqus_thread" class="article-comment-link">Comments</a>
       
