@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/</loc>
+        <lastmod>2024-02-03T11:20:52.454Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/</loc>
         <lastmod>2023-12-11T03:45:24.137Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -183,7 +191,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
+        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -191,7 +199,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
+        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
