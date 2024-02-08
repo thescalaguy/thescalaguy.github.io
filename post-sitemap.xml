@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/</loc>
+        <lastmod>2024-02-08T14:31:39.328Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/</loc>
         <lastmod>2024-02-03T11:41:49.588Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -319,7 +327,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
+        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -327,7 +335,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
+        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2020-07-17T12:01:05.854Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
