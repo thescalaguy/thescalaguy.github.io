@@ -65,13 +65,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/architecture/</loc>
-        <lastmod>2023-12-11T03:45:24.137Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/tags/python/</loc>
         <lastmod>2024-02-03T11:41:49.588Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -81,6 +74,13 @@
     <url>
         <loc>http://fasihkhatib.com/tags/misc/</loc>
         <lastmod>2024-02-08T14:31:39.328Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/tags/architecture/</loc>
+        <lastmod>2024-02-12T05:45:48.885Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
