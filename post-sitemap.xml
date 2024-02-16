@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/02/16/Lens-of-Life/</loc>
+        <lastmod>2024-02-16T11:48:20.471Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/</loc>
         <lastmod>2024-02-12T05:45:48.885Z</lastmod>
         <changefreq>weekly</changefreq>
