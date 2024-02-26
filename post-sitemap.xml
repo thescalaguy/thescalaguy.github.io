@@ -7,8 +7,24 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/02/26/Collective-Consciousness/</loc>
+        <lastmod>2024-02-26T13:26:35.727Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/</loc>
+        <lastmod>2024-02-24T15:04:41.189Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/02/16/Lens-of-Life/</loc>
-        <lastmod>2024-02-16T11:48:20.471Z</lastmod>
+        <lastmod>2024-02-24T14:58:20.795Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -17,14 +33,6 @@
     <url>
         <loc>http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/</loc>
         <lastmod>2024-02-12T05:45:48.885Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/</loc>
-        <lastmod>2024-02-08T14:31:39.328Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
