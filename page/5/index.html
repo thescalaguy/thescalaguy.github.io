@@ -4,11 +4,11 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
-  <title>Archives: 2018/10 | Fasih Khatib</title>
+  <title>Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta property="og:type" content="website">
 <meta property="og:title" content="Fasih Khatib">
-<meta property="og:url" content="http://fasihkhatib.com/archives/2018/10/index.html">
+<meta property="og:url" content="http://fasihkhatib.com/page/5/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
 <meta property="og:locale">
 <meta property="article:author" content="Fasih Khatib">
@@ -184,76 +184,69 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" class="archive-article-date">
-  <time datetime="2018-10-28T12:05:15.000Z" itemprop="datePublished">Oct 28</time>
+    <article id="post-scalaz-introduction" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/23/scalaz-introduction/" class="article-date">
+  <time datetime="2017-06-23T09:50:22.000Z" itemprop="datePublished">2017-06-23</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
     <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
+      <a class="article-title" href="/2017/06/23/scalaz-introduction/">Scalaz Introduction</a>
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/" class="archive-article-date">
-  <time datetime="2018-10-24T16:05:58.000Z" itemprop="datePublished">Oct 24</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
-    </h1>
-  
+        <h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><p>I’ve been using Scalaz for a while now and I remember not having any guides that provide a gentle introduction. It was a lot of scouring around, reading source code, and watching tech talks that gave me the understanding that I have now. This series of posts is intended at filling that gap by providing simple, step-by-step tutorials that will help you get productive quickly without compromising on the functional programming concepts. </p>
+<h2 id="What-is-Scalaz"><a href="#What-is-Scalaz" class="headerlink" title="What is Scalaz?"></a>What is Scalaz?</h2><p>The documentation for Scalaz (pronounced Scala-zee or Scala-zed) states:</p>
+<p><em>Scalaz is a Scala library for functional programming.</em><br><em>It provides purely functional data structures to complement those from the Scala standard library. It defines a set of foundational type classes (e.g. Functor, Monad) and corresponding instances for a large number of data structures.</em></p>
+<p>In a nutshell, Scalaz aims to do three things:</p>
+<li> Provide new datatypes that are not present in the core Scala library </li>
+<li> Provide new operations on existing types a.k.a. pimp the library </li>
+<li> Provide general-purpose functions so that you don't have to re-write them </li> 
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/" class="archive-article-date">
-  <time datetime="2018-10-21T12:12:11.000Z" itemprop="datePublished">Oct 21</time>
-</a>
+<p>I’ll provide a quick example of each of these without going into any details.  </p>
+<h2 id="New-Datatypes"><a href="#New-Datatypes" class="headerlink" title="New Datatypes"></a>New Datatypes</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">NonEmptyList</span>.nels(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res0: scalaz.<span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>  
+<p>Here we are creating a <code>NonEmptyList</code> which is a list that is guaranteed to have atleast one element i.e. it’s never empty.</p>
+<h2 id="New-Operations-on-Existing-Types"><a href="#New-Operations-on-Existing-Types" class="headerlink" title="New Operations on Existing Types"></a>New Operations on Existing Types</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">val</span> o = <span class="type">Option</span>(<span class="number">3</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">scala&gt; o some { _ + <span class="number">1</span> } none { <span class="number">0</span> }</span><br><span class="line">res0: <span class="type">Int</span> = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">scala&gt; o.fold(<span class="number">0</span>)( _ + <span class="number">1</span> )</span><br><span class="line">res1: <span class="type">Int</span> = <span class="number">4</span></span><br></pre></td></tr></table></figure>
+<p>The first way of extracting value from an <code>Option</code> comes from Scalaz and is much more expressive compared to using <code>fold</code> from Scala standard library.  </p>
+<h2 id="General-Purpose-Functions"><a href="#General-Purpose-Functions" class="headerlink" title="General-Purpose Functions"></a>General-Purpose Functions</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) |+| <span class="type">List</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line">res0: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br></pre></td></tr></table></figure>
+<p>The <code>|+|</code> operator from Scalaz conveniently concatenated the two <code>List</code>s together.  </p>
+
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
-    </h1>
-  
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clt2z3ozc002lr5ovflfd9dbc" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
 </article>
-  
-  
-    </div></section>
+
+
+
   
 
+
+  <nav id="page-nav">
+    
+    <a class="extend prev" rel="prev" href="/page/4/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><span class="space">&hellip;</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="page-number current">5</span>
+  </nav>
 
 </section>
         

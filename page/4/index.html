@@ -184,6 +184,62 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-mapops" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/11/scalaz-mapops/" class="article-date">
+  <time datetime="2017-07-11T06:47:09.000Z" itemprop="datePublished">2017-07-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/11/scalaz-mapops/">Scalaz MapOps</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/syntax/std/MapOps.scala"><code>MapOps</code></a> and the goodies it provides to work with <code>Map</code>s. Examples galore!  </p>
+<h3 id="Altering-a-Map"><a href="#Altering-a-Map" class="headerlink" title="Altering a Map"></a>Altering a Map</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line"><span class="comment">// create two maps</span></span><br><span class="line">@ <span class="keyword">val</span> m1 = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">m1: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">@ <span class="keyword">val</span> m2 = <span class="type">Map</span>(<span class="string">"b"</span> -&gt; <span class="number">2</span>, <span class="string">"c"</span> -&gt; <span class="number">3</span>)</span><br><span class="line">m2: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"b"</span> -&gt; <span class="number">2</span>, <span class="string">"c"</span> -&gt; <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// alter an existing key</span></span><br><span class="line">@ m1.alter(<span class="string">"b"</span>) { maybeValue =&gt; maybeValue some { v =&gt;  some(v + <span class="number">1</span>) } none { some(<span class="number">0</span>) } }</span><br><span class="line">res4: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">3</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>alter</code> lets you change the values associated with keys. In the example, we’re altering the value associated with key <code>b</code>. Since there may or may not be a value associated with <code>b</code>, we get an <code>Option</code> which we’ve named as <code>maybeValue</code>. We then use the <code>some { ... } none { ... }</code> construct to either add 1 in case there’s a value or initialize the key with 0. Also, since we need to return <code>Option</code>s, we use <code>some</code> and <code>none</code> again.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ m1.alter(<span class="string">"d"</span>) { maybeValue =&gt; maybeValue some { v =&gt; some(v + <span class="number">1</span>) } none { some(<span class="number">0</span>) } }</span><br><span class="line">res5: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>, <span class="string">"d"</span> -&gt; <span class="number">0</span>)</span><br></pre></td></tr></table></figure>  
+<p>If the key does not exist, it will be added to the map.  </p>
+<h3 id="Intersection"><a href="#Intersection" class="headerlink" title="Intersection"></a>Intersection</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ m1.intersectWith(m2) { _ + _ }</span><br><span class="line">res6: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"b"</span> -&gt; <span class="number">4</span>)</span><br><span class="line">@ m1.intersectWith(m2)((v1, v2) =&gt; v1 + v2)</span><br><span class="line">res7: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"b"</span> -&gt; <span class="number">4</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>intersectWith</code> lets you calculate the intersection of two maps. It expects a function that will accept values <code>v1</code> and <code>v2</code> from both the maps and return a new value which will become the value associated with the key in the new map. If you want to analyze the key before returning the value, you can use <code>intersectWithKey</code> which expects a function <code>(k, v1, v2) =&gt; { ... }</code>.  </p>
+<h3 id="Mapping-Keys"><a href="#Mapping-Keys" class="headerlink" title="Mapping Keys"></a>Mapping Keys</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ m1 mapKeys { _.toUpperCase }</span><br><span class="line">res8: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"A"</span> -&gt; <span class="number">1</span>, <span class="string">"B"</span> -&gt; <span class="number">2</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>mapKeys</code> lets you change the keys without changing the values associated with them. Here, we’re converting them to uppercase.   </p>
+<h3 id="Union"><a href="#Union" class="headerlink" title="Union"></a>Union</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ m1.unionWith(m2){ _ + _ }</span><br><span class="line">res9: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">4</span>, <span class="string">"c"</span> -&gt; <span class="number">3</span>)</span><br><span class="line">@ m1.unionWith(m2)((v1, v2) =&gt; v1 + v2)</span><br><span class="line">res10: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">4</span>, <span class="string">"c"</span> -&gt; <span class="number">3</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>unionWith</code> lets you calculate the union of two maps and expects a function that will accept values <code>v1</code> and <code>v2</code> from both maps and return a new value which will become the value associated with the key in the new map. Similarly, there’s <code>unionWithKey</code> which will pass the key as the first argument to the function.  </p>
+<h3 id="Inserting-a-Value"><a href="#Inserting-a-Value" class="headerlink" title="Inserting a Value"></a>Inserting a Value</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ m1.insertWith(<span class="string">"a"</span>, <span class="number">99</span>) { _ + _ }</span><br><span class="line">res11: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">100</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">@ m1.insertWith(<span class="string">"a"</span>, <span class="number">99</span>)((v1, v2) =&gt; v1 + v2)</span><br><span class="line">res12: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">100</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">@ m1.insertWith(<span class="string">"z"</span>, <span class="number">100</span>) { _ + _ }</span><br><span class="line">res13: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>, <span class="string">"z"</span> -&gt; <span class="number">100</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>insertWith</code> lets you insert a new key-value pair into the map. It also expects a function which will take values <code>v1</code> and <code>v2</code> as arguments to deal with cases where the key you’re trying to add already exists.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>MapOps</code>. These extra functions make it very easy to work with an immutable <code>Map</code> by providing extra functionality not present in the Scala core library.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="clt2z3oze002qr5ova701egpt" data-title="Scalaz MapOps" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/11/scalaz-mapops/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-booleanops" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/10/scalaz-booleanops/" class="article-date">
@@ -852,68 +908,11 @@ mjx-container[display="true"] + br {
 
 
   
-    <article id="post-scalaz-introduction" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/06/23/scalaz-introduction/" class="article-date">
-  <time datetime="2017-06-23T09:50:22.000Z" itemprop="datePublished">2017-06-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/06/23/scalaz-introduction/">Scalaz Introduction</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><p>I’ve been using Scalaz for a while now and I remember not having any guides that provide a gentle introduction. It was a lot of scouring around, reading source code, and watching tech talks that gave me the understanding that I have now. This series of posts is intended at filling that gap by providing simple, step-by-step tutorials that will help you get productive quickly without compromising on the functional programming concepts. </p>
-<h2 id="What-is-Scalaz"><a href="#What-is-Scalaz" class="headerlink" title="What is Scalaz?"></a>What is Scalaz?</h2><p>The documentation for Scalaz (pronounced Scala-zee or Scala-zed) states:</p>
-<p><em>Scalaz is a Scala library for functional programming.</em><br><em>It provides purely functional data structures to complement those from the Scala standard library. It defines a set of foundational type classes (e.g. Functor, Monad) and corresponding instances for a large number of data structures.</em></p>
-<p>In a nutshell, Scalaz aims to do three things:</p>
-<li> Provide new datatypes that are not present in the core Scala library </li>
-<li> Provide new operations on existing types a.k.a. pimp the library </li>
-<li> Provide general-purpose functions so that you don't have to re-write them </li> 
-
-<p>I’ll provide a quick example of each of these without going into any details.  </p>
-<h2 id="New-Datatypes"><a href="#New-Datatypes" class="headerlink" title="New Datatypes"></a>New Datatypes</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">NonEmptyList</span>.nels(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res0: scalaz.<span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]</span><br></pre></td></tr></table></figure>  
-<p>Here we are creating a <code>NonEmptyList</code> which is a list that is guaranteed to have atleast one element i.e. it’s never empty.</p>
-<h2 id="New-Operations-on-Existing-Types"><a href="#New-Operations-on-Existing-Types" class="headerlink" title="New Operations on Existing Types"></a>New Operations on Existing Types</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">val</span> o = <span class="type">Option</span>(<span class="number">3</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">3</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">scala&gt; o some { _ + <span class="number">1</span> } none { <span class="number">0</span> }</span><br><span class="line">res0: <span class="type">Int</span> = <span class="number">4</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">scala&gt; o.fold(<span class="number">0</span>)( _ + <span class="number">1</span> )</span><br><span class="line">res1: <span class="type">Int</span> = <span class="number">4</span></span><br></pre></td></tr></table></figure>
-<p>The first way of extracting value from an <code>Option</code> comes from Scalaz and is much more expressive compared to using <code>fold</code> from Scala standard library.  </p>
-<h2 id="General-Purpose-Functions"><a href="#General-Purpose-Functions" class="headerlink" title="General-Purpose Functions"></a>General-Purpose Functions</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) |+| <span class="type">List</span>(<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br><span class="line">res0: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>)</span><br></pre></td></tr></table></figure>
-<p>The <code>|+|</code> operator from Scalaz conveniently concatenated the two <code>List</code>s together.  </p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clt2z3ozc002lr5ovflfd9dbc" data-title="Scalaz Introduction" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
 
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+    <a class="extend prev" rel="prev" href="/page/3/">&amp;laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/5/">Next &amp;raquo;</a>
   </nav>
 
 </section>
@@ -934,6 +933,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/">Palestine and Israel from the perspective of collective consciousness, 2nd essay</a>
+          </li>
         
           <li>
             <a href="/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/">Palestine and Israel from the perspective of collective consciousness</a>
@@ -969,10 +972,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2021/11/07/Learn-you-a-SQL-for-Great-Good/">Learn you a SQL for Great Good</a>
-          </li>
-        
-          <li>
-            <a href="/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/">Frequentism vs Bayesianism</a>
           </li>
         
       </ul>
