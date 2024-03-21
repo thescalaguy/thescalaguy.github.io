@@ -211,7 +211,7 @@ mjx-container[display="true"] + br {
 <p>This post is my opinion on how Python microservices can be created. While we’ll see libraries and tools used from the Python ecosystem, the ideas discussed in the following sections can be applied to the language of your choice. We’ll create a couple of microservices, and see how we can add logging, tracing, metrics, and profiling to them. The goal is to develop a blueprint that can be used to create microservices.</p>
 <h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll look at two key parts of creating a microservice: telemetry, and profiling. Telemetry includes collecting logs, and metrics. Profiling includes analysing the CPU, memory, IO, etc. Both of these put together give us the complete picture of how the microservice is performing. We’ll use OpenTelemetry and Parca for telemetry, and profiling respectively. A detailed introduction to both of these projects is beyond the scope of this post and you’re encouraged to read the relevant documentation. </p>
 <p>Briefly, we will use a combination of zero-code and code-based instrumentation offered by OTel. The zero-code instrumentaion is helpful as it adds instrumentation to the libraries that we are using. If we’d like to instrument our code, we’ll have to use code-based instrumentaion and add it to the source ourselves.</p>
-<p>Finally, the setup consists of two Flask apps running on the machine; everything else runs as Docker containers. We’ll run an OTel Collector exporter to collect the metrics and logs emitted from OpenTelemetry, Jaeger to display the distributed trace, and Parca for continuous profiling.<sup>[1]</sup></p>
+<p>Finally, the setup consists of two Flask apps, and Parca Agent running on the machine; everything else runs as Docker containers. We’ll run an OTel Collector exporter to collect the metrics and logs emitted from OpenTelemetry, Jaeger to display the distributed trace, and Parca Server for continuous profiling.<sup>[1]</sup></p>
 <h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>For the sake of brevity, we will only look at parts of the code that are necessary for the post and will exclude all the scaffolding. The complete code is available in the repository mentioned at the end.   </p>
 <h3 id="Microservices"><a href="#Microservices" class="headerlink" title="Microservices"></a>Microservices</h3><p>We’ll begin by looking at how the microservices work. The two microservices are called “first” and “second”. The first microservice receives an API call, sleeps for duration, and makes an API call to the second. The second receives the API call and makes an API call to the <code>/delay</code> endpoint of HTTPBin. We are trying to mimic a real-world scenario by adding some delay, and a slow API call.  </p>
 <p>The code for the first endpoint is given below.  </p>
@@ -281,14 +281,14 @@ mjx-container[display="true"] + br {
 <img src="/2024/03/21/Setting-up-a-Python-microservice/Parca-2.png" class="" title="Compare stack trace">  
 <p>Towards the middle of the image we’ll see the call stack calling the private functions <code>_one</code>, <code>_two</code>, and <code>_fib</code>. In the cumulative diff column<sup>[11]</sup> we see a +10.05s. This means that between the two timeframes, the stacktrace has been running 10.05s longer; we’ve gotten slower with time. This can be confirmed by switching to the icicle graph which indicates the same.</p>
 <p>That’s it. We’ve added profiling to our service. </p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We saw how we can add telemetry using OTel, and profiling using Parca. Both of these great ways to observe a service in production. However, as of writing, both of these projects are in their early stages as can be seen from functionality that is yet to be developed. For example, OTel’s Python SDK is yet to add support for logging, and Parca only supports CPU profiling. Despite this, they’re both worth following as they let us add observability to our services without much effort.  </p>
-<p>This is my opinion on how to create a microservice with observability baked in. </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We saw how we can add telemetry using OTel, and profiling using Parca. Both of these are great ways to observe a service in production. However, as of writing, both of these projects are in their early stages as can be seen from functionality that is yet to be developed. For example, OTel’s Python SDK is yet to add support for logging, and Parca only supports CPU profiling. Despite this, they’re both worth following as they let us add observability to our services without much effort.  </p>
+<p>This is my opinion on how to create a microservice with observability baked in. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">The code for this post is available on GitHub.</a></p>
 <h3 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h3><p>[1] I was unable to send traces and metrics to the collector, and from there to the appropriate backends, as I kept running into issues with gRPC. Perhaps an astute reader would like to submit a PR to fix these. :)<br>[2] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/traces/">https://opentelemetry.io/docs/concepts/signals/traces/</a><br>[3] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/context-propagation/">https://opentelemetry.io/docs/concepts/context-propagation/</a><br>[4] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/">https://opentelemetry.io/docs/collector/</a><br>[5] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/scaling/">https://opentelemetry.io/docs/collector/scaling/</a><br>[6] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/configuration/">https://opentelemetry.io/docs/collector/configuration/</a><br>[7] <a target="_blank" rel="noopener" href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md">https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md</a><br>[8] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider">https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider</a><br>[9] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/languages/python/instrumentation/">https://opentelemetry.io/docs/languages/python/instrumentation/</a><br>[10] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/profiling-101/">https://www.parca.dev/docs/profiling-101/</a><br>[11] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/concepts/#cumulative-and-diff-values">https://www.parca.dev/docs/concepts/#cumulative-and-diff-values</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clu13gu4f001os4ov92loeenk" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clu14nkuu001oxzov91aafvov" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -366,7 +366,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clu13gu4e001ms4ovfpaf3tdx" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clu14nkut001mxzov0d5f5g5y" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -414,7 +414,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clu13gu4d001js4ov9a451z8c" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clu14nkus001jxzoveotyafj2" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -464,7 +464,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clu13gu4q002ds4ovb1ak73sv" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clu14nkv7002dxzov907l9yg4" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -522,7 +522,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clu13gu4a001es4ov31nddq6t" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clu14nkup001exzovcknz98hi" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -592,7 +592,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clu13gu49001cs4ovcli46bn4" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clu14nkuo001cxzov0pqt9v5j" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -648,7 +648,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clu13gu470019s4ov679bc4v0" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clu14nkul0019xzovfzeagpid" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -711,7 +711,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="clu13gu460017s4ov0zta5euz" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="clu14nkuk0017xzovgbk0ac27" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -776,7 +776,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="clu13gu4c001hs4ov8dv3asuj" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="clu14nkuq001hxzovgan47jyv" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -827,7 +827,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="clu13gu3v000is4ovb77dc52d" data-title="Collective Consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="clu14nku8000ixzov0ed4bnu2" data-title="Collective Consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -874,7 +874,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="clu13gu450014s4ovd7mi4v64" data-title="Lens of Life" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="clu14nkuj0014xzov52gf20gw" data-title="Lens of Life" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/16/Lens-of-Life/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -944,7 +944,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="clu13gu3z000ss4ov26eieua0" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="clu14nkud000sxzovcfo83ddv" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/#disqus_thread" class="article-comment-link">Comments</a>
       
