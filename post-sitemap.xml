@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/</loc>
+        <lastmod>2024-03-22T16:34:29.244Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/</loc>
         <lastmod>2024-03-21T11:05:58.492Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -223,7 +231,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
+        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -231,7 +239,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
         <lastmod>2020-07-17T12:01:05.862Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
