@@ -14,7 +14,7 @@
 <meta property="og:description" content="In one of the previous posts we saw how to set up a Python microservice. This post is a continuation and shows how to scale it. Specifically, we’ll look at handling larger volumes of data by sharding">
 <meta property="og:locale">
 <meta property="article:published_time" content="2024-03-25T07:09:42.000Z">
-<meta property="article:modified_time" content="2024-03-25T07:11:15.705Z">
+<meta property="article:modified_time" content="2024-03-26T16:38:08.204Z">
 <meta property="article:author" content="Fasih Khatib">
 <meta property="article:tag" content="architecture">
 <meta name="twitter:card" content="summary">
@@ -223,7 +223,7 @@ mjx-container[display="true"] + br {
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">_shard = sharding.from_env_variables()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_before_request</span>():</span><br><span class="line">    identifier = request.headers.get(<span class="string">"X-Customer-ID"</span>)</span><br><span class="line">    g.db = _shard.db(identifier=identifier)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_after_request</span>(<span class="params">response</span>):</span><br><span class="line">    g.db.close()</span><br><span class="line">    <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">api = Blueprint(<span class="string">"api"</span>, __name__)</span><br><span class="line">api.before_app_request(_before_request)</span><br><span class="line">api.after_app_request(_after_request)</span><br></pre></td></tr></table></figure>  
 <p>We’re creating an instance of <code>Shard</code> and using it to retrieve the appropriate database. This is then stored in the per-request global <code>g</code>. This lets us use the same database throughout the context of the request. Finally, we register the before and after hooks.  </p>
 <p>We’ll now add functions to the library which allow saving and retrieving the data using the database stored in <code>g</code>.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">save_with_db</span>(<span class="params"></span></span><br><span class="line"><span class="params">    instance: Model,</span></span><br><span class="line"><span class="params">    db: Database,</span></span><br><span class="line"><span class="params">    force_insert: <span class="built_in">bool</span> = <span class="literal">False</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    identifier_field = os.environ.get(EnvironmentVariables.SHARDING_IDENTIFIER_FIELD)</span><br><span class="line">    identifier = <span class="built_in">getattr</span>(instance, identifier_field)</span><br><span class="line">    <span class="keyword">assert</span> identifier, <span class="string">"identifier field is not set on the instance"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> db.bind_ctx(models=[instance.__class__]):</span><br><span class="line">        instance.save(force_insert=force_insert)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@contextmanager</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">read_with_db</span>(<span class="params"></span></span><br><span class="line"><span class="params">    query: SelectQuery,</span></span><br><span class="line"><span class="params">    db: Database,</span></span><br><span class="line"><span class="params">    models: <span class="built_in">list</span>[<span class="type">Type</span>[Model]] | <span class="literal">None</span> = <span class="literal">None</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    models = models <span class="keyword">if</span> models <span class="keyword">else</span> [query.model().__class__]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> db.bind_ctx(models=models):</span><br><span class="line">        <span class="keyword">yield</span> query</span><br></pre></td></tr></table></figure>  
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">save_with_db</span>(<span class="params"></span></span><br><span class="line"><span class="params">    instance: Model,</span></span><br><span class="line"><span class="params">    db: Database,</span></span><br><span class="line"><span class="params">    force_insert: <span class="built_in">bool</span> = <span class="literal">False</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    identifier_field = os.environ.get(EnvironmentVariables.SHARDING_IDENTIFIER_FIELD)</span><br><span class="line">    identifier = <span class="built_in">getattr</span>(instance, identifier_field)</span><br><span class="line">    <span class="keyword">assert</span> identifier, <span class="string">"identifier field is not set on the instance"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> db.bind_ctx(models=[instance.__class__]):</span><br><span class="line">        instance.save(force_insert=force_insert)</span><br></pre></td></tr></table></figure>  
 <p>What allows us to switch the database at runtime is the <code>bind_ctx</code> method of the Peewee <code>Database</code> instance. This temporarily binds the model to the database that was retrieved using the <code>Shard</code>. In essence, we’re storing and retrieving the data from the right database.  </p>
 <p>Next we’ll add a simple Peewee model that represents a person.  </p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span>(<span class="title class_ inherited__">Model</span>):</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Meta</span>:</span><br><span class="line">        model_metadata_class = ThreadSafeDatabaseMetadata</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">id</span> = BigAutoField(primary_key=<span class="literal">True</span>)</span><br><span class="line">    name = TextField()</span><br><span class="line">    address = TextField()</span><br><span class="line">    customer_id = TextField()</span><br></pre></td></tr></table></figure>  
@@ -246,12 +246,12 @@ mjx-container[display="true"] + br {
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">DISTINCT</span> customer_id <span class="keyword">FROM</span> person;</span><br></pre></td></tr></table></figure>
 <p>This returns the following:</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">customer_id</span><br><span class="line">3</span><br></pre></td></tr></table></figure>  
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can connect a Flask service to multiple databases dynamically. Please note that the code is yet to be pushed to a Github repo since it needs some refactoring.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can connect a Flask service to multiple databases dynamically.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clu6m1d6j001p7bovflp78i98" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clu8ls0cd001pfbovexnldz63" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -401,38 +401,6 @@ mjx-container[display="true"] + br {
 
 
 
-  </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({{ JSON.stringify(config) }});
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i=0; i < all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-  });
-</script>
-
-<script type="text/javascript" src="{{ src }}">
-</script>
-<!-- End: Injected MathJax -->
-<!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
