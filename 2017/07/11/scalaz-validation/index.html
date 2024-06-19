@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Scalaz Validation | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="IntroductionIn this post we’ll look at Scalaz Validation which you can use to validate the data in your system. Data validation is a part and parcel of software development; you have to check the data">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scalaz Validation">
+<meta property="og:url" content="http://fasihkhatib.com/2017/07/11/scalaz-validation/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="IntroductionIn this post we’ll look at Scalaz Validation which you can use to validate the data in your system. Data validation is a part and parcel of software development; you have to check the data">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-07-11T09:33:41.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.188Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="scala">
+<meta property="article:tag" content="functional programming">
+<meta property="article:tag" content="scalaz">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-scalaz-validation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/11/scalaz-validation/" class="article-date">
+  <time datetime="2017-07-11T09:33:41.000Z" itemprop="datePublished">2017-07-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Scalaz Validation
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>In this post we’ll look at Scalaz <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/Validation.scala"><code>Validation</code></a> which you can use to validate the data in your system. Data validation is a part and parcel of software development; you have to check the data that comes into your system or it may lead to unexpected behavior and / or cause your system to fail. Scalaz provides you with <code>Validation</code> to validate your data. <code>Validation</code> is an applicative functor. An applicative functor has more structure than a functor but less than a monad.<sup><a target="_blank" rel="noopener" href="https://wiki.haskell.org/Applicative_functor">[1]</a></sup>  </p>
+<h2 id="Motivating-Example"><a href="#Motivating-Example" class="headerlink" title="Motivating Example"></a>Motivating Example</h2><p>So let’s say we have a <code>Version</code> class representing the major and minor version of our software like so:<sup><a target="_blank" rel="noopener" href="http://arosien.github.io/scalaz-base-talk-201208/#slide20">[2]</a></sup> </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br></pre></td></tr></table></figure>   
+<p>Then, a negative value in either of major or minor would be invalid. We could ensure that we never get a negative value in either the major or minor by using <code>require</code> like so:<sup><a target="_blank" rel="noopener" href="http://arosien.github.io/scalaz-base-talk-201208/#slide23">[3]</a></sup>  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>) </span>{</span><br><span class="line">  require(major &gt;= <span class="number">0</span>, <span class="string">"major must be &gt;= 0: %s"</span>.format(major))</span><br><span class="line">  require(minor &gt;= <span class="number">0</span>, <span class="string">"minor must be &gt;= 0: %s"</span>.format(minor))</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
+<p>The problem here is that we’ll have to handle exceptions and we don’t want side-effects. Let’s use <code>Validation</code> to do it in a more functional way.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="comment">// paste mode in Ammonite REPL is { .. CODE HERE .. } and not :paste</span></span><br><span class="line">@ {</span><br><span class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br><span class="line">  <span class="class"><span class="keyword">object</span> <span class="title">Version</span> </span>{</span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">createNew</span></span>(major: <span class="type">Int</span>, minor: <span class="type">Int</span>): <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = {</span><br><span class="line">            <span class="keyword">val</span> isValidMajor = (major &gt;= <span class="number">0</span>) ? <span class="literal">true</span> | <span class="literal">false</span></span><br><span class="line">            <span class="keyword">val</span> isValidMinor = (minor &gt;= <span class="number">0</span>) ? <span class="literal">true</span> | <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">            (isValidMajor, isValidMinor) <span class="keyword">match</span> {</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">false</span>, <span class="literal">true</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">true</span>, <span class="literal">false</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"minor &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">false</span>, <span class="literal">false</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major and minor &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">true</span>, <span class="literal">true</span>) =&gt; <span class="keyword">new</span> <span class="type">Version</span>(major, minor).success</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">     }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Version</span></span></span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Version</span></span></span><br><span class="line">@ <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">res5: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  java.lang.<span class="type">IllegalArgumentException</span>: major and minor &lt; <span class="number">0</span></span><br><span class="line">)</span><br><span class="line">@ <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">res6: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
+<p>What we’ve done here is add a <code>createNew</code> to the companion object of <code>Version</code> that returns a <code>Validation</code>. Validating the input can result in either a <code>Success</code> or <code>Failure</code>. We create a <code>Success</code> by calling <code>success</code> on the value and a <code>Failure</code> by calling <code>failure</code> on the value. Once we have a <code>Validation</code>, there are numerous ways in which we can deal with it.  </p>
+<h3 id="Providing-Default-Values"><a href="#Providing-Default-Values" class="headerlink" title="Providing Default Values"></a>Providing Default Values</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> invalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">invalid: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  java.lang.<span class="type">IllegalArgumentException</span>: major and minor &lt; <span class="number">0</span></span><br><span class="line">)</span><br><span class="line">@ <span class="keyword">val</span> <span class="keyword">default</span> = invalid | <span class="keyword">new</span> <span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">default</span>: <span class="type">Version</span> = <span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>  
+<p>There’s a convenient <code>|</code> operator (<code>getOrElse</code>) that lets you provide a default value if the result of the validation is a <code>Failure</code>. Here we are assigning the value 1 to major and 0 to minor.  </p>
+<h3 id="Folding-a-Validation"><a href="#Folding-a-Validation" class="headerlink" title="Folding a Validation"></a>Folding a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> valid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">valid: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>))</span><br><span class="line">@ valid fold(</span><br><span class="line">    f =&gt; <span class="string">s"Validation failed because <span class="subst">${f getMessage}</span>"</span>.println,</span><br><span class="line">    v =&gt; <span class="string">s"Version is <span class="subst">$v</span>"</span>.println</span><br><span class="line">  )</span><br><span class="line"><span class="string">"Version is Version(1,0)"</span></span><br><span class="line">@ invalid fold(</span><br><span class="line">    f =&gt; <span class="string">s"Validation failed because <span class="subst">${f getMessage}</span>"</span>.println,</span><br><span class="line">    v =&gt; <span class="string">s"Version is <span class="subst">$v</span>"</span>.println</span><br><span class="line">  )</span><br><span class="line"><span class="string">"Validation failed because major and minor &lt; 0"</span></span><br></pre></td></tr></table></figure>  
+<p>Akin to a disjunction, it’s possible to <code>fold</code> a <code>Validation</code>. <code>Failure</code> will be the first argument and <code>Success</code> will be the second. If you want to fold just on the <code>Success</code> part, you can use <code>foldRight</code>.  </p>
+<p><hr></p>
+<h5 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE:"></a>NOTE:</h5><p>Both <code>fold</code> and <code>foldRight</code> should return values. Here I’ve just printed out the values to the console which is a side-effect. I’ve done this to keep the examples simple.</p>
+<hr>
+
+<h3 id="Composing-Validations"><a href="#Composing-Validations" class="headerlink" title="Composing Validations"></a>Composing Validations</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">@ {</span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br><span class="line">    <span class="class"><span class="keyword">object</span> <span class="title">Version</span> </span>{</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">isValidMajor</span></span>(major: <span class="type">Int</span>) = </span><br><span class="line">        (major &gt;= <span class="number">0</span>) ?</span><br><span class="line">        major.success[<span class="type">IllegalArgumentException</span>] |</span><br><span class="line">        <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major &lt; 0"</span>).failure</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">isValidMinor</span></span>(minor: <span class="type">Int</span>) = </span><br><span class="line">        (minor &gt;= <span class="number">0</span>) ?</span><br><span class="line">        minor.success[<span class="type">IllegalArgumentException</span>] |</span><br><span class="line">        <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"minor &lt; 0"</span>).failure</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">createNew</span></span>(major: <span class="type">Int</span>, minor: <span class="type">Int</span>) = {</span><br><span class="line">        (isValidMajor(major).toValidationNel |@| isValidMinor(minor).toValidationNel) {</span><br><span class="line">          <span class="type">Version</span>(_, _)</span><br><span class="line">        }</span><br><span class="line">      }</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Version</span></span></span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Version</span></span></span><br></pre></td></tr></table></figure>  
+<p>When we started building the <code>Version</code> example, we used pattern matching to check if the major and minor versions were correct. However, there’s a more succinct way to collect all the errors. In the example above, we’ve turned <code>isValidMajor</code> and <code>isValidMinor</code> into methods that return a <code>Validation</code> instead of simply a <code>Boolean</code>.   </p>
+<p>The magic is in <code>createNew</code>. Here we convert the <code>Validation</code> into a <code>NonEmptyList</code>. <code>toValidationNel</code> wraps the <code>Failure</code> in a <code>NonEmptyList</code> but keeps the <code>Success</code> as-is. The <code>|@|</code> is an <code>ApplicativeBuilder</code> which lets us combine the failures together. If we get all successes, we construct a <code>Version</code> out of it. Let’s see this in action:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> bothInvalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">bothInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: major &lt; <span class="number">0</span>,java.lang.<span class="type">IllegalArgumentException</span>: minor &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> majorInvalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">0</span>)</span><br><span class="line">majorInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: major &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> minorInvalid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">-1</span>)</span><br><span class="line">minorInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: minor &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> bothValid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">bothValid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
+<p>So, in case of both the major and minor being invalid, we get a non-empty list with both the errors in it. This is very convenient and also very extensible. If you need to add an extra check, you can write a new <code>isValidXXX</code> method and make it return a <code>Validation</code>. You can then use the <code>ApplicativeBuilder</code> to your advantage. Using simply booleans would need checking a large number of possible cases.  </p>
+<h3 id="Mapping-Success-and-Failure"><a href="#Mapping-Success-and-Failure" class="headerlink" title="Mapping Success and Failure"></a>Mapping <code>Success</code> and <code>Failure</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> errMsgs = bothInvalid bimap(</span><br><span class="line">    f =&gt; f map { _.getMessage },</span><br><span class="line">    identity,</span><br><span class="line">  )</span><br><span class="line">errMsgs: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">String</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(<span class="type">NonEmpty</span>[major &lt; <span class="number">0</span>,minor &lt; <span class="number">0</span>])</span><br></pre></td></tr></table></figure>  
+<p>It’s possible to map over <code>Success</code> and <code>Failure</code> and apply any transformations you want. For example, we represent errors with <code>IllegalArgumentException</code>s and we may be coding a rest API and we’d like to send back the strings representing the errors. In the example above, I’ve used <code>bimap</code> to map <code>Success</code> and <code>Failure</code>. For every failure, I am extracting the string using <code>getMessage</code> and leaving the success as-is by using <code>identity</code>. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> theVersion = bothValid bimap(</span><br><span class="line">    f =&gt; f map { _.getMessage },</span><br><span class="line">    identity,</span><br><span class="line">  )</span><br><span class="line">theVersion: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">String</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
+<p>Similar to <code>bimap</code> is <code>map</code> which just maps the <code>Success</code> part of the <code>Validation</code>.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> theValue = bothValid map { v =&gt; <span class="type">Version</span>(v.major + <span class="number">1</span>, v.minor * <span class="number">2</span>) }</span><br><span class="line">theValue: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">2</span>, <span class="number">2</span>))</span><br></pre></td></tr></table></figure>  
+<p>Remember that <code>bimap</code> and <code>map</code> return a <code>Validation</code>. They don’t extract values out of it. You’ll have to use <code>fold</code>, etc. to get the values out.  </p>
+<h3 id="Running-a-Side-Effect-on-Success"><a href="#Running-a-Side-Effect-on-Success" class="headerlink" title="Running a Side-Effect on Success"></a>Running a Side-Effect on <code>Success</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ bothValid foreach { v =&gt; <span class="string">s"Begin build process for version <span class="subst">$v</span>"</span>.println }</span><br><span class="line"><span class="string">"Begin build process for version Version(1,1)"</span></span><br></pre></td></tr></table></figure>  
+<p><code>foreach</code> lets you run a side-effecting function if the result of the <code>Validation</code> is a <code>Success</code>. For example, using the <code>Version</code>, you could begin a build process or similar.  </p>
+<h3 id="Checking-if-it-is-a-Success-or-Failure"><a href="#Checking-if-it-is-a-Success-or-Failure" class="headerlink" title="Checking if it is a Success or Failure"></a>Checking if it is a <code>Success</code> or <code>Failure</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> isSuccess = bothValid isSuccess</span><br><span class="line">isSuccess: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isFailure = bothInvalid isFailure</span><br><span class="line">isFailure: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isSuccessSatisfying = bothValid exists { _.major &lt; <span class="number">5</span> }</span><br><span class="line">isSuccessSatisfying: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isSuccessSatisfyingOrFailure = bothValid forall { _.major === <span class="number">5</span> }</span><br><span class="line">isSuccessSatisfyingOrFailure: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<p>There are numerous ways in which we can check if the <code>Validation</code> resulted in a <code>Success</code> or a <code>Failure</code>. The simplest way is to use one of <code>isSuccess</code> or <code>isFailure</code>. Similarly, <code>exists</code> will return true if the validation is a success value satisfying the given predicate and <code>forall</code> will return true if the validation is a failure value or the success value satisfies the given predicate.  </p>
+<h3 id="Converting-to-Other-Datatypes"><a href="#Converting-to-Other-Datatypes" class="headerlink" title="Converting to Other Datatypes"></a>Converting to Other Datatypes</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> list = bothValid toList</span><br><span class="line">list: <span class="type">List</span>[<span class="type">Version</span>] = <span class="type">List</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> stream = bothValid toStream</span><br><span class="line">stream: <span class="type">Stream</span>[<span class="type">Version</span>] = <span class="type">Stream</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> either = bothValid toEither</span><br><span class="line">either: <span class="type">Either</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Right</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
+<p>Scalaz also provides convenience methods to convert the <code>Validation</code> to different datatypes like <code>List</code>, <code>Stream</code>, <code>Either</code>, etc.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>There’s a lot more methods than can be covered in a post. Hopefully this post gave you an idea about what’s possible with <code>Validation</code>s.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clxlottcj00648nrubnsz0q8w" data-title="Scalaz Validation" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/07/17/scalaz-either/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Scalaz Either
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/07/11/scalaz-mapops/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Scalaz MapOps</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/07/11/scalaz-validation/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

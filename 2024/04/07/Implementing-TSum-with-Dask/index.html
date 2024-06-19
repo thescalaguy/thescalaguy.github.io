@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Implementing TSum with Dask | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In one of the previous blog posts I’d written about implementing TSum, a table-summarization algorithm from Google Research. The implementation was written using Javascript and was meant for small dat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Implementing TSum with Dask">
+<meta property="og:url" content="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In one of the previous blog posts I’d written about implementing TSum, a table-summarization algorithm from Google Research. The implementation was written using Javascript and was meant for small dat">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-04-07T06:15:43.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.170Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="algorithms">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Implementing-TSum-with-Dask" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/04/07/Implementing-TSum-with-Dask/" class="article-date">
+  <time datetime="2024-04-07T06:15:43.000Z" itemprop="datePublished">2024-04-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Implementing TSum with Dask
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of the <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">previous blog posts</a> I’d written about implementing TSum, a table-summarization algorithm from Google Research. The implementation was written using Javascript and was meant for small datasets that can be summarized within the browser itself. I recently ported the implementation to <a target="_blank" rel="noopener" href="https://www.dask.org/">Dask</a> so that it can be used for larger datasets that consist of many rows. In a nutshell, it lets us summarize a Dask DataFrame and find representative patterns within it. In this post we’ll see how to use the algorithm to summarize a Dask DataFrame, and run benchmarks to see its performance. </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>Although the library is designed to be used in production on data stored in a warehouse, it can also be used to summarize CSV or Parquet files. In essence, anything that can be read into a Dask DataFrame can be summarized.</p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><h3 id="Summarizing-data"><a href="#Summarizing-data" class="headerlink" title="Summarizing data"></a>Summarizing data</h3><p>Imagine that we have customer data stored in a datawarehouse that we’d like to summarize. For example, how would we best describe the customer’s behavior given the data? In essence, we’d like to find patterns within this dataset. In scenarios like these, TSum works well. As an example of data summarization, we’ll use the patient data given in the <a target="_blank" rel="noopener" href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41683.pdf">research paper</a> and pass it to the summarization algorithm.  </p>
+<p>We’ll begin by adding a function to generate some test data. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">data</span>(<span class="params">n=<span class="number">1</span></span>):</span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"high"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"teen"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"high"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">    ] * <span class="built_in">int</span>(n)</span><br></pre></td></tr></table></figure>
+<p>We’ll then add code to summarize this data.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> cattrs</span><br><span class="line"><span class="keyword">import</span> dask.dataframe <span class="keyword">as</span> dd</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> tabulate</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> tsum <span class="keyword">import</span> summarize</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">from</span> dask.distributed <span class="keyword">import</span> LocalCluster</span><br><span class="line"></span><br><span class="line">    cluster = LocalCluster(n_workers=<span class="number">1</span>, nthreads=<span class="number">8</span>, diagnostics_port=<span class="number">8787</span>)</span><br><span class="line">    client = cluster.get_client()</span><br><span class="line"></span><br><span class="line">    df = pd.DataFrame.from_records(data=data(n=<span class="number">1</span>))</span><br><span class="line">    ddf = dd.from_pandas(df, npartitions=<span class="number">4</span>)</span><br><span class="line">    t0 = time.perf_counter()</span><br><span class="line">    patterns = summarize(ddf=ddf)</span><br><span class="line">    t1 = time.perf_counter()</span><br><span class="line"></span><br><span class="line">    dicts = [cattrs.unstructure(_) <span class="keyword">for</span> _ <span class="keyword">in</span> patterns]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(dicts, indent=<span class="number">4</span>))</span><br></pre></td></tr></table></figure>
+<p>Upon running the script we get the following patterns.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"pattern"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"gender"</span><span class="punctuation">:</span> <span class="string">"M"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"age"</span><span class="punctuation">:</span> <span class="string">"adult"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"saving"</span><span class="punctuation">:</span> <span class="number">3313</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"coverage"</span><span class="punctuation">:</span> <span class="number">50.0</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"pattern"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"age"</span><span class="punctuation">:</span> <span class="string">"child"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"blood_pressure"</span><span class="punctuation">:</span> <span class="string">"low"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"saving"</span><span class="punctuation">:</span> <span class="number">1684</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"coverage"</span><span class="punctuation">:</span> <span class="number">30.0</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+<p>This indicates that the patterns that best describe our data are “adult males”, which comprise 50% of the data, followed by “children with low blood pressure”, which comprise 30% of the data. We can verify this by looking at the data returned from the <code>data</code> function, and from the patterns mentioned in the paper.</p>
+<h3 id="Running-benchmarks"><a href="#Running-benchmarks" class="headerlink" title="Running benchmarks"></a>Running benchmarks</h3><p>To run the benchmarks, we’ll modify the script and create DataFrames with increasing number of rows. The benchmarks are being run on my local machine which has an Intel i7-8750H, and 16GB of RAM. The script which runs the benchmark is given below.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">from</span> dask.distributed <span class="keyword">import</span> LocalCluster</span><br><span class="line"></span><br><span class="line">    cluster = LocalCluster(n_workers=<span class="number">1</span>, nthreads=<span class="number">8</span>, diagnostics_port=<span class="number">8787</span>)</span><br><span class="line">    client = cluster.get_client()</span><br><span class="line">    table = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> [<span class="number">1</span>, <span class="number">1e1</span>, <span class="number">1e2</span>, <span class="number">1e3</span>, <span class="number">1e4</span>, <span class="number">1e5</span>, <span class="number">1e6</span>]:</span><br><span class="line">        df = pd.DataFrame.from_records(data=data(n=n))</span><br><span class="line">        ddf = dd.from_pandas(df, npartitions=<span class="number">4</span>)</span><br><span class="line">        t0 = time.perf_counter()</span><br><span class="line">        summarize(ddf=ddf)</span><br><span class="line">        t1 = time.perf_counter()</span><br><span class="line">        table.append(</span><br><span class="line">            {</span><br><span class="line">                <span class="string">"Rows"</span>: <span class="built_in">len</span>(ddf),</span><br><span class="line">                <span class="string">"Time Taken (seconds)"</span>: (t1 - t0),</span><br><span class="line">            }</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(tabulate.tabulate(table))</span><br></pre></td></tr></table></figure>   
+<p>This is the output generated. As we can see, it takes 17 minutes for 1e6 rows.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--------  ---------</span><br><span class="line">      10    14.5076</span><br><span class="line">     100    24.1455</span><br><span class="line">    1000    23.4862</span><br><span class="line">   10000    23.4842</span><br><span class="line">  100000    32.8378</span><br><span class="line"> 1000000   121.013</span><br><span class="line">10000000  1050.46</span><br><span class="line">--------  ---------</span><br></pre></td></tr></table></figure>   
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can summarize a Dask DataFrame using TSum. The library is available on PyPI and can be installed with the following command.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install tsum</span><br></pre></td></tr></table></figure>  
+<p><a target="_blank" rel="noopener" href="https://github.com/thescalaguy/tsum-dask">The code is available on GitHub.</a> Contributions welcome.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clxlottc7000f8nru244aewtj" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithms/" rel="tag">algorithms</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Scaling Python Microservices Part 2
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2024/03/31/Running-Database-Migrations/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Running Database Migrations</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

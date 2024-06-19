@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Scaling Python Microservices Part 3 | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In a previous blog post we’d seen how to use OpenTelemetry and Parca to instrument two microservcies. Imagine that our architecture has grown and we now have many microservices. For example, there is">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scaling Python Microservices Part 3">
+<meta property="og:url" content="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In a previous blog post we’d seen how to use OpenTelemetry and Parca to instrument two microservcies. Imagine that our architecture has grown and we now have many microservices. For example, there is">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-05-19T12:05:46.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.172Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Scaling-Python-Microservices-Part-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/" class="article-date">
+  <time datetime="2024-05-19T12:05:46.000Z" itemprop="datePublished">2024-05-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Scaling Python Microservices Part 3
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In a <a href="/2024/03/21/Setting-up-a-Python-microservice/">previous blog post</a> we’d seen how to use OpenTelemetry and Parca to instrument two microservcies. Imagine that our architecture has grown and we now have many microservices. For example, there is a microservice that is used to send emails, another which keeps track of user profile information, etc. We’d previously hardcoded the HTTP address of the second microservice to make a call from the first microservice. We could have, in a production environment, added a DNS entry which points to the load balancer and used that instead. However, when there are many microservcies, it becomes cumbersome to add these entries. Furthermore, any new microservice which depends on another microservice now needs to have the address as a part of its configuration. Maintaining a single repository, which can be used to find the microservices and their addresses, becomes difficult to maintain. An easier way to find services is to use service discovery - a dynamic way for one service to find another. In this post we’ll modify the previous architecture and add service discovery using Zookeeper.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>In a nutshell, we’ll use Zookeeper for service registration and discovery. We’ll modify our <code>create_app</code> factory function to make one more function call which registers the service as it starts. The function call creates an ephemeral node in Zookeeper at a specified path and stores the host and port. Any service which needs to find another service looks for it on the same path. We’ll create a small library for all of this which will make things easier.</p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>We’ll begin by creating a simple attr class to represent a service.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@define(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Service</span>:</span><br><span class="line">    host: <span class="built_in">str</span></span><br><span class="line">    port: <span class="built_in">int</span></span><br></pre></td></tr></table></figure>  
+<p>We’ll be using the <code>kazoo</code> Python library to interact with Zookeeper. The next step is to create a private variable which will be used to store the Zookeeper client.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_zk: KazooClient | <span class="literal">None</span> = <span class="literal">None</span></span><br></pre></td></tr></table></figure>  
+<p>Next we’ll add the function which will be called as a part of the <code>create_app</code> factory function.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">init_zookeeper_and_register</span>():</span><br><span class="line">    _init_zookeeper()</span><br><span class="line">    _register_service()</span><br></pre></td></tr></table></figure>  
+<p>In this function we’ll first initialize the connection to Zookeeper and then register our service. We’ll see both of these functions next, starting with the one to init Zookeeper.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_init_zookeeper</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> _zk:</span><br><span class="line">        _zk = KazooClient(hosts=<span class="string">'127.0.0.1:2181'</span>)</span><br><span class="line">        _zk.start(timeout=<span class="number">5</span>)</span><br><span class="line">        _zk.add_listener(_state_change_listener)</span><br></pre></td></tr></table></figure>  
+<p>The <code>_zk</code> variable is meant to be a singleton. I was unable to find whether this is thread-safe or not but for the sake of this post we’ll assume it is. The <code>start</code> method creates a connection to Zookeeper synchronously and raises an error if no connection could be made in <code>timeout</code> seconds. We also add a listener to respond to changes in the state of a Zookeeper connection. This enables us to respond to scenarios where the connection drops momentarily. Since we’ll be creating ephemeral nodes in Zookeeper, they’ll be removed in the case of a session loss and would need to be recreated. In the listener we recreate the node upon a successful reconnection.  </p>
+<p>Next we’ll look at the function to register the service.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_register_service</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    service = os.environ.get(<span class="string">"SERVICE"</span>)</span><br><span class="line">    host = socket.getfqdn()</span><br><span class="line">    port = os.environ.get(<span class="string">"PORT"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> service</span><br><span class="line">    <span class="keyword">assert</span> host</span><br><span class="line">    <span class="keyword">assert</span> port</span><br><span class="line"></span><br><span class="line">    identifier = <span class="built_in">str</span>(uuid4())</span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{identifier}</span>"</span></span><br><span class="line">    data = {<span class="string">"host"</span>: host, <span class="string">"port"</span>: <span class="built_in">int</span>(port)}</span><br><span class="line">    data_bytes = json.dumps(data).encode(<span class="string">"utf-8"</span>)</span><br><span class="line"></span><br><span class="line">    _zk.create(path, data_bytes, ephemeral=<span class="literal">True</span>, makepath=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>  
+<p>We get the name of the service and the port it is running on as environment variables. The host is retrieved as the fully-qualified domain name of the machine we’re on. Although the example is running on my local machine, it may work on a cloud provider like AWS. We then create a UUID identifier for the service, and a path on which the service will be registered. The information stored on the path is a JSON containing the host and the port of the service. Finally, we create an ephemeral node on the path and store the host and port.  </p>
+<p>Next we’ll look at the function which handles changes in connection state.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_state_change_listener</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="keyword">if</span> state == KazooState.CONNECTED:</span><br><span class="line">        _register_service()</span><br></pre></td></tr></table></figure>  
+<p>We simply re-register the service upon reconnection.  </p>
+<p>Finally, we’ll look at the function which retrieves an instance of the service from Zookeeper.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_service_from_zookeeper</span>(<span class="params">service: <span class="built_in">str</span></span>) -&gt; Service | <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line">    <span class="keyword">assert</span> _zk</span><br><span class="line"></span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>"</span></span><br><span class="line">    children = _zk.get_children(path)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> children:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    idx = random.randint(<span class="number">0</span>, <span class="built_in">len</span>(children) - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    child = children[idx]</span><br><span class="line">    config, _ = _zk.get(<span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{child}</span>"</span>)</span><br><span class="line">    config = config.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">    config = json.loads(config)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Service(**config)</span><br></pre></td></tr></table></figure>  
+<p>To get a service we get all the children at the path <code>/providers/SERVICE_NAME</code>. This returns a list of UUIDs, each of which represents an instance of the service. We randomly pick one of these instances and fetch the information associated with it. What we get back is a two-tuple containing the host and port, and an instance of ZStat which we can ignore. We decode and parse the returned information to get an instance of <code>dict</code>. This is then used to return an instance of <code>Service</code>. We can then use this information to make a call to the returned service.  </p>
+<p>This is all we need to create a small set of utility functions to register and discover services. All we need to do to register the service as a part of the Flask application process is to add a function call in the <code>create_app</code> factory function.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create_app</span>() -&gt; Flask:</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment"># -- Initialize Zookeeper and register the service.</span></span><br><span class="line">    init_zookeeper_and_register()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> app</span><br><span class="line"></span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll retrieve the information about the second service in the first service right before we make the call.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">make_request</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    service = get_service_from_zookeeper(service=<span class="string">"second"</span>)</span><br><span class="line">    url = <span class="string">f"http://<span class="subst">{service.host}</span>:<span class="subst">{service.port}</span>"</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>  
+<p>As an aside, the service will automatically be deregistered once it stops running. This is because we created an ephemeral node in Zookeeper and it only persists as long as the session that created it is alive. When the service stops, the session is disconnected, and the node is removed from Zookeeper.</p>
+<h3 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h3><p>The rationale behind registering and discovering services from Zookeeper is to make it easy to create new services and to find the ones that we need. It’s even more convenient when there is a shared library which contains the code that we saw above. For the sake of simplicity, we’ll assume all our services are written in Python and there is a single library that we need. The library could also contain an enum that represents all the services that are registered with Zookeeper. For example, to make a call to an email microservice, we could have code that looks like the following.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">email_service = Service.EMAIL_SERVICE.value</span><br><span class="line">service = get_service_from_zookeeper(service=email_service)</span><br></pre></td></tr></table></figure>  
+<p>This, in my opinion, is much simpler than adding a DNS entry. The benefits add up over time and result in code that is both readable and maintainable.  </p>
+<p>That’s it. That’s how we can register and retrieve services from Zookeeper. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">Code is available on Github.</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="clxlottca001d8nru7eal0z8f" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/06/10/Factoring-Quadratics/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Factoring Quadratics
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Scaling Python Microservices Part 2</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

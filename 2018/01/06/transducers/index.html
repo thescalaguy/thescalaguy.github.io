@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Transducers | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="One of the nice things that you’ll come across in Clojure is transducer. In this post I’ll go over what transducers are, how you can use them, how you can make one, and what transducible contexts are.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transducers">
+<meta property="og:url" content="http://fasihkhatib.com/2018/01/06/transducers/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="One of the nice things that you’ll come across in Clojure is transducer. In this post I’ll go over what transducers are, how you can use them, how you can make one, and what transducible contexts are.">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/images/chain.gif">
+<meta property="og:image" content="http://fasihkhatib.com/images/transduce.gif">
+<meta property="article:published_time" content="2018-01-06T10:48:11.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.188Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="functional programming">
+<meta property="article:tag" content="clojure">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/images/chain.gif">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-transducers" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/06/transducers/" class="article-date">
+  <time datetime="2018-01-06T10:48:11.000Z" itemprop="datePublished">2018-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Transducers
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>One of the nice things that you’ll come across in Clojure is transducer. In this post I’ll go over what transducers are, how you can use them, how you can make one, and what transducible contexts are.  </p>
+<h2 id="What-are-transducers"><a href="#What-are-transducers" class="headerlink" title="What are transducers?"></a>What are transducers?</h2><p>In simple terms, transducers are composable transformation pipelines. A transducer does not care about where the input comes from or where the output will go; it simply cares about the transformation of the data that that flows through the pipeline. Let’s look at an example:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(let [xf (comp </span><br><span class="line">           (map inc)</span><br><span class="line">           (filter even?))]</span><br><span class="line">  (sequence xf (range 10)))</span><br></pre></td></tr></table></figure>  
+<p>Here <code>xf</code> (e<strong>x</strong>ternal <strong>f</strong>unction) is our transducer which will increment every number and then will keep only the even numbers. Calling sequence functions like <code>map</code>, <code>filter</code>, etc. with single arity returns a transducer which you can then <code>comp</code>ose. The transducer doesn’t know where it will be used - will it be used with a collection or with a channel? So, a transducer captures the essence of your transformation.  <code>sequence</code> is responsible for providing the input to the transducer. This is the context in which the transducer will run.  </p>
+<p>Here’s how the same thing can be done using threading macro:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(-&gt;&gt; (range 10)</span><br><span class="line">     (map inc)</span><br><span class="line">     (filter even?))</span><br></pre></td></tr></table></figure>  
+<p>The difference here is that the 2-arity version of <code>map</code> and <code>filter</code> will create intermediate collections while the 1-artity versions won’t. Transducers are much more efficient than threading together sequence functions.  </p>
+<p><img src="/images/chain.gif" alt="Chaining"><br><img src="/images/transduce.gif" alt="Transducing">  </p>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@roman01la/understanding-transducers-in-javascript-3500d3bd9624">Source for images</a></p>
+<h2 id="Inside-a-transducer"><a href="#Inside-a-transducer" class="headerlink" title="Inside a transducer"></a>Inside a transducer</h2><p>Let’s look at the 1-arity version of <code>map</code> and see what makes a transducer.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(defn map</span><br><span class="line">  ([f]</span><br><span class="line">    (fn [rf]</span><br><span class="line">      (fn</span><br><span class="line">        ([] (rf))</span><br><span class="line">        ([result] (rf result))</span><br><span class="line">        ([result input]</span><br><span class="line">           (rf result (f input)))</span><br><span class="line">        ([result input &amp; inputs]</span><br><span class="line">           (rf result (apply f input inputs))))))</span><br><span class="line">   ...)</span><br></pre></td></tr></table></figure>  
+<p>When you call 1-arity version of <code>map</code> you get back a transducer which, as shown above, is a function. Functions like <code>map</code>, <code>filter</code>, etc. take a collection and return a collection. Transducers, on the otherhand, take one reducing function and return another. The function returned is expected to have three arities:  </p>
+<li> 0-arity (init): This kickstarts the transformation pipeline. The only thing you do here is call the reducing function `rf`.</li>
+<li> 2-arity (step): This is where you'll perform the transformation. You get the result so far and the next input. In case of `map`, you call the reducung function `rf` by applying the function `f` to the input. How the value is going to be added to the result is the job of `rf`. If you don't want to add anything to the result, just return the result as-is. You may call `rf` once, multiple times, or not at all.</li>
+<li> 1-arity (end): This is called when the transducer is terminating. Here you must call `rf` exactly once and call the 1-arity version. This results in the production of the final value.</li>  
+
+<p>So, the general form of a transducer is this:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(fn [rf]</span><br><span class="line">  (fn </span><br><span class="line">    ([] (rf))</span><br><span class="line">    ([result] (rf result))</span><br><span class="line">    ([result input] ... )))</span><br></pre></td></tr></table></figure>  
+<h2 id="Using-transducers"><a href="#Using-transducers" class="headerlink" title="Using transducers"></a>Using transducers</h2><p>You can use a transducer in a context. There’s four contexts which come out of the box — <code>into</code>, <code>transduce</code>, <code>sequence</code>, and <code>educe</code>.</p>
+<h3 id="into"><a href="#into" class="headerlink" title="into"></a>into</h3><p>The simplest way to use a transducer is to pass it to <code>into</code>. This will add your transformed elements to an already-existing collection after applying the transducer. In this example, we’re simply adding a range into a vector.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(let [xf (comp (map inc)</span><br><span class="line">               (map dec))]</span><br><span class="line">  (into [] xf (range 10)))</span><br></pre></td></tr></table></figure>  
+<p>Internally, <code>into</code> calls <code>transduce</code>.  </p>
+<h3 id="transduce"><a href="#transduce" class="headerlink" title="transduce"></a>transduce</h3><p><code>transduce</code> is similar to the standard <code>reduce</code> function but it also takes an additional xform as an argument.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(let [xf (comp (map inc)</span><br><span class="line">               (map dec))]</span><br><span class="line">  (transduce xf + (range 10)))</span><br></pre></td></tr></table></figure>
+<h3 id="sequence"><a href="#sequence" class="headerlink" title="sequence"></a>sequence</h3><p><code>sequence</code> lets you create a lazy sequence after applying a transducer. In contrast, <code>into</code> and <code>transduce</code> are eager.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(let [xf (comp (map inc)</span><br><span class="line">               (map dec))]</span><br><span class="line">  (sequence xf (range 10)))</span><br></pre></td></tr></table></figure>  
+<h3 id="eduction"><a href="#eduction" class="headerlink" title="eduction"></a>eduction</h3><p><code>eduction</code> lets you capture applying a transducer to a collection. The value returned is an iterable application of the transducer on the collection items which can then be passed to, say, <code>reduce</code>.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(let [xf (comp (map inc)</span><br><span class="line">               (map dec))</span><br><span class="line">      coll (eduction xf (range 10))]</span><br><span class="line">  (reduce + 0 coll))</span><br></pre></td></tr></table></figure>  
+<h2 id="Inside-a-transducible-context"><a href="#Inside-a-transducible-context" class="headerlink" title="Inside a transducible context"></a>Inside a transducible context</h2><p>As mentioned before, transducers run in transducible contexts. The ones that come as a part of <code>clojure.core</code> would suffice most real-world needs and you’ll rarely see yourself writing new ones. Let’s look at <code>transduce</code>.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(defn transduce</span><br><span class="line">  ([xform f coll] (transduce xform f (f) coll))</span><br><span class="line">  ([xform f init coll]</span><br><span class="line">     (let [f (xform f)</span><br><span class="line">           ret (if (instance? clojure.lang.IReduceInit coll)</span><br><span class="line">                 (.reduce ^clojure.lang.IReduceInit coll f init)</span><br><span class="line">                 (clojure.core.protocols/coll-reduce coll f init))]</span><br><span class="line">       (f ret))))</span><br></pre></td></tr></table></figure>  
+<p><code>transduce</code> is just like <code>reduce</code>. The 3-arity version expects an initial value to be supplied by calling the 0-arity version of the supplied function. The 4-arity version is slightly more involved. <code>IReduceInit</code> is an interface implemented by collections to let them provide an initial value. It lets a collection reduce itself. If not, the call goes to <code>coll-reduce</code> which is a faster way to reduce a collection than using first/next recursion.  </p>
+<h2 id="Stateful-transducers"><a href="#Stateful-transducers" class="headerlink" title="Stateful transducers"></a>Stateful transducers</h2><p>It’s possible for transducers to maintain reduction state.   </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(defn multiply-xf</span><br><span class="line">  []</span><br><span class="line">  (fn [rf]</span><br><span class="line">    (let [product (volatile! 1)]</span><br><span class="line">      (fn</span><br><span class="line">        ([] (rf))</span><br><span class="line">        ([result] (rf result))</span><br><span class="line">        ([result input]</span><br><span class="line">         (let [new-product (vswap! product * input)]</span><br><span class="line">           (rf result new-product)))))))</span><br></pre></td></tr></table></figure>  
+<p>Here’s a transducer which will multiply all the incoming numbers. We maintain state by using a <code>Volatile</code>. Whenever we get a new input we multiply it with the <code>product</code> and update the state of <code>Volatile</code> using <code>vswap!</code>. Let’s see this in action:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(into [] (multiply-xf) [1 2 3])</span><br><span class="line">=&gt; [1 2 6]</span><br></pre></td></tr></table></figure>
+<h2 id="Early-Termination"><a href="#Early-Termination" class="headerlink" title="Early Termination"></a>Early Termination</h2><p>The way the above transducer is written, it’ll process all the inputs even if one of the inputs is zero. We know that once we encounter a zero, we can safely end the reduction process and return a zero. <a target="_blank" rel="noopener" href="https://clojure.github.io/clojure/clojure.core-api.html#clojure.core/reduced"><code>reduced</code></a> lets you return a reduced value and end the reduction. Let’s make a minor change to the above transducer and add in early termination.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(defn multiply-xf</span><br><span class="line">  []</span><br><span class="line">  (fn [rf]</span><br><span class="line">    (let [product (volatile! 1)]</span><br><span class="line">      (fn</span><br><span class="line">        ([] (rf))</span><br><span class="line">        ([result] (rf result))</span><br><span class="line">        ([result input]</span><br><span class="line">         (let [new-product (vswap! product * input)]</span><br><span class="line">           (if (zero? new-product)</span><br><span class="line">             (reduced result)</span><br><span class="line">             (rf result new-product))))))))</span><br></pre></td></tr></table></figure>
+<p>In the 2-arity function, we check if the <code>new-product</code> is zero. If it is, we know we have a reduced value. We end the reduction by returning the <code>result</code> we have so far.  Let’s see this in action:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(into [] (multiply-xf) [1 2 3])</span><br><span class="line">=&gt; [1 2 6]</span><br><span class="line">(into [] (multiply-xf) [1 2 0 3])</span><br><span class="line">=&gt; [1 2]</span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Transducers can be a very useful tool in your Clojure toolkit that let you process large collections, channels, etc. effectively by letting you make composable transformation pipelines that process one element at a time. They require a little getting used-to but once you’re past the learning curve, performance galore!</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="clxlottcf003t8nru6enzb8aw" data-title="Transducers" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/01/06/transducers/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/clojure/" rel="tag">clojure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/04/17/JVM-JIT-Introduction/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          JVM JIT - Introduction
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/12/06/one-year-an-engineer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">One Year as a Software Engineer - a Retrospective</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2018/01/06/transducers/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

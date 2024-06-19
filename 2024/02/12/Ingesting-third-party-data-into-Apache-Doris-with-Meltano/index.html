@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Ingesting third-party data into Apache Doris with Meltano | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="A common requirement for a data warehouse is to store data from third-party sources like SaaS tools. For example, results of surveys conducted by Product or Marketing teams, or status of JIRA tickets.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ingesting third-party data into Apache Doris with Meltano">
+<meta property="og:url" content="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="A common requirement for a data warehouse is to store data from third-party sources like SaaS tools. For example, results of surveys conducted by Product or Marketing teams, or status of JIRA tickets.">
+<meta property="og:locale">
+<meta property="article:published_time" content="2024-02-12T05:45:48.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.170Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Ingesting-third-party-data-into-Apache-Doris-with-Meltano" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" class="article-date">
+  <time datetime="2024-02-12T05:45:48.000Z" itemprop="datePublished">2024-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Ingesting third-party data into Apache Doris with Meltano
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>A common requirement for a data warehouse is to store data from third-party sources like SaaS tools. For example, results of surveys conducted by Product or Marketing teams, or status of JIRA tickets. While most of these tools provide an option to export data, it could be very limited. For example, they’d only allow downloading it as a CSV file from their dashboard as a one-off download. Some of them provide APIs to export data which is a lot more convenient. Of those that do provide a direct integration with a warehouse, it’d be with the commercial ones like Snowflake. If we’re using a different warehouse, it is going to take some engineering effort to periodically get this data.   </p>
+<p>In this post we’ll look at how we can streamline this ingestion. As always, we’ll use open-source technologies to do this. Like in my previous post, we’ll use Doris as our data warehouse. We’ll use the open-source tool Meltano to fetch data from a Github repository. While this is not going to fully replace the need to write custom code, it will help us benefit from the collection of open-source connectors that come with Meltano.  </p>
+<h2 id="Setting-things-up"><a href="#Setting-things-up" class="headerlink" title="Setting things up"></a>Setting things up</h2><p>Like in my previous post, my setup consists of Docker containers for running Doris locally. There’s a Postgres container that runs as a part of this setup. We’ll install Meltano, and ingest data into a Postgres database. We’ll then create a catalog in Doris that points to the data ingested in Postgres. While it may be possible to ingest the data directly into Doris by letting Meltano write it to S3, I find it much easier to write it to a database.   </p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>For the purpose of this post we’ll will be modifying the example on Meltano’s website to ingest data from Github to Postgres. Meltano is available as a pip package and I already have a Conda environment in which it is installed. I’ll gloss over the steps that show how to create a Meltano project for the sake of keeping the post brief, and jump right into the ones where we add the Github extractor, the Postgres loader, and configure them. </p>
+<p>Let’s start by adding the loader, and the extractor plugins.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">meltano add extractor tap-github</span><br><span class="line">meltano add loader target-postgres</span><br></pre></td></tr></table></figure>  
+<p>We’ll then configure them one-by-one, starting with the Github plugin. We’ll add the repository we’d like to fetch data from, and the auth token that will be used to authenticate with Github.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">meltano config tap-github <span class="built_in">set</span> repositories <span class="string">'["thescalaguy/blog"]'</span></span><br><span class="line">meltano config tap-github <span class="built_in">set</span> auth_token <span class="string">'...'</span></span><br></pre></td></tr></table></figure>  
+<p>Next we’ll configure the Postgres plugin. We’ll ingest the data into a schema called “github” in the “ingest” database.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">meltano config target-postgres <span class="built_in">set</span> user postgres</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> password my-secret-pw</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> database ingest</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> port 6432</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> host 127.0.0.1</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> default_target_schema github</span><br></pre></td></tr></table></figure>  
+<p>Finally, we run the pipeline.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meltano run tap-github target-postgres</span><br></pre></td></tr></table></figure>  
+<p>A successful run of the pipeline will create a whole bunch of tables in Postgres. One such table is “repositories”, and we’ll query it next.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, repo, org, name <span class="keyword">FROM</span> repositories;</span><br></pre></td></tr></table></figure>  
+<p>The query above gives us the following row.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">| id       | repo | org         | name |</span><br><span class="line">|----------|------|-------------|------|</span><br><span class="line">| 95359149 | blog | thescalaguy | blog |</span><br></pre></td></tr></table></figure>
+<p>We can now set the pipeline to run on a schedule by slightly modifying the example given in <a target="_blank" rel="noopener" href="https://docs.meltano.com/getting-started#schedule-pipelines-to-run-regularly">Meltano’s “Getting Started” guide</a>. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meltano schedule add github-to-postgres --extractor tap-github --loader target-postgres --interval @daily</span><br></pre></td></tr></table></figure>  
+<p>We’ll now create a catalog in Doris that points to the database in Postgres. To do this we need to execute the <code>CREATE CATALOG</code> command. Notice that we’ve specified the <code>driver_url</code> that points to Maven. This is a lot easier than manually downloading the JAR, and making it available in the Docker container.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> CATALOG meltano PROPERTIES (</span><br><span class="line">    "type"<span class="operator">=</span>"jdbc",</span><br><span class="line">    "user"<span class="operator">=</span>"postgres",</span><br><span class="line">    "password"<span class="operator">=</span>"my-secret-pw",</span><br><span class="line">    "jdbc_url" <span class="operator">=</span> "jdbc:postgresql://192.168.0.107:6432/ingest",</span><br><span class="line">    "driver_url" <span class="operator">=</span> "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.1/postgresql-42.7.1.jar",</span><br><span class="line">    "driver_class" <span class="operator">=</span> "org.postgresql.Driver"</span><br><span class="line">);</span><br></pre></td></tr></table></figure>  
+<p>We have one last step before we can query the data, and that is to fix a few symlinks in the containers. It looks like the code is looking for CA certificates at a location different than where they actually are. From what I could glean from the documentation, perhaps the base image has changed and the paths need to be upadted. In any case, here’s how to fix it both in the FE and BE containers by <code>docker exec</code>-ing into them.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@be:/<span class="comment"># mkdir -p /etc/pki/tls/certs/</span></span><br><span class="line">root@be:/<span class="comment"># ln -s /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt</span></span><br></pre></td></tr></table></figure>  
+<p>Now we’ll run a <code>SELECT</code> query. Notice how we’re writing the <code>FROM</code> clause; it is <code>catalog.schema.table</code>.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, repo, org, name </span><br><span class="line"><span class="keyword">FROM</span> meltano.github.repositories;</span><br></pre></td></tr></table></figure>
+<p>There are, however, limitations to what we can read from the Postgres table. Some of the column types are not supported. Changing the query to <code>SELECT *</code> will raise an error that “topics” column is not supported. We can describe the table in the catalog to check which of the columns cannot be read. </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DESC</span> meltano.github.repositories;</span><br></pre></td></tr></table></figure>  
+<p>The result shows “UNSUPPORTED_TYPE” next to “topics” column. This is perhaps because Doris uses MySQL protocol and there’s no equivalent mapping bewteen Postgres and MySQL for that type. One way to mitigate this is to create a new column using Meltano’s <code>stream_maps</code>, and parse it in Doris.  </p>
+<p>That’s it. That’s how we can ingest data from third-party systems into Doris.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="clxlottc8000n8nru366l1cmh" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/02/16/Lens-of-Life/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Lens of Life
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Setting up a SQL IDE with Apache Superset</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

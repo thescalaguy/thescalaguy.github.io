@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Software Architecture as Code | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Let’s start with an exercise: ask two of your colleagues to create an architecture for a moderately-complex CRUD app. Chances are that they’d look very different from each other. They’d look different">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Software Architecture as Code">
+<meta property="og:url" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="Let’s start with an exercise: ask two of your colleagues to create an architecture for a moderately-complex CRUD app. Chances are that they’d look very different from each other. They’d look different">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/abstractions.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/FirstDraft.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/Container.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/Style.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/Dynamic.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/DeploymentDev.png">
+<meta property="og:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/DeploymentProd.png">
+<meta property="article:published_time" content="2023-12-11T03:45:24.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.176Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/abstractions.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Software-Architecture-as-Code" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2023/12/11/Software-Architecture-as-Code/" class="article-date">
+  <time datetime="2023-12-11T03:45:24.000Z" itemprop="datePublished">2023-12-11</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Software Architecture as Code
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Let’s start with an exercise: ask two of your colleagues to create an architecture for a moderately-complex CRUD app. Chances are that they’d look very different from each other. They’d look different because the notations used to depict different parts of the system, like a database, for example, are different. Additionally, everyone has a favorite tool like DrawIO, LucidChart, paper towel, etc. for drawing these diagrams. This approach only works well for rapid prototyping. The drag-and-drop nature of most drawing tools, and paper towel’s susceptibility to getting lost make documenting large software systems a less-than-pleasant experience. </p>
+<p>This post describes how to use code to create software architecture diagrams and then commit them to version control. We’ll look at the process and tools for producing consistent diagrams at various abstraction levels, ranging from high-level to low-level. To achieve this, we will create a fictitious notification delivery system. After reading this you should be able to draw diagrams for your own systems at various levels of detail, and be able to explain them to different types of audiences.  </p>
+<p>In the first part we will talk about why it is necessary to represent the system at various levels of abstraction. In the second part we will talk about notations we can use to draw our system. In the last part we will work through the notification delivery system and create different types of diagrams for it. If you’re looking for an introduction-by-example, feel free to skip to the third part.</p>
+<h2 id="Abstraction"><a href="#Abstraction" class="headerlink" title="Abstraction"></a>Abstraction</h2><p>Consider a typical software engineering team. You can categorize the people in the team as “engineers” or “not engineers”. Product managers and other stakeholders would make up the “not engineers” portion of the team. They require a broad overview of the system. Within the engineering team, too, people look at the system at different levels of detail. A junior engineer, for example, would focus on the subsystem they are working on while passing by the other subsystems. A more senior engineer, on the other hand, would be expected to be intimately familiar with many systems. This requires presenting the system at different levels of abstraction, depending on the intended audience.  </p>
+<p>The <a target="_blank" rel="noopener" href="https://c4model.com/">C4 model</a> allows us to create such views of the system - from the least to the most detailed. The four C’s of the model stand for context, containers, components, and code. A system is made up of many containers (applications, databases, etc), each of which contains multiple components (various API controllers, etc), which are made up of code elements (individual classes, functions, interfaces, etc.). The diagram below, taken from C4 model’s website, shows how they are arranged in a hierarchy.  </p>
+<img src="/2023/12/11/Software-Architecture-as-Code/abstractions.png" class="">  
+<p>Given the hierarchy of the four C’s, we can create diagrams at different levels of abstraction. For example, a high-level diagram which only shows different software systems. The highest-level diagram is called the <a target="_blank" rel="noopener" href="https://c4model.com/#SystemLandscapeDiagram">system landscape diagram</a>. This shows how our system fits into the larger scheme of things. The <a target="_blank" rel="noopener" href="https://c4model.com/#SystemContextDiagram">system context diagram</a> narrows the focus by showing our system and the systems that it interacts with. A <a target="_blank" rel="noopener" href="https://c4model.com/#ContainerDiagram">container diagram</a> adds more detail by showing the responsibilities of different subsystems that together make up our system. Finally, a <a target="_blank" rel="noopener" href="https://c4model.com/#CodeDiagram">code diagram</a> shows the most detailed view consisting of class hierarchies, ER diagrams, etc.  </p>
+<p>Creating such diagrams is helpful because it lets us communicate effectively. For example, we’d use the system landscape or system context diagram when discussing the scope of changes with the product team. A junior engineer, on the other hand, could work their way through the different types of diagrams to get a sense of how the system works.  </p>
+<p>Writing code to generate these multiple perspectives of the system is a really convenient method, as you’ll see later in the post. All of the views can be generated automatically by the same code. In comparison, you could use a drag-and-drop tool. However, keeping all the diagrams in sync with each other gets tiresome and error-prone.</p>
+<h2 id="Notation"><a href="#Notation" class="headerlink" title="Notation"></a>Notation</h2><p>Languages like UML are very heavy on notation. For example, the notation to draw a component diagram is very different from a sequence diagram. In contrast, the C4 model is very light on notation. As a starting point, you could represent different diagrams using boxes and arrows, and then augment them with shapes and colors to convey more information. This makes it easy for different people to understand the diagrams without getting bogged down in notation.</p>
+<p>As you’ll see in the example that follows, we’ll start with boxes and arrows. For example, the database would be represented as a grey box. We’ll then change it’s shape and color to make it a blue cylinder.</p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Now let’s look at our notification delivery system. It consists of a REST API which allows callers to send notifications across various channels like email, SMS, or push notifications. Every incoming request is added to a Kafka topic, depending on the channel of delivery, and is eventually picked up by background consumers. The status of each request is updated in the database. A CDC pipeline reads from this database and stores it into a warehouse. The diagram below gives an overview of what the system would look like.</p>
+<img src="/2023/12/11/Software-Architecture-as-Code/FirstDraft.png" class="">  
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>My tool of choice for creating architecture diagrams as code is <a target="_blank" rel="noopener" href="https://structurizr.org">Structurizr</a>. It provides a DSL which lets us create C4 model of our systems. When you visit its homepage, you’d find an example of how the same code can generate different views of the system at different levels of abstraction. We will use the open-source version of the tool, called Structurizr Lite, which allows a single person to create, edit, and view diagrams; in other words, there is no collaborative editing. The workflow we are aiming for lets individuals submit architecture diagrams as a part of their pull requests. In the next section, we will create a script which will let us run Structurizr Lite as a Docker container. We will then create the diagram that we saw above using the Structurizr DSL.</p>
+<h3 id="start-sh"><a href="#start-sh" class="headerlink" title="start.sh"></a>start.sh</h3><p>We’ll start by organizing our Git repository. At the top level is the <code>design</code> folder where we will keep all the Structurizr code. The <code>start.sh</code> script, also at the top level, will launch the Docker container and reference the files in the <code>design</code> folder.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── app.py</span><br><span class="line">├── design</span><br><span class="line">└── start.sh</span><br></pre></td></tr></table></figure>  
+<p>The content of the start script is the following:  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#! /bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [ -z <span class="variable">$1</span> ]; <span class="keyword">then</span></span><br><span class="line">    <span class="built_in">echo</span> <span class="string">"You should provide a file name"</span></span><br><span class="line">    <span class="built_in">exit</span> 1</span><br><span class="line"><span class="keyword">fi</span></span><br><span class="line"></span><br><span class="line">docker run --<span class="built_in">rm</span> -it -p 8080:8080 \</span><br><span class="line"> -e STRUCTURIZR_WORKSPACE_FILENAME=<span class="variable">$1</span> \</span><br><span class="line"> -v ~/Personal/notifications/design:/usr/local/structurizr structurizr/lite</span><br></pre></td></tr></table></figure> 
+<p>We pass the name of the file as the first argument when we run the script. It is stored in the <code>/usr/local/structurizr</code> directory of the container which we have mapped to the <code>design</code> folder of our Git repository. When we run the script and the file does not exist, Structurizr creates it for us. This is helpful when we are creating a new diagram. If the file exists, Structurizr will read from it and render the diagrams. Let’s start by creating our first file.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./start.sh 001-overview</span><br></pre></td></tr></table></figure>  
+<p>This will create two files under the <code>design</code> folder. The one we’d like to edit ends with <code>dsl</code> extension and will be committed to the repositiory. It is okay to add the <code>json</code> file to gitignore as that will be generated again when the container runs.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── app.py</span><br><span class="line">├── design</span><br><span class="line">│__ ├── 001-overview.dsl</span><br><span class="line">│__ └── 001-overview.json</span><br><span class="line">└── start.sh</span><br></pre></td></tr></table></figure>  
+<p>If you navigate to <a href="localhost:8080">localhost:8080</a> you’ll see Structurizr rendering a default diagram. We’ll update this to reflect our system.   </p>
+<h3 id="Creating-our-first-diagram"><a href="#Creating-our-first-diagram" class="headerlink" title="Creating our first diagram"></a>Creating our first diagram</h3><p>Open the <code>dsl</code> file with your favorite editor and replace the contents of the file with the following:  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">workspace {</span><br><span class="line">    model {</span><br><span class="line">        user = softwareSystem "Client"</span><br><span class="line">        notificationSystem = softwareSystem "Notification System"</span><br><span class="line"></span><br><span class="line">        sendgrid = softwareSystem "Sendgrid"</span><br><span class="line">        apns = softwareSystem "Apple Push Notification Service"</span><br><span class="line">        fcm = softwareSystem "Firebase Cloud Messaging"</span><br><span class="line">        cdc = softwareSystem "Change Data Capture"</span><br><span class="line">        warehouse = softwareSystem "Data Warehouse"</span><br><span class="line"></span><br><span class="line">        user -&gt; notificationSystem "Uses"</span><br><span class="line">        notificationSystem -&gt; sendgrid "Sends emails using"</span><br><span class="line">        notificationSystem -&gt; apns "Sends push notifications using"</span><br><span class="line">        notificationSystem -&gt; fcm "Sends push notifications using"</span><br><span class="line">        cdc -&gt; notificationSystem "Reads databse changes from"</span><br><span class="line">        cdc -&gt; warehouse "Writes database changes to"</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    views {</span><br><span class="line">        systemLandscape notificationSystem "Overview" {</span><br><span class="line">            include *</span><br><span class="line">            autoLayout lr</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        systemContext notificationSystem "Context" {</span><br><span class="line">            include *</span><br><span class="line">            autoLayout lr</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
+<p>Let’s unpack what is going on here. At the top-level is the <a target="_blank" rel="noopener" href="https://docs.structurizr.com/dsl/language#workspace"><code>workspace</code></a> which is a container for the model and views. A <a target="_blank" rel="noopener" href="https://docs.structurizr.com/dsl/language#model"><code>model</code></a> contains the different pieces of our architecture. This includes the software system we are describing, the people and external systems it interacts with, and the relationships between them. <a target="_blank" rel="noopener" href="https://docs.structurizr.com/dsl/language#views"><code>views</code></a> contains the different levels of abstractions at which we’d like to see the system. Here we’ve defined the <a target="_blank" rel="noopener" href="https://c4model.com/#SystemLandscapeDiagram">system landscape view</a>, and the <a target="_blank" rel="noopener" href="https://c4model.com/#SystemContextDiagram">system context view</a>.   </p>
+<p>In the <code>model</code> we’ve defined various software systems and the relationships between them. The system that we’d like to diagram is the <code>notificationSystem</code>. At this stage we’ve just added a one-line definition of the system, as <code>softwareSystem</code>, which results in it being rendered as a box in the diagram with its name on it.   </p>
+<p>We’ll continue to refine this diagram by defining other parts which together comprise the notification system. We will do so by adding them as children of the notification system which we’ve defined in the DSL. In other words, we will add one more level of detail to the system.</p>
+<p>Relationships between the different parts of the system are defined using an arrow <code>-&gt;</code>. These can be added as children of a <code>softwareSystem</code> or defined outside of them, as we’ve done above. </p>
+<h3 id="Adding-more-detail"><a href="#Adding-more-detail" class="headerlink" title="Adding more detail"></a>Adding more detail</h3><p>We will now zoom in and add the containers which make up the notification system. We will add the background consumers which consume the notifications enqueued in Kafka and send them to the relevant channel. Update the contents of the <code>dsl</code> file to the following: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">workspace {</span><br><span class="line"></span><br><span class="line">    model {</span><br><span class="line">        user = softwareSystem "Client"</span><br><span class="line">        notificationSystem = softwareSystem "Notification System" {</span><br><span class="line"></span><br><span class="line">            api = container "API" "Receives requests to send notifications"</span><br><span class="line">            db = container "Database" "Stores the status of each request to send a notification"</span><br><span class="line">            email = container "Email Consumer" "Sends emails"</span><br><span class="line">            ios = container "iOS Consumer" "Sends iOS push notifications"</span><br><span class="line">            android = container "Android Consumer" "Sends Android push notifications"</span><br><span class="line"></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        sendgrid = softwareSystem "Sendgrid"</span><br><span class="line">        apns = softwareSystem "Apple Push Notification Service"</span><br><span class="line">        fcm = softwareSystem "Firebase Cloud Messaging"</span><br><span class="line">        cdc = softwareSystem "Change Data Capture"</span><br><span class="line">        warehouse = softwareSystem "Data Warehouse"</span><br><span class="line"></span><br><span class="line">        # -- Relationships between systems</span><br><span class="line">        user -&gt; api "Uses"</span><br><span class="line">        api -&gt; email "Enqueues request to send emails, through Kafka, to"</span><br><span class="line">        email -&gt; sendgrid "Sends emails using"</span><br><span class="line"></span><br><span class="line">        api -&gt; ios "Enqueues request to send push notifications, through Kafka, using"</span><br><span class="line">        ios -&gt; apns "Sends push notifications using"</span><br><span class="line"></span><br><span class="line">        api -&gt; android "Enqueues request to send push notifications, through Kafka, using"</span><br><span class="line">        android -&gt; fcm "Sends push notifications using"</span><br><span class="line"></span><br><span class="line">        cdc -&gt; db "Reads databse changes from"</span><br><span class="line">        cdc -&gt; warehouse "Writes database changes to"</span><br><span class="line"></span><br><span class="line">        # -- Relationships between components</span><br><span class="line">        api -&gt; db "Stores incoming request in"</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    views {</span><br><span class="line">        systemLandscape notificationSystem "Overview" {</span><br><span class="line">            include *</span><br><span class="line">            autoLayout lr</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        systemContext notificationSystem "Context" {</span><br><span class="line">            include *</span><br><span class="line">            autoLayout lr</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        container notificationSystem "Container" {</span><br><span class="line">            include *</span><br><span class="line">            autoLayout tb</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
+<p>Notice that we’ve added <code>component</code>s which are children of the notification system. We’ve also changed the relationships to point to these components instead of the parent software system. This keeps the system landscape and the system context diagrams the same but allows us to add a new <a target="_blank" rel="noopener" href="https://c4model.com/#ContainerDiagram">container diagram</a> to the system. This diagram is shown below.  </p>
+<img src="/2023/12/11/Software-Architecture-as-Code/Container.png" class="">  
+<p>You can add more detail by creating a <a target="_blank" rel="noopener" href="https://c4model.com/#ComponentDiagram">component diagram</a>. This will let you show individual parts of your software that perform specific tasks. For example, a REST API controller which handles incoming requests to send notifications. Although possible, it is recommended to add a component diagram only if it adds value. Usually it’d be sufficient to only create a container diagram.  </p>
+<h3 id="Styling-our-diagram"><a href="#Styling-our-diagram" class="headerlink" title="Styling our diagram"></a>Styling our diagram</h3><p>The diagram we’ve created so far conveys the architecture. However, the only indication of what is internal to the notification system, i.e. within the scope of the system, is a faint dashed line which groups various components together. Let’s go ahead and style our diagram by making components that are a part of the notification system render with a blue background. We’ll start by creating a few directories under <code>design</code> directory.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p design/commons/styles</span><br><span class="line"><span class="built_in">mkdir</span> -p design/commons/icons</span><br><span class="line"><span class="built_in">mkdir</span> -p design/commons/themes</span><br></pre></td></tr></table></figure>  
+<p>We’ve created three directories. <code>styles</code> will contain files which store styling information. <code>icons</code> is where we will keep PNG icons. <code>themes</code> is where we will store predefined themes. This is what the directory structure will look like. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">design/</span><br><span class="line">├── 001-overview.dsl</span><br><span class="line">└── commons</span><br><span class="line">    ├── icons</span><br><span class="line">    │__ ├── debezium.png</span><br><span class="line">    │__ └── postgres.png</span><br><span class="line">    ├── styles</span><br><span class="line">    │__ └── default.dsl</span><br><span class="line">    └── themes</span><br></pre></td></tr></table></figure>
+<p>Let’s create <code>default.dsl</code> under the <code>styles</code> directory. The contents of the file are given below.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">styles {</span><br><span class="line">    </span><br><span class="line">    element "internal" {</span><br><span class="line">        background #4287f5</span><br><span class="line">        color #ffffff</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    element "database" {</span><br><span class="line">        shape Cylinder</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
+<p>Here we are creating a couple of <a target="_blank" rel="noopener" href="https://docs.structurizr.com/dsl/language#element">custom elements</a>. We are creating an <code>internal</code> element which has a blue background color, and a <code>database</code> element which is a cylinder. We will then use these elements to style our diagram. Let’s update the <code>dsl</code> file to include these elements. I’m only showing the parts that have changed for the sake of brevity.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">workspace {</span><br><span class="line"></span><br><span class="line">    model {</span><br><span class="line">        user = softwareSystem "Client"</span><br><span class="line">        notificationSystem = softwareSystem "Notification System" {</span><br><span class="line"></span><br><span class="line">            tags "internal"</span><br><span class="line"></span><br><span class="line">            api = container "API" "Receives requests to send notifications" "Python" "internal"</span><br><span class="line"></span><br><span class="line">            db = container "Database" "Stores the status of each request to send a notification" "Postgres" {</span><br><span class="line">                tags "internal, database"</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            email = container "Email Consumer" "Sends emails" "Python" "internal"</span><br><span class="line">            ios = container "iOS Consumer" "Sends iOS push notifications" "Python" "internal"</span><br><span class="line">            android = container "Android Consumer" "Sends Android push notifications" "Python" "internal"</span><br><span class="line"></span><br><span class="line">        }</span><br><span class="line">        ...</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    views {</span><br><span class="line">        ...</span><br><span class="line">        !include ./commons/styles/default.dsl</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>We begin by including the styling information using the <code>!include</code> directive under <code>views</code>. Styling information is associated with individual systems and components by using tags. You can combine tags to apply multiple styles. Tags can be specified in-line or as a child of a software system or a component. We’ve specified the <code>internal</code> tag in-line for the <code>api</code> container, and as a child of the <code>db</code> container. Notice how we’ve applied both the <code>internal</code> and <code>database</code> tags to the <code>db</code> container, causing it to be rendered as a blue cylinder. With styling, the container diagram now visually communicates what is within and outside the scope of the notification system.</p>
+<img src="/2023/12/11/Software-Architecture-as-Code/Style.png" class="">  
+<h3 id="Dynamic-diagrams"><a href="#Dynamic-diagrams" class="headerlink" title="Dynamic diagrams"></a>Dynamic diagrams</h3><p>The diagrams we’ve created so far are static and only show the structure of the system. <a target="_blank" rel="noopener" href="https://c4model.com/#DynamicDiagram">Dynamic diagrams</a> allow us to show the flow of information between systems as a sequence of steps. They are like UML sequence diagrams but allow a more free-form arrangement of the various parts of the system. The steps are numbered to show the order in which they happen.   </p>
+<p>As an example, let’s model how an email notification would be triggered. The API receives a request to send an email. It stores this incoming request in the database, and then puts it into a Kafka topic. The consumer then picks up this request, and sends the email using a third-party system.  </p>
+<p>Dynamic diagrams are created using the <code>dynamic</code> element under <code>views</code>. To model the scenario mentioned above, we’d add the following to our <code>dsl</code> file.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">views {</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    dynamic notificationSystem {</span><br><span class="line">        title "Send an email notification"</span><br><span class="line">        user -&gt; api "Sends request to trigger an email notification to"</span><br><span class="line">        api -&gt; db "Stores the incoming request in"</span><br><span class="line">        api -&gt; email "Enqueues the request in Kafka for"</span><br><span class="line">        email -&gt; sendgrid "Sends email using"</span><br><span class="line">        autoLayout lr</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
+<p>The steps are written in the order in which they appear. Numbers indicating their sequence are added automatically by Structurizr. The dynamic diagram for the code we just added is given below.</p>
+<img src="/2023/12/11/Software-Architecture-as-Code/Dynamic.png" class="">  
+<h3 id="Deployment-diagrams"><a href="#Deployment-diagrams" class="headerlink" title="Deployment diagrams"></a>Deployment diagrams</h3><p><a target="_blank" rel="noopener" href="https://c4model.com/#DeploymentDiagram">Deployment diagrams</a> allow us to show how the software will actually run. For example, the various components of the software can be deployed as containers running on a Kubernetes cluster. We’ll start by creating a simple deployment diagram which shows the local development environment. All of the services, except the ones that are third-party, will run on the developer’s laptop.  </p>
+<p>Deployment diagrams are created by adding a model under <code>model</code> using the <code>deploymentEnvironemnt</code> keyword. Once that is defined, we include it in the <code>views</code>. Let’s model the development environment.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">model {</span><br><span class="line">    ...</span><br><span class="line">    development = deploymentEnvironment "Development" {</span><br><span class="line">        deploymentNode "Laptop" {</span><br><span class="line">            containerInstance api</span><br><span class="line">            containerInstance email</span><br><span class="line">            containerInstance ios</span><br><span class="line">            containerInstance android</span><br><span class="line">            containerInstance db</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        deploymentNode "Third-Party Services" "Development" {</span><br><span class="line">            softwareSystemInstance sendgrid</span><br><span class="line">            softwareSystemInstance fcm</span><br><span class="line">            softwareSystemInstance apns</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    ...</span><br><span class="line">}  </span><br></pre></td></tr></table></figure> 
+<p>We’re creating a node called “Laptop” which will host all the components running on the developer’s local machine. To this we add the various containers. We add another node to contain all the third-party services. Relationships between these are automatically inferred from the container diagram created previously. Finally, we add it to <code>views</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">views {</span><br><span class="line">    ...</span><br><span class="line">    deployment * development {</span><br><span class="line">        include *</span><br><span class="line">        autoLayout lr</span><br><span class="line">    }</span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>This gives us the following diagram.</p>
+<img src="/2023/12/11/Software-Architecture-as-Code/DeploymentDev.png" class="">  
+<p>We can also depict how the software would be deployed to production. Let’s say that our system is deployed to AWS. Our databse is an RDS cluster, and API servers and email consumers are deployed to EC2 instances. We use Route52 for DNS, and Elastic Load Balancer to forward requests to the API servers. Like we did for the development environment above, we’ll create a deployment diagram. This diagram, however, will be styled some more to indicate the various AWS services.  </p>
+<p>Structurizr allows importing themes. Themes provide predefined tags which you can use to style elements of your diagram. Themes are added to <code>views</code>. Let’s start by adding the AWS theme.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">views {</span><br><span class="line">    ...</span><br><span class="line">    theme https://static.structurizr.com/themes/amazon-web-services-2023.01.31/theme.json</span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>Next we’ll model the production environment. In the model below, we’re nesting deployment nodes. The outermost node represents the AWS environment as a whole. The next node represent the AWS region. Being able to nest deployment nodes allows us to reuse elements of a diagram. For example, if we had multiple database clusters that were all hosted on Amazon RDS, we could nest them all under a single deployment node representing Amazon RDS.  </p>
+<p>We’ve added Route52 and ELB as infrastructure nodes, and defined relationships between them. They’re styled using tags that we imported from the AWS theme. These are defined in the JSON that’s returned from the theme’s URL.  </p>
+<p>You don’t need to add relationships between deployment nodes that host your containers. These relationships are implied from the container diagram that was created above.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">model {</span><br><span class="line">    ...</span><br><span class="line">    production = deploymentEnvironment "Production" {</span><br><span class="line">        deploymentNode "Amazon Web Services" {</span><br><span class="line">            tags "Amazon Web Services - Cloud"</span><br><span class="line"></span><br><span class="line">            deploymentNode "US-East-1" {</span><br><span class="line">                tags "Amazon Web Services - Region"</span><br><span class="line"></span><br><span class="line">                route53 = infrastructureNode "Route 53" {</span><br><span class="line">                    tags "Amazon Web Services - Route 53"</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                elb = infrastructureNode "Elastic Load Balancer" {</span><br><span class="line">                    tags "Amazon Web Services - Elastic Load Balancing"</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                deploymentNode "Amazon RDS" {</span><br><span class="line">                    tags "Amazon Web Services - RDS"</span><br><span class="line"></span><br><span class="line">                    deploymentNode "Postgres" {</span><br><span class="line">                        tags "Amazon Web Services - RDS Postgres instance"</span><br><span class="line">                        containerInstance db</span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                deploymentNode "API Servers" {</span><br><span class="line">                    tags "Amazon Web Services - EC2"</span><br><span class="line">                    </span><br><span class="line">                    deploymentNode "Ubuntu Server" {</span><br><span class="line">                        apiInstance = containerInstance api</span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line"></span><br><span class="line">                deploymentNode "Email Consumers" {</span><br><span class="line">                    tags "Amazon Web Services - EC2"</span><br><span class="line">                    </span><br><span class="line">                    deploymentNode "Ubuntu Server" {</span><br><span class="line">                        containerInstance email</span><br><span class="line">                    }</span><br><span class="line">                }</span><br><span class="line">            }</span><br><span class="line"></span><br><span class="line">            route53 -&gt; elb "Forwards requests to" "HTTPS"</span><br><span class="line">            elb -&gt; apiInstance "Forwards requests to" "HTTPS"</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        deploymentNode "Third-Party Services" "Production" {</span><br><span class="line">            softwareSystemInstance sendgrid</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll add the production environment to <code>views</code>.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">views {</span><br><span class="line">    ...</span><br><span class="line">    deployment * production {</span><br><span class="line">        include *</span><br><span class="line">        autoLayout lr</span><br><span class="line">    }</span><br><span class="line">    ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>This gives us the following diagram. Notice how adding tags has caused AWS icons to be added and styling to be applied, wherever applicable. This is a very small subset of the overall system. Some of the background consumers, CDC, and warehouse have been omitted.</p>
+<img src="/2023/12/11/Software-Architecture-as-Code/DeploymentProd.png" class="">  
+<p>That’s it. That’s how you can create software architecture using code. I’ve created a <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/software-architecture-as-code">Github repository for this blog post</a> which contains the complete code for creating the notification system we discussed above. </p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/" data-id="clxlottcb001q8nruhctofsm8" data-title="Software Architecture as Code" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/02/03/Creating-facades-in-Python/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Creating facades in Python
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2023/11/04/Creating-a-data-warehouse-with-Apache-Doris/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Creating a data warehouse with Apache Doris, Kafka, and Debezium</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

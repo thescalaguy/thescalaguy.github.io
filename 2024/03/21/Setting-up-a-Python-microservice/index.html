@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Setting up a Python microservice | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In my tenure as an engineer working for early-to-mid stage startups, I’ve noticed that the first iteration of the product is usually a monolith; all of the code is written in a monorepo, and the tooli">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Setting up a Python microservice">
+<meta property="og:url" content="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In my tenure as an engineer working for early-to-mid stage startups, I’ve noticed that the first iteration of the product is usually a monolith; all of the code is written in a monorepo, and the tooli">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/Parca-1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/Parca-2.png">
+<meta property="article:published_time" content="2024-03-21T10:32:13.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.175Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/Parca-1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Setting-up-a-Python-microservice" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/21/Setting-up-a-Python-microservice/" class="article-date">
+  <time datetime="2024-03-21T10:32:13.000Z" itemprop="datePublished">2024-03-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Setting up a Python microservice
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In my tenure as an engineer working for early-to-mid stage startups, I’ve noticed that the first iteration of the product is usually a monolith; all of the code is written in a monorepo, and the tooling, and processes are created to support it. While this helps to ship the product quick and early, it becomes difficult to scale both in terms of software systems, and teams which write code. For example, if multiple teams are creating features then merging the code becomes a bottleneck since all the code is committed to the same repository. Additionally, all of the changes being made to the code that is shared among multiple teams needs to be backward compatible, and any breaking change needs to be communicated to the relevant teams. All of this can slow down the subsequent releases.  </p>
+<p>As the startup grows, and the multiple features become products of their own, it may be required to separate the monolith into microservices. This requires a change in how systems are designed, and deployed. For example, we’d now need to trace an API request across multiple services. While many teams moving from monoliths to microservices think of them as code that is written in separate repositories, and deployed independently, they’re actually smaller subsystems of the larger software.  </p>
+<p>This post is my opinion on how Python microservices can be created. While we’ll see libraries and tools used from the Python ecosystem, the ideas discussed in the following sections can be applied to the language of your choice. We’ll create a couple of microservices, and see how we can add logging, tracing, metrics, and profiling to them. The goal is to develop a blueprint that can be used to create microservices.</p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll look at two key parts of creating a microservice: telemetry, and profiling. Telemetry includes collecting logs, and metrics. Profiling includes analysing the CPU, memory, IO, etc. Both of these put together give us the complete picture of how the microservice is performing. We’ll use OpenTelemetry and Parca for telemetry, and profiling respectively. A detailed introduction to both of these projects is beyond the scope of this post and you’re encouraged to read the relevant documentation. </p>
+<p>Briefly, we will use a combination of zero-code and code-based instrumentation offered by OTel. The zero-code instrumentaion is helpful as it adds instrumentation to the libraries that we are using. If we’d like to instrument our code, we’ll have to use code-based instrumentaion and add it to the source ourselves.</p>
+<p>Finally, the setup consists of two Flask apps, and Parca Agent running on the machine; everything else runs as Docker containers. We’ll run an OTel Collector exporter to collect the metrics and logs emitted from OpenTelemetry, Jaeger to display the distributed trace, and Parca Server for continuous profiling.<sup>[1]</sup></p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>For the sake of brevity, we will only look at parts of the code that are necessary for the post and will exclude all the scaffolding. The complete code is available in the repository mentioned at the end.   </p>
+<h3 id="Microservices"><a href="#Microservices" class="headerlink" title="Microservices"></a>Microservices</h3><p>We’ll begin by looking at how the microservices work. The two microservices are called “first” and “second”. The first microservice receives an API call, sleeps for duration, and makes an API call to the second. The second receives the API call and makes an API call to the <code>/delay</code> endpoint of HTTPBin. We are trying to mimic a real-world scenario by adding some delay, and a slow API call.  </p>
+<p>The code for the first endpoint is given below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.post(<span class="params"><span class="string">"/"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    time.sleep(random.random())</span><br><span class="line">    <span class="keyword">return</span> make_request()  <span class="comment"># Makes a call to second</span></span><br></pre></td></tr></table></figure> 
+<p>The code for the second endpoint is given below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.post(<span class="params"><span class="string">"/"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="keyword">return</span> make_request()  <span class="comment"># Makes a call to HTTPBin</span></span><br></pre></td></tr></table></figure>  
+<p>We can test the two endpoints by running the Flask apps and then making a call to the first.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s -XPOST localhost:5000 | jq .</span><br></pre></td></tr></table></figure>  
+<h3 id="Adding-automatic-instrumentation"><a href="#Adding-automatic-instrumentation" class="headerlink" title="Adding automatic instrumentation"></a>Adding automatic instrumentation</h3><p>We’ll now begin by adding zero-code instrumentation to both of these microservices. The first step is to install the packages. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install opentelemetry-distro opentelemetry-exporter-otlp</span><br></pre></td></tr></table></figure>  
+<p>This installs the API, SDK, <code>opentelemetry-bootstrap</code>, and <code>opentelemetry-instrument</code>. We’ll now use <code>opentelemetry-bootstrap</code> to install the instrumentation libraries for the libraries that we have installed. It does so by reading the list of libraries installed, and fetching the corresponding instrumentation library, if applicable.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">opentelemetry-bootstrap -a install</span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll add two bash scripts to run the apps with OTel enabled. The script for the first service is given below and the one for the second service looks similiar.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> PYTHONPATH=.</span><br><span class="line">opentelemetry-instrument \</span><br><span class="line">    --traces_exporter console \</span><br><span class="line">    --metrics_exporter console \</span><br><span class="line">    --logs_exporter console \</span><br><span class="line">    --service_name first \</span><br><span class="line">    --exporter_otlp_traces_endpoint 0.0.0.0:4317 \</span><br><span class="line">    --exporter_otlp_logs_endpoint 0.0.0.0:4317 \</span><br><span class="line">    --exporter_otlp_metrics_endpoint 0.0.0.0:4317 \</span><br><span class="line">    python first/service.py</span><br></pre></td></tr></table></figure>
+<p>We’ll then send requests to the first service using curl and observe the traces of the two services. Specifically, we’re looking for how OTel does distributed tracing.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> `<span class="built_in">seq</span> 1 10`; <span class="keyword">do</span> curl -s -XPOST localhost:5000 &gt; /dev/null; <span class="keyword">done</span></span><br></pre></td></tr></table></figure>  
+<p>One of the trace generated by the first service is the following.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"context"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"trace_id"</span><span class="punctuation">:</span> <span class="string">"0xaea0259b21595c636b2829efa04b9bdd"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"span_id"</span><span class="punctuation">:</span> <span class="string">"0xc077c62137db5ea8"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"trace_state"</span><span class="punctuation">:</span> <span class="string">"[]"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"kind"</span><span class="punctuation">:</span> <span class="string">"SpanKind.SERVER"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"parent_id"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">null</span></span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"start_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-19T11:25:39.131261Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"end_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-19T11:25:43.223344Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"status"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"status_code"</span><span class="punctuation">:</span> <span class="string">"UNSET"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"http.method"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.server_name"</span><span class="punctuation">:</span> <span class="string">"127.0.0.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.scheme"</span><span class="punctuation">:</span> <span class="string">"http"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.host.port"</span><span class="punctuation">:</span> <span class="number">5000</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.host"</span><span class="punctuation">:</span> <span class="string">"localhost:5000"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.target"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.peer.ip"</span><span class="punctuation">:</span> <span class="string">"127.0.0.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.user_agent"</span><span class="punctuation">:</span> <span class="string">"curl/7.81.0"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.peer.port"</span><span class="punctuation">:</span> <span class="number">37316</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.flavor"</span><span class="punctuation">:</span> <span class="string">"1.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.route"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.status_code"</span><span class="punctuation">:</span> <span class="number">200</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"events"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"links"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"resource"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.language"</span><span class="punctuation">:</span> <span class="string">"python"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.name"</span><span class="punctuation">:</span> <span class="string">"opentelemetry"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.version"</span><span class="punctuation">:</span> <span class="string">"1.23.0"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"service.name"</span><span class="punctuation">:</span> <span class="string">"first"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.auto.version"</span><span class="punctuation">:</span> <span class="string">"0.44b0"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"schema_url"</span><span class="punctuation">:</span> <span class="string">""</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
+<p>The <code>context</code> contains the <code>trace_id</code> which is the ID that will be used to trace the request across services. It also contains <code>span_id</code> which represents the current unit of work and that is the request received by the service. The <code>parent_id</code> is <code>null</code> which means that this is the root span; it represents the entry of the request in the mesh of services. The <code>attributes</code> are key-value pairs and they show that the request was received from curl on the <code>/</code> endpoint, and that it returned a 200 response. More detailed information on the structure of the trace can be found in the OTel documentation.<sup>[2]</sup></p>
+<p>To trace the request across services, OTel propagates some contextual information.<sup>[3]</sup> This allows linking the spans in a downstream service with an upstream service. In our case, the request received by the second service will be associated with the first. This is done by setting the <code>parent_id</code> of one of the spans in the second service to the <code>span_id</code> of the first service. In essence we’re creating a hierarchy. Let’s look at an example.  </p>
+<p>Here’s a span from the first service. Notice that it’s <code>parent_id</code> is set to a value to inidicate that it is not a root span. The attributes indicate that a request was made to <code>http://localhost:6000/</code> and that is the endpoint of the second service.</p>
+<figure class="highlight json"><figcaption><span>First Span</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"context"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"trace_id"</span><span class="punctuation">:</span> <span class="string">"0x2025471829c2f09088d8660876b8896f"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"span_id"</span><span class="punctuation">:</span> <span class="string">"0x84715b55044c5c7d"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"trace_state"</span><span class="punctuation">:</span> <span class="string">"[]"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"kind"</span><span class="punctuation">:</span> <span class="string">"SpanKind.CLIENT"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"parent_id"</span><span class="punctuation">:</span> <span class="string">"0x2fa37c124a45b9e4"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"start_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:53.311658Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"end_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:55.561899Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"status"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"status_code"</span><span class="punctuation">:</span> <span class="string">"UNSET"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"http.method"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.url"</span><span class="punctuation">:</span> <span class="string">"http://localhost:6000/"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.status_code"</span><span class="punctuation">:</span> <span class="number">200</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"events"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"links"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"resource"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.language"</span><span class="punctuation">:</span> <span class="string">"python"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.name"</span><span class="punctuation">:</span> <span class="string">"opentelemetry"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.version"</span><span class="punctuation">:</span> <span class="string">"1.23.0"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"service.name"</span><span class="punctuation">:</span> <span class="string">"first"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.auto.version"</span><span class="punctuation">:</span> <span class="string">"0.44b0"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"schema_url"</span><span class="punctuation">:</span> <span class="string">""</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>If we were to depict the flow of request as a tree we get the following. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Root Span</span><br><span class="line"> - first service calls the second</span><br></pre></td></tr></table></figure>  
+<p>Let us now look at a span from the second service. It has the same <code>trace_id</code> as the one from the first, and the <code>parent_id</code> is the <code>span_id</code> of the span we saw previously. The attributes indicate that this span represents the request that was made from the first service to the second.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"context"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"trace_id"</span><span class="punctuation">:</span> <span class="string">"0x2025471829c2f09088d8660876b8896f"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"span_id"</span><span class="punctuation">:</span> <span class="string">"0x71860f29c6b0e465"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"trace_state"</span><span class="punctuation">:</span> <span class="string">"[]"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"kind"</span><span class="punctuation">:</span> <span class="string">"SpanKind.SERVER"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"parent_id"</span><span class="punctuation">:</span> <span class="string">"0x84715b55044c5c7d"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"start_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:53.312600Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"end_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:55.559641Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"status"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"status_code"</span><span class="punctuation">:</span> <span class="string">"UNSET"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"http.method"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.server_name"</span><span class="punctuation">:</span> <span class="string">"127.0.0.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.scheme"</span><span class="punctuation">:</span> <span class="string">"http"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.host.port"</span><span class="punctuation">:</span> <span class="number">6000</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.host"</span><span class="punctuation">:</span> <span class="string">"localhost:6000"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.target"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.peer.ip"</span><span class="punctuation">:</span> <span class="string">"127.0.0.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.user_agent"</span><span class="punctuation">:</span> <span class="string">"python-requests/2.31.0"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"net.peer.port"</span><span class="punctuation">:</span> <span class="number">48138</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.flavor"</span><span class="punctuation">:</span> <span class="string">"1.1"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.route"</span><span class="punctuation">:</span> <span class="string">"/"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.status_code"</span><span class="punctuation">:</span> <span class="number">200</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"events"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"links"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"resource"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.language"</span><span class="punctuation">:</span> <span class="string">"python"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.name"</span><span class="punctuation">:</span> <span class="string">"opentelemetry"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.version"</span><span class="punctuation">:</span> <span class="string">"1.23.0"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"service.name"</span><span class="punctuation">:</span> <span class="string">"second"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.auto.version"</span><span class="punctuation">:</span> <span class="string">"0.44b0"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"schema_url"</span><span class="punctuation">:</span> <span class="string">""</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>If we were to depict the flow of request as a tree we get the following.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Root Span</span><br><span class="line"> - first service calls the second</span><br><span class="line">   - second service receives the request</span><br></pre></td></tr></table></figure>  
+<p>We’ll look at one final span in the second service, and that is the child of the span mentioned above.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"context"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"trace_id"</span><span class="punctuation">:</span> <span class="string">"0x2025471829c2f09088d8660876b8896f"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"span_id"</span><span class="punctuation">:</span> <span class="string">"0x5735ce777bfb155a"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"trace_state"</span><span class="punctuation">:</span> <span class="string">"[]"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"kind"</span><span class="punctuation">:</span> <span class="string">"SpanKind.CLIENT"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"parent_id"</span><span class="punctuation">:</span> <span class="string">"0x71860f29c6b0e465"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"start_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:53.313345Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"end_time"</span><span class="punctuation">:</span> <span class="string">"2024-03-20T05:34:55.556813Z"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"status"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"status_code"</span><span class="punctuation">:</span> <span class="string">"UNSET"</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"http.method"</span><span class="punctuation">:</span> <span class="string">"POST"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.url"</span><span class="punctuation">:</span> <span class="string">"https://httpbin.org/delay/0"</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"http.status_code"</span><span class="punctuation">:</span> <span class="number">200</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"events"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"links"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"resource"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.language"</span><span class="punctuation">:</span> <span class="string">"python"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.name"</span><span class="punctuation">:</span> <span class="string">"opentelemetry"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.sdk.version"</span><span class="punctuation">:</span> <span class="string">"1.23.0"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"service.name"</span><span class="punctuation">:</span> <span class="string">"second"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"telemetry.auto.version"</span><span class="punctuation">:</span> <span class="string">"0.44b0"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"schema_url"</span><span class="punctuation">:</span> <span class="string">""</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>We can see that the <code>parent_id</code> is the <code>span_id</code> of the previous span, and the attributes indicate that a call was made to HttpBin. Notice that throughout this flow the <code>trace_id</code> has remained the same. We can now look at the final tree to see the flow of requests. Distributed tracing backends like Jaeger provide a visual representation of this flow.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Root Span</span><br><span class="line"> - first service calls the second</span><br><span class="line">   - second service receives the request</span><br><span class="line">     - second service calls HttpBin</span><br></pre></td></tr></table></figure>  
+<p>So far we’ve sent the traces to the console which is helpful for development. We’ll now look at how we can send the traces to the OpenTelemetry Collector<sup>[4]</sup>, and from there to appropriate backends.  </p>
+<h3 id="OTel-Collector"><a href="#OTel-Collector" class="headerlink" title="OTel Collector"></a>OTel Collector</h3><p>Telemetry data is received, processed, and exported via the OTel Collector. It may receive logs and export them to any vendor of your choosing, or it can receive traces and export them to Jaeger. As a result, the services can submit telemetry data to the collector, which will forward it to the relevant backends. This enables the codebase to be instrumented with merely OTel, while a combination of open-source and proprietary backends can be used to process the telemetry data. </p>
+<p>We only need to change the command in the bash script that launches the services in order to transmit the data to the Collector. Notice that we have included OTLP as an export option for all of our telemetry data. In a similar vein, we supply the endpoints — which leads to the collector(s) — to whom the data will be transferred. While all metrics can be specified as a single collection endpoint, the example below demonstrates how to send each type of data separately, allowing the collector(s) to be scaled independently.<sup>[5]</sup></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> PYTHONPATH=.</span><br><span class="line">opentelemetry-instrument \</span><br><span class="line">    --traces_exporter console,otlp \</span><br><span class="line">    --metrics_exporter console,otlp \</span><br><span class="line">    --logs_exporter console,otlp \</span><br><span class="line">    --service_name first \</span><br><span class="line">    --exporter_otlp_traces_endpoint 0.0.0.0:4317 \</span><br><span class="line">    --exporter_otlp_logs_endpoint 0.0.0.0:4317 \</span><br><span class="line">    --exporter_otlp_metrics_endpoint 0.0.0.0:4317 \</span><br><span class="line">    python first/service.py</span><br></pre></td></tr></table></figure>  
+<p>We need to configure the collector(s) for it to be able to recieve, transform, and export the data. This is done through a YAML file. We specify the receivers, processors, and exporters for each type of telemetry data.<sup>[6]</sup> For the sake of this post, we’ll modify the example given in the official OTel documentation slightly and send the traces to Jaeger.  </p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">receivers:</span></span><br><span class="line">  <span class="attr">otlp:</span></span><br><span class="line">    <span class="attr">protocols:</span></span><br><span class="line">      <span class="attr">grpc:</span></span><br><span class="line">        <span class="attr">endpoint:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span><span class="string">:4317</span></span><br><span class="line">      <span class="attr">http:</span></span><br><span class="line">        <span class="attr">endpoint:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span><span class="string">:4318</span></span><br><span class="line"></span><br><span class="line"><span class="attr">processors:</span></span><br><span class="line">  <span class="attr">batch:</span></span><br><span class="line"></span><br><span class="line"><span class="attr">exporters:</span></span><br><span class="line">  <span class="attr">otlp/jaeger:</span></span><br><span class="line">    <span class="attr">endpoint:</span> <span class="string">jaeger:4317</span></span><br><span class="line">  <span class="attr">debug:</span></span><br><span class="line">    <span class="attr">verbosity:</span> <span class="string">detailed</span></span><br><span class="line">  <span class="attr">prometheus:</span></span><br><span class="line">    <span class="attr">endpoint:</span> <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span><span class="string">:8889</span></span><br><span class="line">    <span class="attr">namespace:</span> <span class="string">default</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="attr">extensions:</span></span><br><span class="line">  <span class="attr">health_check:</span></span><br><span class="line">  <span class="attr">pprof:</span></span><br><span class="line">  <span class="attr">zpages:</span></span><br><span class="line"></span><br><span class="line"><span class="attr">service:</span></span><br><span class="line">  <span class="attr">extensions:</span> [<span class="string">health_check</span>, <span class="string">pprof</span>, <span class="string">zpages</span>]</span><br><span class="line">  <span class="attr">pipelines:</span></span><br><span class="line">    <span class="attr">traces:</span></span><br><span class="line">      <span class="attr">receivers:</span> [<span class="string">otlp</span>]</span><br><span class="line">      <span class="attr">processors:</span> [<span class="string">batch</span>]</span><br><span class="line">      <span class="attr">exporters:</span> [<span class="string">otlp/jaeger</span>]</span><br><span class="line">    <span class="attr">metrics:</span></span><br><span class="line">      <span class="attr">receivers:</span> [<span class="string">otlp</span>]</span><br><span class="line">      <span class="attr">processors:</span> [<span class="string">batch</span>]</span><br><span class="line">      <span class="attr">exporters:</span> [<span class="string">prometheus</span>]</span><br><span class="line">    <span class="attr">logs:</span></span><br><span class="line">      <span class="attr">receivers:</span> [<span class="string">otlp</span>]</span><br><span class="line">      <span class="attr">processors:</span> [<span class="string">batch</span>]</span><br><span class="line">      <span class="attr">exporters:</span> [<span class="string">debug</span>]</span><br></pre></td></tr></table></figure>
+<p>If we look at the pipeline, at the bottom of the YAML file, which processes the traces, we’ll see that we receive them in the OTLP format, batch them<sup>[7]</sup>, and send them to Jaeger. Similarly, we could export the logs to a vendor of our choosing, or to a self-hosted solution like OpenSearch.  </p>
+<p>Finally, we’ll look at adding instrumention using code to the services. </p>
+<h3 id="Code-based-Intrumentation"><a href="#Code-based-Intrumentation" class="headerlink" title="Code-based Intrumentation"></a>Code-based Intrumentation</h3><p>When we put a service into production, we will need more than just the basic monitoring that OTel provides. For instance, we might want to monitor how much time it takes for a specific part of the code to run. We can use the OTel SDK for situations like these. When we did the bootstrap step, the OTel API and SDK were installed for us. We can check this by looking for them in the list of installed packages. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pip list | grep opentelemetry | grep -E <span class="string">"*.-(api|sdk)"</span></span><br><span class="line">opentelemetry-api                        1.23.0</span><br><span class="line">opentelemetry-sdk                        1.23.0</span><br></pre></td></tr></table></figure>
+<p>We’ll begin by couting the number of requests that are received by the first service. To do this, we’ll first need to obtain a MeterProvider<sup>[8]</sup>. From this we will create a Meter, and then Metric Instruments. The instruments represent the actual metric that we want to track. For example, a counter. </p>
+<p>The <code>common</code> package in our repository contains code to configure a MeterProvider, obtain a counter, and to incremenet it. For the sake of brevity we will only look at the change to the endpoint of the first service. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">_counter = create_counter(</span><br><span class="line">    name=<span class="string">"first.request.count"</span>,</span><br><span class="line">    unit=<span class="string">"1"</span>,</span><br><span class="line">    description=<span class="string">"Counts the number of requests received by the service"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@api.post(<span class="params"><span class="string">"/"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    increment_counter(counter=_counter)</span><br><span class="line">    time.sleep(random.random())</span><br><span class="line">    <span class="keyword">return</span> make_request()  <span class="comment"># Makes a call to second</span></span><br></pre></td></tr></table></figure>
+<p>We are now keeping track of how many times we call the API. If we check the numbers in the console, we will find this. The <code>value</code> shows how many times we used curl to make requests. It is currently at 10.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"first.request.count"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"description"</span><span class="punctuation">:</span> <span class="string">"Counts the number of requests received by the service"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"unit"</span><span class="punctuation">:</span> <span class="string">"1"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"data"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"data_points"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">            <span class="punctuation">{</span></span><br><span class="line">                <span class="attr">"attributes"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">                    <span class="attr">"env"</span><span class="punctuation">:</span> <span class="string">"dev"</span></span><br><span class="line">                <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">"start_time_unix_nano"</span><span class="punctuation">:</span> <span class="number">1710928263740358000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">"time_unix_nano"</span><span class="punctuation">:</span> <span class="number">1710928319927995000</span><span class="punctuation">,</span></span><br><span class="line">                <span class="attr">"value"</span><span class="punctuation">:</span> <span class="number">10</span></span><br><span class="line">            <span class="punctuation">}</span></span><br><span class="line">        <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"aggregation_temporality"</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"is_monotonic"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>We can create different instruments, too. Let us now use a histogram to track the time taken by HTTPBin.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">_histogram = create_histogram(</span><br><span class="line">    name=<span class="string">"httpbin.latency"</span>,</span><br><span class="line">    unit=<span class="string">"1.0"</span>,</span><br><span class="line">    description=<span class="string">"Track the time taken by the /delay endpoint."</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@api.post(<span class="params"><span class="string">"/"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="keyword">with</span> timed(_histogram):</span><br><span class="line">        <span class="keyword">return</span> make_request()  <span class="comment"># Makes a call to HTTPBin</span></span><br></pre></td></tr></table></figure>
+<p>Like with the previous metric, we can see it logged to the console. The output for a hisogram is sufficiently large and has been excluded for brevity.</p>
+<p>With this we conclude how to add telemetry, both automatic and manual, using OTel. Before we move on to profiling, I’d like to point out a few things I noticed when using the Python SDK for OTel. One, there is only the console exporter for metrics and traces. I’d assume we’d need an OTLP exporter to be able to send these to the collector. Two, the logs SDK is still under development.<sup>[9]</sup> Nonetheless, OTel is a great way to add instrumentation to the services.</p>
+<h3 id="Profiling"><a href="#Profiling" class="headerlink" title="Profiling"></a>Profiling</h3><p>Telemetry helps us observe how our program is performing by looking at logs, metrics, and traces. Another way to observe the program is by profiling it. This helps us understand how resources like memory, IO, CPU, etc. are being used. In this section we will look at how to profile our microservices using Parca. Specifically, we will profile the CPU usage.<sup>[10]</sup>  </p>
+<p>To see our service’s CPU usage over time, we will add a new endpoint which computes Fibonacci numbers. Since this is a CPU-intensive operation, it will be captured visibly in the trace. We’ll add the following endpoint to the first microservice.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.get(<span class="params"><span class="string">"/&lt;int:n&gt;"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_one</span>(<span class="params">n: <span class="built_in">int</span></span>):</span><br><span class="line">        <span class="keyword">return</span> _two(n=n)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_two</span>(<span class="params">n: <span class="built_in">int</span></span>):</span><br><span class="line">        <span class="keyword">return</span> _fibo(n=n)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_fibo</span>(<span class="params">n: <span class="built_in">int</span></span>):</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, n - <span class="number">1</span>):</span><br><span class="line">            fibo(i)</span><br><span class="line">        <span class="keyword">return</span> fibo(n=n)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> {<span class="string">"fibonacci"</span>: _one(n=n)}</span><br></pre></td></tr></table></figure>  
+<p>Notice that the returned value is generated from calling <code>_one</code>. This function then calls <code>_two</code> which eventually calls <code>_fibo</code>. The reason it is written this way is to have them show up in the profile.  </p>
+<p>Next we will download the Parca Agent. This is an always-on profiler which reads the stack traces of programs in both user-space and kernel-space.   </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">RUN wget -O parca-agent https://github.com/parca-dev/parca-agent/releases/download/v0.30.0/parca-agent_0.30.0_`<span class="built_in">uname</span> -s`_`<span class="built_in">uname</span> -m`</span><br><span class="line">RUN <span class="built_in">chmod</span> +x parca-agent</span><br></pre></td></tr></table></figure>
+<p>We’ll also add a small script which sends random requests to the endpoint.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, <span class="built_in">int</span>(<span class="number">1e10</span>)):</span><br><span class="line">        n = random.randint(<span class="number">1</span>, <span class="number">31</span>)</span><br><span class="line">        response = requests.get(<span class="string">f"http://localhost:5000/<span class="subst">{n}</span>"</span>)</span><br><span class="line">        response.raise_for_status()</span><br></pre></td></tr></table></figure>  
+<p>We’ll now run the agent and the services. The Parca Server which receives the profiles and displays them is part of the Docker compose file. The agent will run on the machine and send the profiles to the server.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo ./parca-agent --remote-store-address=<span class="string">"localhost:7070"</span> --node=<span class="string">"laptop"</span> --http-address=<span class="string">"0.0.0.0:7071"</span> --remote-store-insecure</span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll send requests to the endpoint and wait for the profiler to generate profiling data. This will be visible on <code>localhost:7071</code>. To query the first microservice we will need its pid, and this can be obtained by grepping for it.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ps aux | grep python | grep -E <span class="string">"*.(first).*"</span></span><br><span class="line">fasih     838847 68.9  0.3 720716 53720 pts/7    Sl+  13:51  76:08 /home/fasih/anaconda3/envs/microservice/bin/python first/service.py</span><br></pre></td></tr></table></figure>  
+<p>We can now query Parca and look at the profiles. The benefit of profiling is to look at how the program is performing over time. We’ll compare two profiles along side each other. Notice how we’ve used the PID to filter the profiles.  </p>
+<img src="/2024/03/21/Setting-up-a-Python-microservice/Parca-1.png" class="" title="Compare profiles">  
+<p>Similarly, we can look at the stack trace.</p>
+<img src="/2024/03/21/Setting-up-a-Python-microservice/Parca-2.png" class="" title="Compare stack trace">  
+<p>Towards the middle of the image we’ll see the call stack calling the private functions <code>_one</code>, <code>_two</code>, and <code>_fib</code>. In the cumulative diff column<sup>[11]</sup> we see a +10.05s. This means that between the two timeframes, the stacktrace has been running 10.05s longer; we’ve gotten slower with time. This can be confirmed by switching to the icicle graph which indicates the same.</p>
+<p>That’s it. We’ve added profiling to our service. </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We saw how we can add telemetry using OTel, and profiling using Parca. Both of these are great ways to observe a service in production. However, as of writing, both of these projects are in their early stages as can be seen from functionality that is yet to be developed. For example, OTel’s Python SDK is yet to add support for logging, and Parca only supports CPU profiling. Despite this, they’re both worth following as they let us add observability to our services without much effort.  </p>
+<p>This is my opinion on how to create a microservice with observability baked in. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">The code for this post is available on GitHub.</a></p>
+<h3 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h3><p>[1] I was unable to send traces and metrics to the collector, and from there to the appropriate backends, as I kept running into issues with gRPC. Perhaps an astute reader would like to submit a PR to fix these. :)<br>[2] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/traces/">https://opentelemetry.io/docs/concepts/signals/traces/</a><br>[3] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/context-propagation/">https://opentelemetry.io/docs/concepts/context-propagation/</a><br>[4] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/">https://opentelemetry.io/docs/collector/</a><br>[5] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/scaling/">https://opentelemetry.io/docs/collector/scaling/</a><br>[6] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/configuration/">https://opentelemetry.io/docs/collector/configuration/</a><br>[7] <a target="_blank" rel="noopener" href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md">https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md</a><br>[8] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider">https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider</a><br>[9] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/languages/python/instrumentation/">https://opentelemetry.io/docs/languages/python/instrumentation/</a><br>[10] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/profiling-101/">https://www.parca.dev/docs/profiling-101/</a><br>[11] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/concepts/#cumulative-and-diff-values">https://www.parca.dev/docs/concepts/#cumulative-and-diff-values</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clxlottca001l8nru7saqfw0h" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2024/03/22/Hosting-Python-Packages/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Hosting Python Packages
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2024/03/17/Setting-up-Sphinx-Documentation/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Setting up Sphinx Documentation</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>

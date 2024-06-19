@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Scalaz Order | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In this post we’ll look at how to implement ordering using Scalaz Order trait. However, before we do that, let’s step back a little and look at how we implement ordering using scala.math.Ordering   So">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Scalaz Order">
+<meta property="og:url" content="http://fasihkhatib.com/2017/06/29/scalaz-order/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In this post we’ll look at how to implement ordering using Scalaz Order trait. However, before we do that, let’s step back a little and look at how we implement ordering using scala.math.Ordering   So">
+<meta property="og:locale">
+<meta property="article:published_time" content="2017-06-29T09:00:08.000Z">
+<meta property="article:modified_time" content="2024-06-19T10:13:08.187Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="scala">
+<meta property="article:tag" content="functional programming">
+<meta property="article:tag" content="scalaz">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-scalaz-order" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/29/scalaz-order/" class="article-date">
+  <time datetime="2017-06-29T09:00:08.000Z" itemprop="datePublished">2017-06-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Scalaz Order
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at how to implement ordering using Scalaz <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Order.scala"><code>Order</code></a> trait. However, before we do that, let’s step back a little and look at how we implement ordering using <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/current/scala/math/Ordering.html"><code>scala.math.Ordering</code></a>  </p>
+<h2 id="Sorting-a-Collection-Scala-Way"><a href="#Sorting-a-Collection-Scala-Way" class="headerlink" title="Sorting a Collection - Scala Way"></a>Sorting a Collection - Scala Way</h2><p>Say we have a <code>List</code> and we’d like to sort it.<sup><a target="_blank" rel="noopener" href="http://alvinalexander.com/scala/how-to-sort-scala-collections-sortwith-sorted-ordered-ordering">[1]</a></sup> We can do so by calling the <code>sorted</code> method on it and it’ll work out-of-the-box for lists of <code>Int</code>, <code>Float</code>, etc. because there is an implicit in <code>scala.math.Ordering</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">5</span>, <span class="number">4</span>, <span class="number">10</span>, <span class="number">-1</span>, <span class="number">0</span>).sorted</span><br><span class="line">res0: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>  
+<p>Going over the documentation for <code>scala.math.Ordering</code><sup><a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/current/scala/math/Ordering.html">[2]</a></sup>:  </p>
+<p><em>Ordering is a trait whose instances each represent a strategy for sorting instances of a type.<br>Ordering’s companion object defines many implicit objects to deal with subtypes of AnyVal (e.g. Int, Double), String, and others.</em>  </p>
+<p>All the implicit objects in the companion object implement the <code>scala.math.Ordering</code> trait which extends the <code>java.util.Comparator</code> interface. Thus, they all have a <code>compare</code> method. What if we have types for which there is no sorting strategy in the companion object of <code>scala.math.Ordering</code>? We define our own like so:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Salary</span></span></span><br><span class="line">@ <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrdered</span> <span class="keyword">extends</span> <span class="title">Ordering</span>[<span class="type">Salary</span>] </span>{</span><br><span class="line">    <span class="comment">// we are using compare on type Float</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(a: <span class="type">Salary</span>, b: <span class="type">Salary</span>): <span class="type">Int</span> = a.amt compare b.amt</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrdered</span></span></span><br><span class="line">@ <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">999.0</span>f), <span class="type">Salary</span>(<span class="number">555.0</span>f)).sorted</span><br><span class="line">res4: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">555.0</span>F), <span class="type">Salary</span>(<span class="number">999.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>But we still don’t have operators like <code>&lt;</code>, <code>&lt;=</code>, etc. on type <code>Salary</code>.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">999.0</span>f) &gt; <span class="type">Salary</span>(<span class="number">555.0</span>f)</span><br><span class="line">cmd3.sc:<span class="number">1</span>: value &gt; is not a member of ammonite.$sess.cmd0.<span class="type">Salary</span></span><br><span class="line"><span class="keyword">val</span> res3 = <span class="type">Salary</span>(<span class="number">999.0</span>f) &gt; <span class="type">Salary</span>(<span class="number">555.0</span>f)</span><br><span class="line">                          ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<p>To do that, the trait <code>scala.math.Ordered</code> would have to be mixed in.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>) <span class="keyword">extends</span> <span class="title">Ordered</span>[<span class="type">Salary</span>] </span>{</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">compare</span></span>(that: <span class="type">Salary</span>): <span class="type">Int</span> = <span class="keyword">this</span>.amt compare that.amt</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Salary</span></span></span><br><span class="line">@ <span class="type">Salary</span>(<span class="number">1.0</span>f) &lt; <span class="type">Salary</span>(<span class="number">2.0</span>f)</span><br><span class="line">res1: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">1.0</span>f)).sorted</span><br><span class="line">res2: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">1.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>And we know that if we’re working with a library, we do not have the liberty to mix a trait for our convenience. Also, Scala’s comparison operators are not type safe.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> &gt; <span class="number">2.0</span></span><br><span class="line">res4: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Sorting-a-Collection-Scalaz-Way"><a href="#Sorting-a-Collection-Scalaz-Way" class="headerlink" title="Sorting a Collection - Scalaz Way"></a>Sorting a Collection - Scalaz Way</h2><p>As stated before, Scalaz provides <code>Order</code> trait. Staying with our <code>Salary</code> example, let’s put Scalaz <code>Order</code> to use.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Salary</span>(<span class="params">amt: <span class="type">Float</span></span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Salary</span></span></span><br><span class="line">@ <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrder</span> <span class="keyword">extends</span> <span class="title">Order</span>[<span class="type">Salary</span>] </span>{</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">order</span></span>(a: <span class="type">Salary</span>, b: <span class="type">Salary</span>): <span class="type">Ordering</span> = {</span><br><span class="line">      a.amt compare b.amt <span class="keyword">match</span> {</span><br><span class="line">        <span class="keyword">case</span> <span class="number">-1</span> =&gt; <span class="type">Ordering</span>.<span class="type">LT</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="type">Ordering</span>.<span class="type">EQ</span></span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="type">Ordering</span>.<span class="type">GT</span></span><br><span class="line">      }</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">SalaryOrder</span></span></span><br></pre></td></tr></table></figure>
+<p>We’ve defined a way to order <code>Salary</code> objects using Scalaz <code>Order</code> trait via a typeclass. The implicit object needs to provide an implementation for <code>order</code> method which returns an <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Ordering.scala"><code>Ordering</code></a> value. Going over the code for Scalaz <code>Ordering</code>: </p>
+<p><em>This Ordering is analogous to the Ints returned by scala.math.Ordering.</em>  </p>
+<p>Now, we have comparison operators at our disposal. Here’s how we can compare <code>Salary</code> objects using the <code>?|?</code> operator:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">1.0</span>f) ?|? <span class="type">Salary</span>(<span class="number">2.0</span>f)</span><br><span class="line">res4: <span class="type">Ordering</span> = <span class="type">LT</span></span><br></pre></td></tr></table></figure>  
+<p><code>?|?</code> can also be used with <code>Int</code>, <code>Float</code>, etc. and is type-safe.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.0</span> ?|? <span class="number">2.0</span></span><br><span class="line">res5: <span class="type">Ordering</span> = <span class="type">LT</span></span><br><span class="line">@ <span class="number">1.0</span> ?!? <span class="number">2</span></span><br><span class="line">cmd6.sc:<span class="number">1</span>: value ?!? is not a member of <span class="type">Double</span></span><br><span class="line"><span class="keyword">val</span> res6 = <span class="number">1.0</span> ?!? <span class="number">2</span></span><br><span class="line">               ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<p>Also, analogous to <code>&lt;</code>, <code>&lt;=</code>, we now have type-safe <code>lt</code>, <code>lte</code>, etc.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.0</span> gte <span class="number">2.0</span></span><br><span class="line">res6: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line">@ <span class="number">1</span> gt <span class="number">2.0</span></span><br><span class="line">cmd8.sc:<span class="number">1</span>: <span class="class"><span class="keyword">type</span> <span class="title">mismatch</span></span>;</span><br><span class="line"> found   : <span class="type">Double</span>(<span class="number">2.0</span>)</span><br><span class="line"> required: <span class="type">Int</span></span><br><span class="line"><span class="keyword">val</span> res8 = <span class="number">1</span> gt <span class="number">2.0</span></span><br><span class="line">                ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>
+<p>That’s not where the power ends. You can also compare <code>Option</code>s seamlessly. Do note that it is <code>some</code> with a lowercase “s”.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ some(<span class="type">Salary</span>(<span class="number">1.0</span>f)) ?|? some(<span class="type">Salary</span>(<span class="number">2.0</span>f))</span><br><span class="line">res8: <span class="type">Ordering</span> = <span class="type">LT</span></span><br></pre></td></tr></table></figure>  
+<p>You can now also use <code>sorted</code> on a collection equally easily. Using <code>Order[A].toScalaOrdering</code> we can get back an object of type <code>scala.math.Ordering</code> which we can use to sort collections. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">implicit</span> <span class="keyword">val</span> salaryOrdering = <span class="type">Order</span>[<span class="type">Salary</span>].toScalaOrdering</span><br><span class="line">salaryOrdering: math.<span class="type">Ordering</span>[<span class="type">Salary</span>] = scalaz.<span class="type">Order</span>$$anon$<span class="number">1</span>@<span class="number">5</span>b8a5d7c</span><br><span class="line">@ <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">2.0</span>f), <span class="type">Salary</span>(<span class="number">1.0</span>f), <span class="type">Salary</span>(<span class="number">0.0</span>f)).sorted</span><br><span class="line">res10: <span class="type">List</span>[<span class="type">Salary</span>] = <span class="type">List</span>(<span class="type">Salary</span>(<span class="number">0.0</span>F), <span class="type">Salary</span>(<span class="number">1.0</span>F), <span class="type">Salary</span>(<span class="number">2.0</span>F))</span><br></pre></td></tr></table></figure>  
+<p>Also, since <code>Order</code> trait extends the <code>Equal</code> trait, you get the <code>===</code> operator, too.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">Salary</span>(<span class="number">0.0</span>F) === <span class="type">Salary</span>(<span class="number">1.0</span>F)</span><br><span class="line">res11: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>By using Scalaz <code>Order</code> trait, we can implement comparison between values in a type-safe and extensible way. There’s seamless transformation from Scalaz <code>Order</code> to <code>scala.math.Ordering</code> which lets us use the <code>sorted</code> method on collections.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="clxlottce003f8nru5xnp1uah" data-title="Scalaz Order" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/07/01/scalaz-show/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Scalaz Show
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/06/28/scalaz-equals/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Scalaz Equal</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.43px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 15.71px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.43px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
+          </li>
+        
+          <li>
+            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+          </li>
+        
+          <li>
+            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+          </li>
+        
+          <li>
+            <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
+          </li>
+        
+          <li>
+            <a href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2024 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2017/06/29/scalaz-order/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({{ JSON.stringify(config) }});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="{{ src }}">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+</body>
+</html>
