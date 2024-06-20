@@ -30,13 +30,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/architecture/</loc>
-        <lastmod>2024-06-19T10:13:08.176Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/tags/machine-learning/</loc>
         <lastmod>2024-06-19T10:13:08.185Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -88,6 +81,13 @@
     <url>
         <loc>http://fasihkhatib.com/tags/testing/</loc>
         <lastmod>2024-06-19T10:13:08.188Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/tags/architecture/</loc>
+        <lastmod>2024-06-20T07:49:19.417Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
