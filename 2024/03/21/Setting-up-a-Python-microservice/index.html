@@ -286,11 +286,11 @@ mjx-container[display="true"] + br {
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We saw how we can add telemetry using OTel, and profiling using Parca. Both of these are great ways to observe a service in production. However, as of writing, both of these projects are in their early stages as can be seen from functionality that is yet to be developed. For example, OTel’s Python SDK is yet to add support for logging, and Parca only supports CPU profiling. Despite this, they’re both worth following as they let us add observability to our services without much effort.  </p>
 <p>This is my opinion on how to create a microservice with observability baked in. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">The code for this post is available on GitHub.</a></p>
 <h3 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h3><p>[1] I was unable to send traces and metrics to the collector, and from there to the appropriate backends, as I kept running into issues with gRPC. Perhaps an astute reader would like to submit a PR to fix these. :)<br>[2] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/traces/">https://opentelemetry.io/docs/concepts/signals/traces/</a><br>[3] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/context-propagation/">https://opentelemetry.io/docs/concepts/context-propagation/</a><br>[4] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/">https://opentelemetry.io/docs/collector/</a><br>[5] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/scaling/">https://opentelemetry.io/docs/collector/scaling/</a><br>[6] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/collector/configuration/">https://opentelemetry.io/docs/collector/configuration/</a><br>[7] <a target="_blank" rel="noopener" href="https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md">https://github.com/open-telemetry/opentelemetry-collector/blob/main/processor/batchprocessor/README.md</a><br>[8] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider">https://opentelemetry.io/docs/concepts/signals/metrics/#meter-provider</a><br>[9] <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/languages/python/instrumentation/">https://opentelemetry.io/docs/languages/python/instrumentation/</a><br>[10] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/profiling-101/">https://www.parca.dev/docs/profiling-101/</a><br>[11] <a target="_blank" rel="noopener" href="https://www.parca.dev/docs/concepts/#cumulative-and-diff-values">https://www.parca.dev/docs/concepts/#cumulative-and-diff-values</a></p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clxmyp2wh001r8drubyen5eup" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clxsmn86q001sviruarpn6xk1" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -339,7 +339,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 10px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -349,6 +349,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/06/24/Programming-Puzzles-1/">Programming Puzzles 1</a>
+          </li>
         
           <li>
             <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium</a>
@@ -384,10 +388,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
-          </li>
-        
-          <li>
-            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
           </li>
         
       </ul>

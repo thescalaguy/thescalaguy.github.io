@@ -180,6 +180,55 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-memo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/05/scalaz-memo/" class="article-date">
+  <time datetime="2017-08-05T18:12:31.000Z" itemprop="datePublished">2017-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/05/scalaz-memo/">Scalaz Memo</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fab6f1f97664590652bf37d64750e229c0524000/core/src/main/scala/scalaz/Memo.scala">Memo</a> which is a Scalaz goodie to add memoization to your program. We’ll recap what memoization is, write a recursive function to calculate Fibonacci numbers, and then add memoization to it using <code>Memo</code>.  </p>
+<h2 id="What-is-Memoization"><a href="#What-is-Memoization" class="headerlink" title="What is Memoization?"></a>What is Memoization?</h2><p>In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again.<sup><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Memoization">[1]</a></sup> </p>
+<h2 id="Fibonacci-without-Memo"><a href="#Fibonacci-without-Memo" class="headerlink" title="Fibonacci (without Memo)"></a>Fibonacci (without Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">fibo</span></span>(n: <span class="type">Int</span>): <span class="type">Int</span> = {</span><br><span class="line">    n <span class="keyword">match</span> {</span><br><span class="line">      <span class="keyword">case</span> <span class="number">0</span> | <span class="number">1</span> =&gt; n</span><br><span class="line">      <span class="keyword">case</span> _: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined function fibo</span><br></pre></td></tr></table></figure>
+<p>So here’s the non-memoized recursive <code>fibo</code> which calculates the n<sup>th</sup> Fibonacci number. The issue here is that it’ll recalculate the Fibonacci numbers a lot of times and therefore cannot be used for large values of n. </p>
+<h2 id="Fibonacci-with-Memo"><a href="#Fibonacci-with-Memo" class="headerlink" title="Fibonacci (with Memo)"></a>Fibonacci (with Memo)</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = <span class="type">Memo</span>.immutableHashMapMemo {</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="number">0</span></span><br><span class="line">    <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="number">1</span></span><br><span class="line">    <span class="keyword">case</span> n: <span class="type">Int</span> =&gt; fibo(n - <span class="number">1</span>) + fibo(n - <span class="number">2</span>)</span><br><span class="line">  }</span><br><span class="line">fibo: <span class="type">Int</span> =&gt; <span class="type">Int</span> = scalaz.<span class="type">Memo</span>$$$<span class="type">Lambda</span>$<span class="number">2233</span>/<span class="number">1055106802</span>@<span class="number">48649202</span></span><br></pre></td></tr></table></figure> 
+<p>Here’s the memoized version using Scalaz <code>Memo</code>. We are using an immutable, hash map-backed memo. The <code>immutableHashMapMemo</code> method takes a partial function defining how we construct the memo. In our case, if the value of n is not 0 or 1, we try looking up the value in the memo again. We recurse until we reach 0 or 1. Once that happens and our recursion returns, the resultant value is cached in an <code>immutable.HashMap</code>.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Memoization is a great way to optimize your programs. In this post we used an immutable hash map memo. There are other types of memos applying different strategies to cache their results. The <code>Memo</code> companion object is the place to look for an appropriate memo that suits your needs.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="clxsmn86t003bviruaox13hui" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-lens" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/08/01/scalaz-lens/" class="article-date">
@@ -243,11 +292,11 @@ mjx-container[display="true"] + br {
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ state(p1)</span><br><span class="line">res33: (<span class="type">Person</span>, <span class="type">Address</span>) = (<span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Fancytown"</span>, <span class="number">3</span>)), <span class="type">Address</span>(<span class="string">"Fancytown"</span>, <span class="number">3</span>))</span><br></pre></td></tr></table></figure>
 <p>Here we are updating person <code>p1</code>‘s address. What we get back is a new state <code>S</code>, <code>p1</code> but with Fancytown address, and the result <code>A</code>, the new <code>Address</code>. <code>state(p1)</code> is the same as <code>state.apply(p1)</code>. In short, we’re applying that state to a <code>Person</code> object.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end the post on lenses. Lenses are a powerful way to get, set, and modify fields in your data structures. The best part about them is that they are reusable and can be composed to form lenses that focus deeper into the data structure.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="clxmyp2wk00358drueva66b5w" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="clxsmn86t0033viru5knr1nr9" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -317,11 +366,11 @@ mjx-container[display="true"] + br {
 <h3 id="Iterating"><a href="#Iterating" class="headerlink" title="Iterating"></a>Iterating</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) foreach println</span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"></span><br><span class="line">@ <span class="type">NonEmptyList</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>) map { _ + <span class="number">1</span> }</span><br><span class="line">res18: <span class="type">NonEmptyList</span>[<span class="type">Int</span>] = <span class="type">NonEmpty</span>[<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]</span><br></pre></td></tr></table></figure>  
 <p>Because NEL is also a list, you can perform familiar list operations like <code>foreach</code>, <code>map</code>, etc.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This post was intended to give you an introduction to Scalaz <code>NonEmptyList</code> and how it differs from the usual <code>List</code>. The guarantee on NEL being non-empty means that you can call <code>head</code> without having to worry about exceptions. This makes your code less cluttered and its intent more expressive. </p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="clxmyp2wm003x8dru7v2ihx78" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="clxsmn86u003dviru95q63ey0" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -390,11 +439,11 @@ mjx-container[display="true"] + br {
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.</span>right validation</span><br><span class="line">res65: <span class="type">Validation</span>[<span class="type">Nothing</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
 <p>We create a <code>Validation</code> by calling <code>validation</code> method on the <code>Either</code> instance. Depending on a left or right, we get either a <code>Success</code> or <code>Failure</code>.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Scalaz <code>Either</code> and Scala <code>Either</code> are pretty similar in the latest version of Scala (2.12, as of writing). Which one you decide to use depends upon your personal preference. My preference is to use Scalaz <code>Either</code> throughout my code if I am using other Scalaz features to maintain consistency.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="clxmyp2wj002v8dru52ex7fmu" data-title="Scalaz Either" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="clxsmn86u003iviru5im1egwy" data-title="Scalaz Either" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -466,11 +515,11 @@ mjx-container[display="true"] + br {
 <h3 id="Converting-to-Other-Datatypes"><a href="#Converting-to-Other-Datatypes" class="headerlink" title="Converting to Other Datatypes"></a>Converting to Other Datatypes</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> list = bothValid toList</span><br><span class="line">list: <span class="type">List</span>[<span class="type">Version</span>] = <span class="type">List</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> stream = bothValid toStream</span><br><span class="line">stream: <span class="type">Stream</span>[<span class="type">Version</span>] = <span class="type">Stream</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> either = bothValid toEither</span><br><span class="line">either: <span class="type">Either</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Right</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
 <p>Scalaz also provides convenience methods to convert the <code>Validation</code> to different datatypes like <code>List</code>, <code>Stream</code>, <code>Either</code>, etc.  </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>There’s a lot more methods than can be covered in a post. Hopefully this post gave you an idea about what’s possible with <code>Validation</code>s.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clxmyp2wl003p8dru3j6z4c6o" data-title="Scalaz Validation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clxsmn86v003wviruc5ep6lrr" data-title="Scalaz Validation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -522,11 +571,11 @@ mjx-container[display="true"] + br {
 <h3 id="Inserting-a-Value"><a href="#Inserting-a-Value" class="headerlink" title="Inserting a Value"></a>Inserting a Value</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ m1.insertWith(<span class="string">"a"</span>, <span class="number">99</span>) { _ + _ }</span><br><span class="line">res11: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">100</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">@ m1.insertWith(<span class="string">"a"</span>, <span class="number">99</span>)((v1, v2) =&gt; v1 + v2)</span><br><span class="line">res12: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">100</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>)</span><br><span class="line">@ m1.insertWith(<span class="string">"z"</span>, <span class="number">100</span>) { _ + _ }</span><br><span class="line">res13: <span class="type">Map</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Map</span>(<span class="string">"a"</span> -&gt; <span class="number">1</span>, <span class="string">"b"</span> -&gt; <span class="number">2</span>, <span class="string">"z"</span> -&gt; <span class="number">100</span>)</span><br></pre></td></tr></table></figure>  
 <p><code>insertWith</code> lets you insert a new key-value pair into the map. It also expects a function which will take values <code>v1</code> and <code>v2</code> as arguments to deal with cases where the key you’re trying to add already exists.  </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>MapOps</code>. These extra functions make it very easy to work with an immutable <code>Map</code> by providing extra functionality not present in the Scala core library.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="clxmyp2wk00388dru1d06eeax" data-title="Scalaz MapOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="clxsmn86t0036viru4hwk8dof" data-title="Scalaz MapOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-mapops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -584,11 +633,11 @@ mjx-container[display="true"] + br {
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t !? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res17: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>()</span><br><span class="line">@ f !? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res18: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>   
 <p><code>!?</code> is the opposite of <code>??</code> and returns the argument if the value is false or the zero element otherwise.  </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of our post on <code>BooleanOps</code>. There’s a lot more functions provided but I’ve chosen to cover those which I feel will be the most useful.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="clxmyp2wj002t8dru2s6g0ldg" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="clxsmn86s002wviru3frmajrj" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -635,11 +684,11 @@ mjx-container[display="true"] + br {
 <h3 id="Converting-to-a-ValidationNel"><a href="#Converting-to-a-ValidationNel" class="headerlink" title="Converting to a ValidationNel"></a>Converting to a ValidationNel</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> nel = t1 toValidationNel</span><br><span class="line">nel: <span class="type">ValidationNel</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
 <p><code>ValidationNel</code> is useful for accumulating errors. We’ll cover all of this in coming posts.   </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>TryOps</code>. In coming posts we’ll look at <code>Validation</code> type which lets us represent, as you might have guessed, the result of validating an input. Similarly, if we want to accumulate all the results of validating inputs, we use <code>ValidationNel</code>. Both of these are subjects of coming posts.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clxmyp2wl003l8dru9tuadis1" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clxsmn86u003rviru2k6pawkf" data-title="Scalaz TryOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -688,11 +737,11 @@ mjx-container[display="true"] + br {
 <p>This is different from the <code>map</code> from the standard library. The <code>map</code> from the standard library only operates on the last element of the tuple.  </p>
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) map (_ * <span class="number">2</span>)</span><br><span class="line">res5: (<span class="type">Int</span>, <span class="type">Int</span>) = (<span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s the end of the post on <code>TupleOps</code>. <code>TupleOps</code>‘s convenience methods can be used to manipulate tuples easily.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="clxmyp2wl003n8dru0myh3x3r" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="clxsmn86v003tviru58poae2b" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -742,11 +791,11 @@ mjx-container[display="true"] + br {
 <p>It’s also possible to parse values to <code>BigDecimal</code> and <code>BigInt</code>.</p>
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="string">"3.14159265358979323846"</span>.parseBigDecimal.fold(err =&gt; <span class="string">"failed parse"</span>.println, num =&gt; num.println)</span><br><span class="line"><span class="number">3.14159265358979323846</span></span><br></pre></td></tr></table></figure>  
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This covers the convenience methods Scalaz provides for dealing with <code>String</code>s. The <code>parseXXX</code> methods are the most useful as they avoid having to deal with an exception.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="clxmyp2wl003i8drudy0l60jf" data-title="Scalaz StringOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="clxsmn86u003pviru72qidokj" data-title="Scalaz StringOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-stringops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -792,11 +841,11 @@ mjx-container[display="true"] + br {
 <h3 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// we'll have fun with these values</span></span><br><span class="line">@ <span class="keyword">val</span> o = some(<span class="string">"option"</span>)</span><br><span class="line">o: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">"option"</span>)</span><br><span class="line">@ <span class="keyword">val</span> n = none[<span class="type">String</span>]</span><br><span class="line">n: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// None to right disjunction</span></span><br><span class="line">@ n toRightDisjunction <span class="string">"onTheLeft"</span></span><br><span class="line">res10: <span class="type">String</span> \/ <span class="type">String</span> = -\/(<span class="string">"onTheLeft"</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the left</span></span><br><span class="line">@ res10 fold(l =&gt; <span class="string">s"Left: <span class="subst">$l</span>"</span>.println, r =&gt; <span class="string">s"Right: <span class="subst">$r</span>"</span>.println)</span><br><span class="line"><span class="string">"Left: onTheLeft"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Some to right disjunction</span></span><br><span class="line">@ o toRightDisjunction <span class="string">"onTheLeft"</span></span><br><span class="line">res11: <span class="type">String</span> \/ <span class="type">String</span> = \/-(<span class="string">"option"</span>)</span><br><span class="line"><span class="comment">// Folding the disjunction prints the value on the right</span></span><br><span class="line">@ res11 fold(l =&gt; <span class="string">s"Left: <span class="subst">$l</span>"</span>.println, r =&gt; <span class="string">s"Right: <span class="subst">$r</span>"</span>.println)</span><br><span class="line"><span class="string">"Right: option"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// default values, similar to unary ~</span></span><br><span class="line">@ n.orZero</span><br><span class="line">res12: <span class="type">String</span> = <span class="string">""</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// ternary operator</span></span><br><span class="line">@ o ? <span class="string">"some"</span> | <span class="string">"none"</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">"some"</span></span><br></pre></td></tr></table></figure>  
 <p>Scalaz provides us with a disjunction which is a replacement for Scala <code>Either</code>. I’ve only introduced disjunction here and will cover it later in a post of its own. Trying to convert a <code>None</code> to a right disjunction doesn’t work. We get back a left disjunction as indicated by <code>-\/</code>. Similarly, converting a <code>Some</code> to right disjunction works, as indicated by <code>\/-</code>. Scalaz also provides a ternary operator to work with <code>Option</code>s. </p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This sums up, non-exhaustively, how we can use the convenience methods that Scalaz provides on top of <code>Option</code>s that lets us code in more expressive and type-safe way. </p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clxmyp2wk003d8druasrs6m12" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clxsmn86u003gvirud61p19g6" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -870,65 +919,13 @@ mjx-container[display="true"] + br {
 <figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="class"><span class="keyword">object</span> <span class="title">Size</span> </span>{</span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Size</span>(<span class="params">val size: <span class="type">Int</span>, val name: <span class="type">String</span></span>)</span></span><br><span class="line">    <span class="keyword">val</span> <span class="type">SMALL</span> = <span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>)</span><br><span class="line">    <span class="keyword">val</span> <span class="type">MEDIUM</span> = <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>)</span><br><span class="line">    <span class="keyword">val</span> <span class="type">LARGE</span> = <span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">SizeEnum</span> <span class="keyword">extends</span> <span class="title">Enum</span>[<span class="type">Size</span>] <span class="keyword">with</span> <span class="title">Show</span>[<span class="type">Size</span>] </span>{</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">order</span></span>(s1: <span class="type">Size</span>, s2: <span class="type">Size</span>): <span class="type">Ordering</span> = (s1.size compare s2.size) <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="number">-1</span> =&gt; <span class="type">Ordering</span>.<span class="type">LT</span></span><br><span class="line">          <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="type">Ordering</span>.<span class="type">EQ</span></span><br><span class="line">          <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="type">Ordering</span>.<span class="type">GT</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">succ</span></span>(s: <span class="type">Size</span>): <span class="type">Size</span> = s <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="type">SMALL</span> =&gt; <span class="type">MEDIUM</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">MEDIUM</span> =&gt; <span class="type">LARGE</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">LARGE</span> =&gt; <span class="type">SMALL</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">pred</span></span>(s: <span class="type">Size</span>): <span class="type">Size</span> = s <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="type">SMALL</span> =&gt; <span class="type">LARGE</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">MEDIUM</span> =&gt; <span class="type">SMALL</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">LARGE</span> =&gt; <span class="type">MEDIUM</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">zero</span></span>: <span class="type">Size</span> = <span class="type">SMALL</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">shows</span></span>(s: <span class="type">Size</span>) = s.name</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">max</span> </span>= <span class="type">Some</span>(<span class="type">LARGE</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">min</span> </span>= <span class="type">Some</span>(<span class="type">SMALL</span>)</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Size</span></span></span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Size</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Size</span>._</span><br><span class="line"><span class="comment">// step through</span></span><br><span class="line">@ <span class="type">SMALL</span> -+- <span class="number">1</span></span><br><span class="line">res4: <span class="type">Size</span> = <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>)</span><br><span class="line"><span class="comment">// as a list</span></span><br><span class="line">@ <span class="type">SMALL</span> |-&gt; <span class="type">LARGE</span></span><br><span class="line">res5: <span class="type">List</span>[<span class="type">Size</span>] = <span class="type">List</span>(<span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>), <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>), <span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>))</span><br><span class="line"><span class="comment">// show</span></span><br><span class="line">@ <span class="type">SMALL</span>.println</span><br><span class="line"><span class="type">SMALL</span></span><br><span class="line"><span class="comment">// max</span></span><br><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Size</span>]].max</span><br><span class="line">res6: <span class="type">Option</span>[<span class="type">Size</span>] = <span class="type">Some</span>(<span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>))</span><br><span class="line"><span class="comment">// min</span></span><br><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Size</span>]].min</span><br><span class="line">res7: <span class="type">Option</span>[<span class="type">Size</span>] = <span class="type">Some</span>(<span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>))</span><br></pre></td></tr></table></figure>  
 <p>Notice that since we’re using <code>implicitly[]</code>, we don’t have to provide the exact name of the typeclass extending <code>Enum[Size]</code>, the compiler will figure it out from the implicits within scope.</p>
 <h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Although Scalaz <code>Enum</code> may seem like a long-winded way to do something trivial, they offer you a lot more flexibility and brevity over vanilla Scala enum. However, I believe that the full force of Scalaz <code>Enum</code> is needed only when you have ordered elements like size. For cases like compass directions, Scala enum are better-suited.</p>
-
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="clxmyp2wj002y8drugh6519y0" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="clxsmn86t002yvirubzncfj05" data-title="Scalaz Enum" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-show" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/01/scalaz-show/" class="article-date">
-  <time datetime="2017-07-01T05:31:40.000Z" itemprop="datePublished">2017-07-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/01/scalaz-show/">Scalaz Show</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at Scalaz <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Show.scala"><code>Show</code></a>. The only purpose of this trait is to provide a <code>String</code> representation for its subtypes.  </p>
-<h2 id="A-Simple-Example"><a href="#A-Simple-Example" class="headerlink" title="A Simple Example"></a>A Simple Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="number">3.</span>show</span><br><span class="line">res2: <span class="type">Cord</span> = <span class="type">Cord</span>(<span class="number">1</span> [<span class="number">3</span>])</span><br><span class="line">@ <span class="number">3.</span>println</span><br><span class="line"><span class="number">3</span></span><br></pre></td></tr></table></figure>  
-<p>As always, there are implicits defined for <code>Int</code>, <code>Float</code>, etc. Calling <code>println</code> returns a <code>String</code> whereas calling <code>show</code> returns a <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Cord.scala"><code>Cord</code></a>. Going over the source code for <code>Cord</code>: </p>
-<p><em>A Cord is a purely functional data structure for efficiently storing and manipulating Strings that are potentially very long.</em>  </p>
-<h2 id="Why-Use-Show"><a href="#Why-Use-Show" class="headerlink" title="Why Use Show?"></a>Why Use Show?</h2><p>A reasonable question to ask is why use <code>Show</code> when we have a <code>toString</code> which produces a <code>String</code> representation of objects. The answer is that <code>toSring</code> doesn’t always produce a useful representation.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ println(<span class="keyword">new</span> <span class="type">Thread</span>())</span><br><span class="line"><span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-185</span>,<span class="number">5</span>,main]</span><br></pre></td></tr></table></figure>  
-<h2 id="Showing-a-Thread"><a href="#Showing-a-Thread" class="headerlink" title="Showing a Thread"></a>Showing a Thread</h2><p>So, let’s create a <code>Show</code> for <code>Thread</code>.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">ThreadShowable</span> <span class="keyword">extends</span> <span class="title">Show</span>[<span class="type">Thread</span>] </span>{</span><br><span class="line">    <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">shows</span></span>(t: <span class="type">Thread</span>): <span class="type">String</span> = <span class="string">s"Thread Id=<span class="subst">${t.getId}</span> name=<span class="subst">${t.getName}</span>"</span></span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">ThreadShowable</span></span></span><br><span class="line">@ <span class="keyword">val</span> t = <span class="keyword">new</span> <span class="type">Thread</span>()</span><br><span class="line">t: <span class="type">Thread</span> = <span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-322</span>,<span class="number">5</span>,main]</span><br><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">@ println(t)</span><br><span class="line"><span class="type">Thread</span>[<span class="type">Thread</span><span class="number">-322</span>,<span class="number">5</span>,main]</span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">@ t.println</span><br><span class="line"><span class="type">Thread</span> <span class="type">Id</span>=<span class="number">352</span> name=<span class="type">Thread</span><span class="number">-322</span></span><br></pre></td></tr></table></figure>  
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p><code>Show</code> is probably not that interesting and probably exists because there is <code>Show</code> class in Haskell<sup><a target="_blank" rel="noopener" href="https://www.haskell.org/tutorial/stdclasses.html">[1]</a></sup>:  </p>
-<p><em>The instances of class Show are those types that can be converted to character strings (typically for I/O)</em></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="clxmyp2wl003g8dru8g0bew9n" data-title="Scalaz Show" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -957,7 +954,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 10px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -967,6 +964,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/06/24/Programming-Puzzles-1/">Programming Puzzles 1</a>
+          </li>
         
           <li>
             <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium</a>
@@ -1002,10 +1003,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
-          </li>
-        
-          <li>
-            <a href="/2024/03/21/Setting-up-a-Python-microservice/">Setting up a Python microservice</a>
           </li>
         
       </ul>
