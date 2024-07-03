@@ -180,6 +180,59 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Programming-Puzzles-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/07/03/Programming-Puzzles-2/" class="article-date">
+  <time datetime="2024-07-03T11:56:27.000Z" itemprop="datePublished">2024-07-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>As I continue working my way through the book on programming puzzles, I came across those involving permutations. In this post I’ll collect puzzles with the same theme, both from the book and from the internet.  </p>
+<h2 id="All-permutations"><a href="#All-permutations" class="headerlink" title="All permutations"></a>All permutations</h2><p>The first puzzle is to compute all the permutations of a given array. By extension, it can be used to compute all the permutations of a string, too, if we view it as an array of characters. To do this we’ll implement <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Heap%27s_algorithm">Heap’s algorithm</a>. The following is its recursive version.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">heap</span>(<span class="params">permutations: <span class="built_in">list</span>[<span class="built_in">list</span>], A: <span class="built_in">list</span>, n: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="keyword">if</span> n == <span class="number">1</span>:</span><br><span class="line">        permutations.append(<span class="built_in">list</span>(A))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        heap(permutations, A, n - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n - <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> n % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">                A[i], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[i]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                A[<span class="number">0</span>], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">            heap(permutations, A, n - <span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
+<p>The array <code>permutations</code> is the accumulator which will store all the permutations of the array. The initial arguments to the function would be an empty acuumulator, the list to permute, and the length of the list.</p>
+<h2 id="Next-permutation"><a href="#Next-permutation" class="headerlink" title="Next permutation"></a>Next permutation</h2><p>The next puzzle we’ll look at is computing the next permutation of the array in lexicographical order. The following implementation has been taken from the book.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">next_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &gt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &gt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
+<h2 id="Previous-permutation"><a href="#Previous-permutation" class="headerlink" title="Previous permutation"></a>Previous permutation</h2><p>A variation of the puzzle is to compute the previous permutation of the array in lexicographical order. The idea is to “reverse” the logic for computing the next permutation. If we look closely, we’ll find that all we’re changing are the comparison operators.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">previous_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &lt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &lt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
+<h2 id="kth-smallest-permutation"><a href="#kth-smallest-permutation" class="headerlink" title="kth smallest permutation"></a>kth smallest permutation</h2><p>The final puzzle we’ll look at is the one where we need to compute the k’th smallest permutation. The solution to this uses the <code>previous_permutation</code> function that we saw above. The idea is to call this function k times on the lexicographically-largest array. Sorting the array in decreasing order results is the largest. This becomes the input to the <code>previous_permutation</code> function.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kth_smallest_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>], k: <span class="built_in">int</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    <span class="comment"># -- Arrange the numbers in decreasing order</span></span><br><span class="line">    <span class="comment"># -- thereby creating the lexicographically largest permutation</span></span><br><span class="line">    perm = <span class="built_in">sorted</span>(perm, reverse=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(k):</span><br><span class="line">        perm = previous_permutation(perm)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
+<p>That’s it. These are puzzles involving permutations.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cly5s8p2b001ih4ruhlcbbilt" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/epi/" rel="tag">epi</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Programming-Puzzles-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/06/24/Programming-Puzzles-1/" class="article-date">
@@ -244,7 +297,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="clxsmn86p001dviru749sgyat" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cly5s8p2b001dh4ruhw2x79m2" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -324,7 +377,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="clxsmn86n000pviru2c8v646l" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cly5s8p29000nh4ruad7d2rai" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -370,7 +423,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="clxsmn86j0003virubecl9emx" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cly5s8p260003h4rueszmabjc" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -492,7 +545,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="clxsmn86l0007viru89gj7vo0" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cly5s8p27000ah4rufaf8bxcd" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -563,7 +616,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="clxsmn86p001iviruanogbbq9" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cly5s8p2b001kh4ru1d7wallk" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -627,7 +680,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="clxsmn86p001nviru334vez53" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cly5s8p2c001ph4ru9v2z2ktz" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -686,7 +739,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clxsmn86l000dvirufjn93gcu" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cly5s8p28000gh4ru6duw8d5x" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -739,7 +792,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clxsmn86p001gviru61c60eln" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cly5s8p2c001sh4ru6ae9depd" data-title="Running Database Migrations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -819,7 +872,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clxsmn86p001lviru5dx65lzs" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cly5s8p2c001nh4rubcm2cuqz" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -889,7 +942,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clxsmn86l000aviru4c0k2w69" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cly5s8p27000bh4ru2oxnbodm" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1009,87 +1062,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clxsmn86q001sviruarpn6xk1" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cly5s8p2c001zh4ru7tt07nsc" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Setting-up-Sphinx-Documentation" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/03/17/Setting-up-Sphinx-Documentation/" class="article-date">
-  <time datetime="2024-03-17T04:29:09.000Z" itemprop="datePublished">2024-03-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In one of my <a href="/2023/12/11/Software-Architecture-as-Code/">previous blog posts</a> I had written about creating software architecture as code. The primary motivation behind it was to commit the architecture to version control, and keep it close to the source code. The added benefit, that perhaps remained implicit, is that architecture reviews can now happen as a part of the PR review. In the same spirit, I’d also like to keep the documentation close to the source code, and make documentation review a part of the PR review process. This post is about setting up Sphinx documentaion for a Flask microservice. Although everything mentioned in this post is Python-specific, the ideas can hopefully be applied to any language and framework of your choice.  </p>
-<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>We’ll build a simple Flask microservice. It receives an HTTP request, conducts some processing, and then invokes another microservice. For the purpose of this post, the processing is simply <code>time.sleep</code>, while the other microservice is HTTPBin. We’ll then document our code and render it with Sphinx. This example, while contrived, is analogous to many real-world software projects in which numerous packages within the codebase are used in conjunction to express business logic. The goal of documentation, therefore, is to provide context to anyone working with the source. We will include documentation that gives a broad overview of the project, and covers each package in detail.  </p>
-<h3 id="HttpBin"><a href="#HttpBin" class="headerlink" title="HttpBin"></a>HttpBin</h3><p>We’ll begin by adding classes which will let us make requests to HTTPBin.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">_HttpBinRequest</span>(abc.ABC):</span><br><span class="line"></span><br><span class="line">    base_url: <span class="built_in">str</span> = <span class="string">"https://httpbin.org"</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @abc.abstractmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">self</span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">        <span class="keyword">raise</span> <span class="literal">NotImplemented</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dc.dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpBinPost</span>(<span class="title class_ inherited__">_HttpBinRequest</span>):</span><br><span class="line">    params: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = dc.field(default=<span class="built_in">dict</span>)</span><br><span class="line">    json: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = dc.field(default=<span class="built_in">dict</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">self</span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">        url = <span class="string">f"<span class="subst">{self.base_url}</span>/post"</span></span><br><span class="line">        headers = {<span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>} <span class="keyword">if</span> self.json <span class="keyword">else</span> {}</span><br><span class="line">        response = requests.post(</span><br><span class="line">            url=url, </span><br><span class="line">            json=self.json, </span><br><span class="line">            params=self.params, </span><br><span class="line">            headers=headers,</span><br><span class="line">        )</span><br><span class="line">        response.raise_for_status()</span><br><span class="line">        <span class="keyword">return</span> response.json()</span><br></pre></td></tr></table></figure>  
-<p>An object of <code>HttpBinPost</code> class is a representation of a POST request to HTTPBin, and can include query params, and a JSON body as a part of the request. As you’d have noticed, there is no documentation in the code.  </p>
-<p>We’ll now add a blueprint which will accept incoming requests, and then make calls to HttpBin. </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@httpbin.post(<span class="params"><span class="string">"/post"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>():</span><br><span class="line">    params = {<span class="string">"foo"</span>: <span class="string">"bar"</span>}</span><br><span class="line">    json = {<span class="string">"foo"</span>: <span class="string">"bar"</span>}</span><br><span class="line">    request = HttpBinPost(params=params, json=json)</span><br><span class="line">    time.sleep(<span class="number">0.5</span>)</span><br><span class="line">    <span class="keyword">return</span> request.execute()</span><br></pre></td></tr></table></figure>  
-<p>The <code>httpbin</code> blueprint configures a <code>/post</code> endpoint. We send some query parameters and a json body along with the POST request, and the response is returned directly to the caller. Finally, we make a curl call to the endpoint. </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s -XPOST localhost:5000/post | jq .</span><br></pre></td></tr></table></figure>  
-<p>To summarize, we have a codebase that includes a package for making requests to HttpBin, as well as an API endpoint that makes the request using this package. We will now look at Sphinx and how to document the codebase.  </p>
-<h3 id="Sphinx"><a href="#Sphinx" class="headerlink" title="Sphinx"></a>Sphinx</h3><p>Sphinx is a documentation generator that we’ll use to generate HTML files from a directory of <a target="_blank" rel="noopener" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a> files. We’ll also use the autodoc extension to generate documentaion from docstrings of Python classes and functions. The first step, however, is to install Sphinx. We’ll do so by using pip.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install sphinx</span><br></pre></td></tr></table></figure>  
-<p>We’ll now begin configuring Sphinx. We’ll navigate to the <code>docs</code> directory, and run the <code>sphinx-quickstart</code> script that will run the interactive setup. While following along the setup, we’ll make sure to separate the <code>build</code> and <code>source</code> directories. </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> docs/</span><br><span class="line">sphinx-quickstart</span><br></pre></td></tr></table></figure>  
-<p>The <code>source</code> directory will contain the configuration file along with the rst files. The <code>build</code> directory will contain the HTML files that are generated when we build the documentation from the <code>source</code> directory. Let’s take a quick look at the generated files and directories with <code>tree</code>.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── build</span><br><span class="line">├── make.bat</span><br><span class="line">├── Makefile</span><br><span class="line">└── source</span><br><span class="line">    ├── conf.py</span><br><span class="line">    ├── index.rst</span><br><span class="line">    ├── _static</span><br><span class="line">    └── _templates</span><br></pre></td></tr></table></figure>  
-<p>We will update <code>conf.py</code> and add our repository to <code>sys.path</code>. This is required by the autodoc extension as it imports modules to be documented. We’ll add the following lines to the bottom of the file. You will have to update the path appropriately.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -- Add our repository to sys.path</span></span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">path = Path.home() / <span class="string">"Personal"</span> / <span class="string">"sphinx"</span></span><br><span class="line">sys.path.insert(<span class="number">0</span>, <span class="built_in">str</span>(path))</span><br></pre></td></tr></table></figure>  
-<p>We’ll now generate documentation by running the <code>sphinx-build</code> command manually. Later we’ll write a small bash script to automate the process of regenerating the documentation.   </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sphinx-build <span class="built_in">source</span>/ build/html/</span><br><span class="line">open build/html/index.html</span><br></pre></td></tr></table></figure>  
-<p>We’ll get the following HTML page after rendering index.rst. It is extremely basic, and we will add to it to give an overview of the codebase. </p>
-<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-1.png" class="">  
-<p>We’ll update the <code>conf.py</code> file and enable a couple of <a target="_blank" rel="noopener" href="https://www.sphinx-doc.org/en/master/usage/extensions/index.html">extensions</a> by adding them to the <code>extensions</code> array.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extensions = [<span class="string">"sphinx.ext.autodoc"</span>, <span class="string">"sphinx.ext.napoleon"</span>]</span><br></pre></td></tr></table></figure> 
-<p>The two extensions we’ve added allow us to include docstrings as a part of the documentation. For the sake of this post, we’ll add lorem ipsum to the <code>HttpBinPost</code> class.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@dc.dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpBinPost</span>(<span class="title class_ inherited__">_HttpBinRequest</span>):</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span></span><br><span class="line"><span class="string">    Fusce laoreet lectus neque, in congue purus dapibus et.</span></span><br><span class="line"><span class="string">    Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span></span><br><span class="line"><span class="string">    Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span></span><br><span class="line"><span class="string">    In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span></span><br><span class="line"><span class="string">    Etiam ullamcorper turpis at tempus semper.</span></span><br><span class="line"><span class="string">    Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span></span><br><span class="line"><span class="string">    Integer varius volutpat interdum.</span></span><br><span class="line"><span class="string">    """</span></span><br></pre></td></tr></table></figure>  
-<p>We’ll now create a new rst file called <code>httpbin.rst</code> in the <code>source</code> directory. This will contain the overview of the HTTPBin module, and a couple of directives to include the module, and the <code>HttpBinPost</code> class as a part of the documentation.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HttpBin Module</span><br><span class="line">==============</span><br><span class="line"></span><br><span class="line">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span><br><span class="line">Fusce laoreet lectus neque, in congue purus dapibus et.</span><br><span class="line">Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span><br><span class="line">Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span><br><span class="line">In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span><br><span class="line">Etiam ullamcorper turpis at tempus semper.</span><br><span class="line">Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span><br><span class="line">Integer varius volutpat interdum.</span><br><span class="line"></span><br><span class="line">.. automodule:: service.httpbin</span><br><span class="line">.. autoclass:: service.httpbin.HttpBinPost</span><br></pre></td></tr></table></figure>  
-<p>Finally, we’ll update the <code>index.rst</code> file. This is where we’ll provide the overview of the codebase, and link the <code>httpbin.rst</code> file.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Welcome to Sphinx's documentation!</span><br><span class="line">==================================</span><br><span class="line">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span><br><span class="line">Fusce laoreet lectus neque, in congue purus dapibus et.</span><br><span class="line">Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span><br><span class="line">Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span><br><span class="line">In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span><br><span class="line">Etiam ullamcorper turpis at tempus semper.</span><br><span class="line">Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span><br><span class="line">Integer varius volutpat interdum.</span><br><span class="line"></span><br><span class="line">.. toctree::</span><br><span class="line">   :maxdepth: 2</span><br><span class="line">   :caption: Contents:</span><br><span class="line"></span><br><span class="line">   httpbin.rst</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>  
-<p>The generated documentation now has an overview on the index page, and a link to the HttpBin module. When we click the link to the module, we’ll see that the overview, as well as the docstring of the <code>HttpBinPost</code> class, are included in the documentation. Screenshots of both of these pages are provided below.</p>
-<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-2.png" class="" title="index">
-<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-3.png" class="" title="httpbin">  
-<p>We’ll now add a small bash script, called <code>docs.sh</code>, to regenerate the documentation for the codebase, and place it at the root of the codebase.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">sphinx-build docs/source/ docs/build/html/</span><br><span class="line">open docs/build/html/index.html</span><br></pre></td></tr></table></figure>  
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This post is a basic introduction to using Sphinx to generate documentation. Keeping the documentation within the repository allows keeping the context close to the source. Combining this post with the previous post on architecture as code, we can keep most of the context of a repository within itself. I find this to be more helpful than using Confluence or Notion. Finally, all of the code for this post is available as a <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/sphinx">GitHub repository</a>.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clxsmn86q001qviru2b8h8le1" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1118,7 +1093,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 10px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.25px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1128,6 +1103,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
+          </li>
         
           <li>
             <a href="/2024/06/24/Programming-Puzzles-1/">Programming Puzzles 1</a>
@@ -1163,10 +1142,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
-          </li>
-        
-          <li>
-            <a href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
           </li>
         
       </ul>

@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/</loc>
+        <lastmod>2024-07-03T11:56:27.581Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/</loc>
         <lastmod>2024-06-24T06:58:05.224Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -63,14 +71,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
-        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -80,6 +80,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2017/07/04/scalaz-optionops/</loc>
+        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -199,6 +207,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2017/07/03/scalaz-enum/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -223,15 +239,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
+        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
         <lastmod>2024-06-19T10:13:08.185Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -239,7 +247,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
+        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
         <lastmod>2024-06-19T10:13:08.185Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -255,7 +263,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/</loc>
+        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
         <lastmod>2024-06-19T10:13:08.184Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -263,7 +271,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
+        <loc>http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/</loc>
         <lastmod>2024-06-19T10:13:08.184Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -351,14 +359,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/</loc>
-        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -375,7 +375,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/</loc>
+        <loc>http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -399,8 +399,8 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
-        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <loc>http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/</loc>
+        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -408,6 +408,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
+        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -455,6 +463,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -496,14 +512,6 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
