@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/</loc>
+        <lastmod>2024-07-06T16:55:11.772Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/</loc>
         <lastmod>2024-07-03T11:56:27.581Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -31,7 +39,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/11/scalaz-validation/</loc>
+        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
         <lastmod>2024-06-19T10:13:08.188Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -47,7 +55,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
+        <loc>http://fasihkhatib.com/2017/07/11/scalaz-validation/</loc>
         <lastmod>2024-06-19T10:13:08.188Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -79,7 +87,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/04/scalaz-optionops/</loc>
+        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -87,7 +95,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/05/scalaz-memo/</loc>
+        <loc>http://fasihkhatib.com/2017/07/04/scalaz-optionops/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -199,14 +207,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -215,7 +215,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/03/scalaz-enum/</loc>
+        <loc>http://fasihkhatib.com/2017/07/10/scalaz-booleanops/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -231,7 +231,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/06/23/scalaz-introduction/</loc>
+        <loc>http://fasihkhatib.com/2017/07/03/scalaz-enum/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -239,8 +239,8 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
-        <lastmod>2024-06-19T10:13:08.185Z</lastmod>
+        <loc>http://fasihkhatib.com/2017/06/23/scalaz-introduction/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -263,8 +263,8 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
-        <lastmod>2024-06-19T10:13:08.184Z</lastmod>
+        <loc>http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/</loc>
+        <lastmod>2024-06-19T10:13:08.185Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -279,7 +279,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/</loc>
+        <loc>http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/</loc>
         <lastmod>2024-06-19T10:13:08.184Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -288,6 +288,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/</loc>
+        <lastmod>2024-06-19T10:13:08.184Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/</loc>
         <lastmod>2024-06-19T10:13:08.184Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -351,23 +359,15 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/</loc>
-        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/</loc>
-        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/</loc>
+        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -383,15 +383,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/</loc>
-        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/</loc>
+        <loc>http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -407,8 +399,16 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
-        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <loc>http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/</loc>
+        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/</loc>
+        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -416,6 +416,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/</loc>
+        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -447,7 +455,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/</loc>
+        <loc>http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -455,7 +463,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/</loc>
+        <loc>http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -495,14 +503,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -512,6 +512,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
