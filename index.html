@@ -205,7 +205,7 @@ mjx-container[display="true"] + br {
         <p>In a previous post we’d seen how to <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">create a realtime data platform with Pinot, Trino, Airflow, and Debezium.</a> In this post we’ll see how to setup a data catalog using <a target="_blank" rel="noopener" href="https://datahubproject.io/">DataHub</a>. A data catalog, as the name suggests, is an inventory of the data within the organization. Data catalogs make it easy to find the data within the organisation like tables, data sets, reports, etc.</p>
 <h2 id="Before-we-begin"><a href="#Before-we-begin" class="headerlink" title="Before we begin"></a>Before we begin</h2><p>My setup consists of Docker containers required to run DataHub. While DataHub provides features like data lineage, column assertions, and much more, we will look at three of the simpler featuers. One, we’ll look at creating a glossary of the terms that will be used frequently in the organization. Two, we’ll catalog the datasets and views that we saw in the previous post. Three, we’ll create an inventory of dashboards and reports created for various departments within the organisation.    </p>
 <p>The rationale for this as follows. Imagine a day in the life of a business analyst. Their responsibilities include creating reports and dashboards for various departments. For example, the marketing team may want to see an “orders by day” dashboard so that they can correlate the effects of advertising campaigns with an uptick in the volume of orders. Similarly, the product team may want a report of which features are being used by the users. The requests of both of these teams will be served by the business analyts using the data that’s been brought into the data platform. While they create these reports and dashboards, it’s common for them to receive queries asking where a team member can find a certain report or how to interpret a data point within a report. They may also have to search for tables and data sets to create new reports, acquaint themselves with the vocabulary of the various departments, and so on.  </p>
-<p>A data catalog makes it all of this a more efficient process. In the following sections we’ll see how we can use DataHub to do it. For example, we’ll create the definition of the term “order”, create a list of reports created for the marketing department, and bring in the views and data sets so that they become searchable.  </p>
+<p>A data catalog makes all of this a more efficient process. In the following sections we’ll see how we can use DataHub to do it. For example, we’ll create the definition of the term “order”, create a list of reports created for the marketing department, and bring in the views and data sets so that they become searchable.  </p>
 <p>The work of data scientists is similar, too, because they create data sets that can be reused across various models. For example, data sets representing features for various customers can be stored in the platform, made searchable, and used with various models. They, too, benefit from having a data catalog.  </p>
 <p>Finally, it helps bring people up to speed with the data that is consumed by their department or team. For example, when someone joins the marketing team, pointing them to the data catalog helps them get productive quickly by finding the relevant reports, terminology, etc.</p>
 <h2 id="Ingesting-data-sets-and-views"><a href="#Ingesting-data-sets-and-views" class="headerlink" title="Ingesting data sets and views"></a>Ingesting data sets and views</h2><p>To ingest the tables and views, we’ll create a data pipeline which ingets metadata from AWS Glue and writes it to the metadata service. This is done by creating a YAML configuration in DataHub that specifies where to ingest the metadata from, and where to write it. Once this is created, we can schedule it to run periodically so that it stays updated with Glue.  </p>
@@ -230,7 +230,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="clyad92mm0027cyru9kc3c837" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="clyd772ef0021ljrufrqc89bh" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -283,7 +283,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="clyad92mk001ecyruebz3h3zg" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="clyd772ee001hljru3x13apz6" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -363,7 +363,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="clyad92mk0019cyruaw0f9xzw" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="clyd772ee001eljrudzgz14ky" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -443,7 +443,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="clyad92mf0007cyruck4sccba" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="clyd772ea000bljruddea3eee" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -489,7 +489,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="clyad92me0003cyru0tgg5rut" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="clyd772e80003ljru8qlrfycb" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -611,7 +611,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="clyad92mg000bcyrubrgi8vg3" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="clyd772ea000aljru4wo3erzq" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -682,7 +682,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="clyad92ml001ycyruhlfyax1i" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="clyd772ee001oljru71fr2g74" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -746,7 +746,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="clyad92ml001rcyru5bifbd6s" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="clyd772ee001mljrugwglhz0w" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -805,7 +805,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clyad92mh000ncyruenybezxf" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clyd772eb000iljru3biuaifr" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -858,7 +858,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clyad92mk001jcyru2zji4ajn" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clyd772ee001jljrueb64hnwc" data-title="Running Database Migrations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -938,7 +938,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clyad92ml001mcyru5sk4cmuf" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clyd772ef001rljru0zm64pr0" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1008,7 +1008,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clyad92mg000dcyrugnesc974" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clyd772ea000eljru9y6zh2xh" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
