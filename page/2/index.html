@@ -180,6 +180,76 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Hosting-Python-Packages" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/22/Hosting-Python-Packages/" class="article-date">
+  <time datetime="2024-03-22T16:34:29.000Z" itemprop="datePublished">2024-03-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2024/03/21/Setting-up-a-Python-microservice/">previous post</a> we saw how to create Python microservices. It’s likely that these microservices will share code. For example libraries for logging, accessing the database, etc. In this post we’ll see how to create and host Python packages.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>The setup is intentionally chosen for simplicity. We’ll separate the common code into a repository of its own, and use Poetry to package it. We’ll deploy it to S3, and use <code>dumb-pypi</code> to generate a static site which can be used to list the hosted packages.  </p>
+<p>The setup can be expanded to accommodate larger organizations with more teams, but it is primarily intended for smaller organizations with fewer teams that need to ramp up quickly. The main idea behind package distribution for Python is to arrange the files in a particular directory structure that can be accessed by a web server. While I am utilizing S3, you are free to use any comparable technology. You may even host everything on virtual machines (VMs) that are placed behind a load balancer. </p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>Let’s start with a package called “common” which contains the OTel code we saw previously. In essence, we’ve simply copied the contents of package over into a new repository. Next we’ll intialize a Poetry project and enter the relevant information interactively.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">poetry init --name=<span class="string">"common"</span> --description=<span class="string">"A collection of utilities"</span> --python=<span class="string">"^3.12"</span></span><br></pre></td></tr></table></figure>
+<p>Next we’ll add the relevant dependencies with Poetry. The first three are for the common code, and the fourth is for generating static pages.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">poetry add opentelemetry-sdk@latest</span><br><span class="line">poetry add opentelemetry-api@latest</span><br><span class="line">poetry add setuptools@latest</span><br><span class="line">poetry add --group dev dumb-pypi@latest</span><br></pre></td></tr></table></figure>
+<p>Next we’ll write a small bash script which will create the package, generate a static site to display hosted packages, and upload them to S3.</p>
+<figure class="highlight bash"><figcaption><span>deploy.sh</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">PROJECT=<span class="string">"common"</span></span><br><span class="line">BUCKET=<span class="string">"... bucket name ..."</span></span><br><span class="line">TEAM=<span class="string">"devtools"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Generate the package file for dumb-pypi</span></span><br><span class="line">PACKAGE=$(poetry build | awk <span class="string">'{print $3}'</span> | sed -n <span class="string">'3p'</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"<span class="variable">$PACKAGE</span>"</span> &gt;&gt; packages</span><br><span class="line"><span class="built_in">sort</span> -u packages -o packages</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Upload package</span></span><br><span class="line">aws s3 <span class="built_in">cp</span> <span class="string">"dist/<span class="variable">$PACKAGE</span>"</span> <span class="string">"s3://<span class="variable">$BUCKET</span>/packages/<span class="variable">$TEAM</span>/<span class="variable">$PROJECT</span>/<span class="variable">$PACKAGE</span>"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Generate static files for PyPi</span></span><br><span class="line">dumb-pypi \</span><br><span class="line">    --package-list packages \</span><br><span class="line">    --packages-url <span class="string">"https://<span class="variable">$BUCKET</span>.s3.us-west-2.amazonaws.com/packages/<span class="variable">$TEAM</span>/<span class="variable">$PROJECT</span>"</span> \</span><br><span class="line">    --output-dir index</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Upload the files in S3</span></span><br><span class="line">aws s3 <span class="built_in">cp</span> --recursive index/ <span class="string">"s3://<span class="variable">$BUCKET</span>/dumb-pypi/<span class="variable">$TEAM</span>/index/"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Open static pages in the browser</span></span><br><span class="line">open <span class="string">"https://<span class="variable">$BUCKET</span>.s3.us-west-2.amazonaws.com/dumb-pypi/<span class="variable">$TEAM</span>/index/index.html"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Serve static pages locally</span></span><br><span class="line"><span class="comment"># -- python -m http.server -b 0.0.0.0 -d index 8080</span></span><br></pre></td></tr></table></figure>
+<p>There’s a lot going on in the script. First we build the package using Poetry on line #7. The output contains the name of the zip file and we extract that into a variable. This is then stored into a file on line #8 and will be used by <code>dumb-pypi</code> to generate the static files. We sort and deduplicate the packages on line #9. On line #12 we store copy the package to S3. On line #15 we generate the static files into a folder named <code>index</code> which we then copy to S3 on line #21. On line #24 we open the documentation in the browser.  </p>
+<p>The S3 bucket contains a directory structure as mentioned in the Python packaging docs.<sup>[1]</sup></p>
+<p>Before we run the script, however, we will have to configure the S3 bucket to be publicly accessible. We do so by enabling it to serve static content, and adding a policy which enables access to the content. The policy is given below.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"Version"</span><span class="punctuation">:</span> <span class="string">"2012-10-17"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"Statement"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"Sid"</span><span class="punctuation">:</span> <span class="string">"ReadIndex"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Effect"</span><span class="punctuation">:</span> <span class="string">"Allow"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Principal"</span><span class="punctuation">:</span> <span class="string">"*"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Action"</span><span class="punctuation">:</span> <span class="string">"s3:GetObject"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Resource"</span><span class="punctuation">:</span> <span class="string">"arn:aws:s3:::yourbucketnamehere/*"</span></span><br><span class="line">        <span class="punctuation">}</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>Now we’ll run the script.  </p>
+<figure class="highlight plaintext"><figcaption><span>lang;bash</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./deploy.sh</span><br></pre></td></tr></table></figure>
+<p>The browser displays the following page.  </p>
+<img src="/2024/03/22/Hosting-Python-Packages/Package-1.png" class="" title="Dumb PyPi Homepage">
+<p>We can now test the installation of the package with both Poetry and Pip. We will do this in a different Poetry project so that the install does not conflict with the existing “common” package.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">pip install --extra-index-url https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/ common</span><br><span class="line"></span><br><span class="line">Looking <span class="keyword">in</span> indexes: https://pypi.org/simple, https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/</span><br><span class="line">Collecting common</span><br><span class="line">  Using cached common-0.1.2.tar.gz (3.5 kB)</span><br><span class="line">  Preparing metadata (setup.py) ... <span class="keyword">done</span></span><br><span class="line">Building wheels <span class="keyword">for</span> collected packages: common</span><br><span class="line">  Building wheel <span class="keyword">for</span> common (setup.py) ... <span class="keyword">done</span></span><br><span class="line">  Created wheel <span class="keyword">for</span> common: filename=common-0.1.2-py3-none-any.whl size=3708 sha256=51d2f21c15829e49375762f5ca246d7f0e4d0bc82c425b25b5e77fcc83e97eae</span><br><span class="line">  Stored <span class="keyword">in</span> directory: /home/fasih/.cache/pip/wheels/12/f4/3f/8982873f5bfad3134251f605011de0c35f93d64b78cb07e3b8</span><br><span class="line">Successfully built common</span><br><span class="line">Installing collected packages: common</span><br><span class="line">Successfully installed common-0.1.2</span><br></pre></td></tr></table></figure>
+<p>Notice how we added the location an extra index using <code>--extra-index-url</code>. The URL points to the <code>devtools</code> directory in the bucket which is the root directory for the packages created by the “devtools” team. The subdirectories follow the layout mentioned previously.</p>
+<p>Next we’ll try the same with Poetry after uninstalling the package using pip. First, we’ll check how Poetry allows us to do it. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">poetry add --<span class="built_in">help</span></span><br><span class="line">...</span><br><span class="line">A url (https://example.com/packages/my-package-0.1.0.tar.gz)</span><br></pre></td></tr></table></figure>
+<p>Let’s go ahead and add the package in that format.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">poetry add --dry-run https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/common/common-0.1.0.tar.gz</span><br><span class="line"></span><br><span class="line">Updating dependencies</span><br><span class="line">Resolving dependencies... (0.1s)</span><br><span class="line"></span><br><span class="line">Package operations: 3 installs, 0 updates, 0 removals, 29 skipped</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>We can verify that the package was installed successfully by importing it in a Python shell. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Python <span class="number">3.12</span><span class="number">.0</span> | packaged by Anaconda, Inc. | (main, Oct  <span class="number">2</span> <span class="number">2023</span>, <span class="number">17</span>:<span class="number">29</span>:<span class="number">18</span>) [GCC <span class="number">11.2</span><span class="number">.0</span>] on linux</span><br><span class="line"><span class="type">Type</span> <span class="string">"help"</span>, <span class="string">"copyright"</span>, <span class="string">"credits"</span> <span class="keyword">or</span> <span class="string">"license"</span> <span class="keyword">for</span> more information.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> common <span class="keyword">import</span> create_histogram</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can host our own Python packages using S3. Note that this is a setup to get started quickly. If you’re looking for a more matured setup, please take a look at the devpi project.<sup>[2]</sup> <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/library">The code is available on Github.</a></p>
+<h2 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h2><p>[1] <a target="_blank" rel="noopener" href="https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository">https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository</a><br>[2] <a target="_blank" rel="noopener" href="https://devpi.net/docs/devpi/devpi/latest/+doc/index.html">https://devpi.net/docs/devpi/devpi/latest/+doc/index.html</a></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clyy23nsf000dmbru87ph8nqx" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Setting-up-a-Python-microservice" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/03/21/Setting-up-a-Python-microservice/" class="article-date">
@@ -284,7 +354,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clyd772ef001wljru72hxcrlr" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clyy23nsk001zmbru1az7587y" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -362,7 +432,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clyd772ef001tljru0qdbbexx" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clyy23nsk001rmbruc15wbkwr" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -410,7 +480,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clyd772ed0019ljru9prg66ow" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clyy23nsj001cmbrubmr6hgez" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -460,7 +530,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clyd772eh002qljru2bht1r9k" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clyy23nsn002wmbru4dw339b2" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -518,7 +588,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clyd772ed0014ljru33594889" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clyy23nsi0015mbruaqwf7wbl" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -588,7 +658,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clyd772ed0012ljru1uceekwg" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clyy23nsi0012mbru9f90fjte" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -644,7 +714,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clyd772ed0017ljru75gkcfni" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clyy23nsj001ambru3x7tguov" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -707,7 +777,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="clyd772ed000zljrufptecski" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="clyy23nsi0010mbru421ea5sr" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -772,7 +842,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="clyd772ee001cljrub273cys4" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="clyy23nsi0017mbru59ilby56" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -823,7 +893,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="clyd772e90005ljru8ye67fcb" data-title="Collective Consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="clyy23nse0005mbrubix4992w" data-title="Collective Consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -870,83 +940,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="clyd772ec000xljrudlcycklv" data-title="Lens of Life" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="clyy23nsi000xmbru5m5u58lk" data-title="Lens of Life" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/16/Lens-of-Life/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/misc/" rel="tag">misc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Ingesting-third-party-data-into-Apache-Doris-with-Meltano" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" class="article-date">
-  <time datetime="2024-02-12T05:45:48.000Z" itemprop="datePublished">2024-02-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/">Ingesting third-party data into Apache Doris with Meltano</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>A common requirement for a data warehouse is to store data from third-party sources like SaaS tools. For example, results of surveys conducted by Product or Marketing teams, or status of JIRA tickets. While most of these tools provide an option to export data, it could be very limited. For example, they’d only allow downloading it as a CSV file from their dashboard as a one-off download. Some of them provide APIs to export data which is a lot more convenient. Of those that do provide a direct integration with a warehouse, it’d be with the commercial ones like Snowflake. If we’re using a different warehouse, it is going to take some engineering effort to periodically get this data.   </p>
-<p>In this post we’ll look at how we can streamline this ingestion. As always, we’ll use open-source technologies to do this. Like in my previous post, we’ll use Doris as our data warehouse. We’ll use the open-source tool Meltano to fetch data from a Github repository. While this is not going to fully replace the need to write custom code, it will help us benefit from the collection of open-source connectors that come with Meltano.  </p>
-<h2 id="Setting-things-up"><a href="#Setting-things-up" class="headerlink" title="Setting things up"></a>Setting things up</h2><p>Like in my previous post, my setup consists of Docker containers for running Doris locally. There’s a Postgres container that runs as a part of this setup. We’ll install Meltano, and ingest data into a Postgres database. We’ll then create a catalog in Doris that points to the data ingested in Postgres. While it may be possible to ingest the data directly into Doris by letting Meltano write it to S3, I find it much easier to write it to a database.   </p>
-<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>For the purpose of this post we’ll will be modifying the example on Meltano’s website to ingest data from Github to Postgres. Meltano is available as a pip package and I already have a Conda environment in which it is installed. I’ll gloss over the steps that show how to create a Meltano project for the sake of keeping the post brief, and jump right into the ones where we add the Github extractor, the Postgres loader, and configure them. </p>
-<p>Let’s start by adding the loader, and the extractor plugins.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">meltano add extractor tap-github</span><br><span class="line">meltano add loader target-postgres</span><br></pre></td></tr></table></figure>  
-<p>We’ll then configure them one-by-one, starting with the Github plugin. We’ll add the repository we’d like to fetch data from, and the auth token that will be used to authenticate with Github.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">meltano config tap-github <span class="built_in">set</span> repositories <span class="string">'["thescalaguy/blog"]'</span></span><br><span class="line">meltano config tap-github <span class="built_in">set</span> auth_token <span class="string">'...'</span></span><br></pre></td></tr></table></figure>  
-<p>Next we’ll configure the Postgres plugin. We’ll ingest the data into a schema called “github” in the “ingest” database.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">meltano config target-postgres <span class="built_in">set</span> user postgres</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> password my-secret-pw</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> database ingest</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> port 6432</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> host 127.0.0.1</span><br><span class="line">meltano config target-postgres <span class="built_in">set</span> default_target_schema github</span><br></pre></td></tr></table></figure>  
-<p>Finally, we run the pipeline.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meltano run tap-github target-postgres</span><br></pre></td></tr></table></figure>  
-<p>A successful run of the pipeline will create a whole bunch of tables in Postgres. One such table is “repositories”, and we’ll query it next.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, repo, org, name <span class="keyword">FROM</span> repositories;</span><br></pre></td></tr></table></figure>  
-<p>The query above gives us the following row.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">| id       | repo | org         | name |</span><br><span class="line">|----------|------|-------------|------|</span><br><span class="line">| 95359149 | blog | thescalaguy | blog |</span><br></pre></td></tr></table></figure>
-<p>We can now set the pipeline to run on a schedule by slightly modifying the example given in <a target="_blank" rel="noopener" href="https://docs.meltano.com/getting-started#schedule-pipelines-to-run-regularly">Meltano’s “Getting Started” guide</a>. </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">meltano schedule add github-to-postgres --extractor tap-github --loader target-postgres --interval @daily</span><br></pre></td></tr></table></figure>  
-<p>We’ll now create a catalog in Doris that points to the database in Postgres. To do this we need to execute the <code>CREATE CATALOG</code> command. Notice that we’ve specified the <code>driver_url</code> that points to Maven. This is a lot easier than manually downloading the JAR, and making it available in the Docker container.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> CATALOG meltano PROPERTIES (</span><br><span class="line">    "type"<span class="operator">=</span>"jdbc",</span><br><span class="line">    "user"<span class="operator">=</span>"postgres",</span><br><span class="line">    "password"<span class="operator">=</span>"my-secret-pw",</span><br><span class="line">    "jdbc_url" <span class="operator">=</span> "jdbc:postgresql://192.168.0.107:6432/ingest",</span><br><span class="line">    "driver_url" <span class="operator">=</span> "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.1/postgresql-42.7.1.jar",</span><br><span class="line">    "driver_class" <span class="operator">=</span> "org.postgresql.Driver"</span><br><span class="line">);</span><br></pre></td></tr></table></figure>  
-<p>We have one last step before we can query the data, and that is to fix a few symlinks in the containers. It looks like the code is looking for CA certificates at a location different than where they actually are. From what I could glean from the documentation, perhaps the base image has changed and the paths need to be upadted. In any case, here’s how to fix it both in the FE and BE containers by <code>docker exec</code>-ing into them.  </p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@be:/<span class="comment"># mkdir -p /etc/pki/tls/certs/</span></span><br><span class="line">root@be:/<span class="comment"># ln -s /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt</span></span><br></pre></td></tr></table></figure>  
-<p>Now we’ll run a <code>SELECT</code> query. Notice how we’re writing the <code>FROM</code> clause; it is <code>catalog.schema.table</code>.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> id, repo, org, name </span><br><span class="line"><span class="keyword">FROM</span> meltano.github.repositories;</span><br></pre></td></tr></table></figure>
-<p>There are, however, limitations to what we can read from the Postgres table. Some of the column types are not supported. Changing the query to <code>SELECT *</code> will raise an error that “topics” column is not supported. We can describe the table in the catalog to check which of the columns cannot be read. </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">DESC</span> meltano.github.repositories;</span><br></pre></td></tr></table></figure>  
-<p>The result shows “UNSUPPORTED_TYPE” next to “topics” column. This is perhaps because Doris uses MySQL protocol and there’s no equivalent mapping bewteen Postgres and MySQL for that type. One way to mitigate this is to create a new column using Meltano’s <code>stream_maps</code>, and parse it in Doris.  </p>
-<p>That’s it. That’s how we can ingest data from third-party systems into Doris.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="clyd772eb000kljru2og7b4u0" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
 
     </footer>
   </div>
@@ -971,7 +971,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.25px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.25px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 10px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -981,6 +981,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/07/23/A-question-on-algebraic-manipulations/">A question on algebraic manipulations</a>
+          </li>
         
           <li>
             <a href="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/">Setting up a data catalog with DataHub</a>
@@ -1016,10 +1020,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
-          </li>
-        
-          <li>
-            <a href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
           </li>
         
       </ul>
