@@ -4,22 +4,22 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
-  <title>Scalaz TryOps | Fasih Khatib</title>
+  <title>An experiemental library to detect PII | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="In this post we’ll look at TryOps and the goodies it provides to work with scala.util.Try. To recap, here’s what Try does:   The Try type represents a computation that may either result in an exceptio">
+  <meta name="description" content="I recently created an experimental library, detectpii, to detect PII data in relational databases. In this post we’ll take a look at the rationale behind the library and it’s architecture.   Rationale">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Scalaz TryOps">
-<meta property="og:url" content="http://fasihkhatib.com/2017/07/06/scalaz-tryops/index.html">
+<meta property="og:title" content="An experiemental library to detect PII">
+<meta property="og:url" content="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
-<meta property="og:description" content="In this post we’ll look at TryOps and the goodies it provides to work with scala.util.Try. To recap, here’s what Try does:   The Try type represents a computation that may either result in an exceptio">
+<meta property="og:description" content="I recently created an experimental library, detectpii, to detect PII data in relational databases. In this post we’ll take a look at the rationale behind the library and it’s architecture.   Rationale">
 <meta property="og:locale">
-<meta property="article:published_time" content="2017-07-06T07:11:25.000Z">
-<meta property="article:modified_time" content="2024-06-19T10:13:08.187Z">
+<meta property="og:image" content="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/detectpii.png">
+<meta property="article:published_time" content="2024-08-02T06:36:13.000Z">
+<meta property="article:modified_time" content="2024-08-02T06:36:13.297Z">
 <meta property="article:author" content="Fasih Khatib">
-<meta property="article:tag" content="scala">
-<meta property="article:tag" content="functional programming">
-<meta property="article:tag" content="scalaz">
+<meta property="article:tag" content="python">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/detectpii.png">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
   
@@ -185,10 +185,10 @@ mjx-container[display="true"] + br {
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-scalaz-tryops" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-An-experiemental-library-to-detect-PII" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2017/07/06/scalaz-tryops/" class="article-date">
-  <time datetime="2017-07-06T07:11:25.000Z" itemprop="datePublished">2017-07-06</time>
+    <a href="/2024/08/02/An-experiemental-library-to-detect-PII/" class="article-date">
+  <time datetime="2024-08-02T06:36:13.000Z" itemprop="datePublished">2024-08-02</time>
 </a>
     
   </div>
@@ -199,7 +199,7 @@ mjx-container[display="true"] + br {
         
   
     <h1 class="article-title" itemprop="name">
-      Scalaz TryOps
+      An experiemental library to detect PII
     </h1>
   
 
@@ -207,26 +207,27 @@ mjx-container[display="true"] + br {
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/TryOps.scala"><code>TryOps</code></a> and the goodies it provides to work with <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.9.3/scala/util/Try.html"><code>scala.util.Try</code></a>. To recap, here’s what <code>Try</code> does:  </p>
-<p><em>The Try type represents a computation that may either result in an exception, or return a successfully computed value. It’s similar to, but semantically different from the scala.util.Either type.</em>  </p>
-<h3 id="Converting-to-a-Disjunction"><a href="#Converting-to-a-Disjunction" class="headerlink" title="Converting to a Disjunction"></a>Converting to a Disjunction</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="comment">// an operation that may potentially throw an exception</span></span><br><span class="line">@ <span class="keyword">val</span> t1 = <span class="type">Try</span> { <span class="string">"1"</span>.toInt }</span><br><span class="line">t1: <span class="type">Try</span>[<span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br><span class="line"><span class="comment">// converting to a Scalaz disjunction</span></span><br><span class="line">@ <span class="keyword">val</span> disjunction = t1 toDisjunction</span><br><span class="line">disjunction: <span class="type">Throwable</span> \/ <span class="type">Int</span> = \/-(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>The result of a <code>Try</code> is either a <code>Success</code> or  a <code>Failure</code>. This can very easily be translated to a Scalaz disjunction. A <code>Success</code> produces a right disjunction whereas a <code>Failure</code> produces a left disjunction.  </p>
-<h3 id="Converting-to-a-Validation"><a href="#Converting-to-a-Validation" class="headerlink" title="Converting to a Validation"></a>Converting to a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> validation = t1 toValidation</span><br><span class="line">validation: <span class="type">Validation</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>Similarly, if this <code>Try</code> were a part of validating your data like checking values in a JSON object, you can convert this to a Scalaz <code>Validation</code>.  </p>
-<h3 id="Converting-to-a-ValidationNel"><a href="#Converting-to-a-ValidationNel" class="headerlink" title="Converting to a ValidationNel"></a>Converting to a ValidationNel</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> nel = t1 toValidationNel</span><br><span class="line">nel: <span class="type">ValidationNel</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p><code>ValidationNel</code> is useful for accumulating errors. We’ll cover all of this in coming posts.   </p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>TryOps</code>. In coming posts we’ll look at <code>Validation</code> type which lets us represent, as you might have guessed, the result of validating an input. Similarly, if we want to accumulate all the results of validating inputs, we use <code>ValidationNel</code>. Both of these are subjects of coming posts.</p>
+        <p>I recently created an experimental library, <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/detectpii">detectpii</a>, to detect PII data in relational databases. In this post we’ll take a look at the rationale behind the library and it’s architecture.  </p>
+<h2 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h2><p>A common requirement in many software systems is to store PII information. For example, a food ordering system may store the user’s name, address, phone number, and email. This information may also be replicated into the data warehouse. As a matter of good data governance, you may want to restrict access to such information. Many data warehouses allow applying a masking policy that makes it easier to redact such values. However, you’d have to specify which columns to apply this policy to. detectpii makes it easier to identify such tables and columns.  </p>
+<p>My journey into creating this library began by looking for open-source projects that would help identify such information. After some research, I did find a few projects that do this. The first project is <a target="_blank" rel="noopener" href="https://github.com/tokern/piicatcher">piicatcher</a>. It allows comparing the column names of tables against regular expressions that represent common PII column names like user_name. The second project is <a target="_blank" rel="noopener" href="https://github.com/madisonmay/CommonRegex">CommonRegex</a> which allows comparing column values against regular expression patterns like emails, IP addresses, etc.  </p>
+<p>detectpii combines these two libraries to allow finding column names and values that may potentially contain PII. Out of the box, the library allows scanning column names and a subset of its values for potentially PII information.</p>
+<h2 id="Architecure"><a href="#Architecure" class="headerlink" title="Architecure"></a>Architecure</h2><img src="/2024/08/02/An-experiemental-library-to-detect-PII/detectpii.png" class="">  
+<p>At the heart of the library is the <code>PiiDetectionPipeline</code>. A pipeline consists of a <code>Catalog</code>, which represents the database we’d like to scan, and a number of <code>Scanner</code>s, which perform the actual scan. The library ships with two scanners - the <code>MetadataScanner</code> and the <code>DataScanner</code>. The first compares column names of the tables in the catalog against known patterns for the ones which store PII information. The second compares the value of each column of the table by retrieving a subset of the rows and comparing them against patterns for PII. The result of the scan is a list of column names that may potentially be PII.  </p>
+<p>The design of the library is extensible and more scanners can be added. For example, a scanner to use a proprietary machine learning algorithm instead of regular expression match.</p>
+<h2 id="Usage"><a href="#Usage" class="headerlink" title="Usage"></a>Usage</h2><p>To perform a scan, we create a pipeline and pass it a catalog and a list of scanners. To inititate the scan, we call the <code>scan</code> method on the pipeline to get back a list of PII columns.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> detectpii.catalog <span class="keyword">import</span> PostgresCatalog</span><br><span class="line"><span class="keyword">from</span> detectpii.pipeline <span class="keyword">import</span> PiiDetectionPipeline</span><br><span class="line"><span class="keyword">from</span> detectpii.scanner <span class="keyword">import</span> DataScanner, MetadataScanner</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Create a catalog to connect to a database / warehouse</span></span><br><span class="line">pg_catalog = PostgresCatalog(</span><br><span class="line">    host=<span class="string">"localhost"</span>,</span><br><span class="line">    user=<span class="string">"postgres"</span>,</span><br><span class="line">    password=<span class="string">"my-secret-pw"</span>,</span><br><span class="line">    database=<span class="string">"postgres"</span>,</span><br><span class="line">    port=<span class="number">5432</span>,</span><br><span class="line">    schema=<span class="string">"public"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Create a pipeline to detect PII in the tables</span></span><br><span class="line">pipeline = PiiDetectionPipeline(</span><br><span class="line">    catalog=pg_catalog,</span><br><span class="line">    scanners=[</span><br><span class="line">        MetadataScanner(),</span><br><span class="line">        DataScanner(percentage=<span class="number">20</span>, times=<span class="number">2</span>,),</span><br><span class="line">    ]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Scan for PII columns.</span></span><br><span class="line">pii_columns = pipeline.scan()</span><br></pre></td></tr></table></figure>  
+<p>That’s it. That’s how to use the library to detect PII columns in tables.</p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clzcc0nsf0040ujru24c24m1n" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="clzcc0ns20007ujrudb7cg0h3" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
-        <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
+        <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
 
     </footer>
   </div>
@@ -234,19 +235,10 @@ mjx-container[display="true"] + br {
     
 <nav id="article-nav">
   
-    <a href="/2017/07/10/scalaz-booleanops/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          Scalaz BooleanOps
-        
-      </div>
-    </a>
   
-  
-    <a href="/2017/07/05/scalaz-tupleops/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2024/07/23/A-question-on-algebraic-manipulations/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Scalaz TupleOps</div>
+      <div class="article-nav-title">A question on algebraic manipulations</div>
     </a>
   
 </nav>
@@ -350,7 +342,7 @@ mjx-container[display="true"] + br {
 <script>
   var disqus_shortname = 'https-thescalaguy-github-io';
   
-  var disqus_url = 'http://fasihkhatib.com/2017/07/06/scalaz-tryops/';
+  var disqus_url = 'http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/';
   
   (function(){
     var dsq = document.createElement('script');
