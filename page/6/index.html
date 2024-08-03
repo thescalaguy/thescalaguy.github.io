@@ -180,6 +180,57 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-tryops" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/06/scalaz-tryops/" class="article-date">
+  <time datetime="2017-07-06T07:11:25.000Z" itemprop="datePublished">2017-07-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/06/scalaz-tryops/">Scalaz TryOps</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/TryOps.scala"><code>TryOps</code></a> and the goodies it provides to work with <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.9.3/scala/util/Try.html"><code>scala.util.Try</code></a>. To recap, here’s what <code>Try</code> does:  </p>
+<p><em>The Try type represents a computation that may either result in an exception, or return a successfully computed value. It’s similar to, but semantically different from the scala.util.Either type.</em>  </p>
+<h3 id="Converting-to-a-Disjunction"><a href="#Converting-to-a-Disjunction" class="headerlink" title="Converting to a Disjunction"></a>Converting to a Disjunction</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="comment">// an operation that may potentially throw an exception</span></span><br><span class="line">@ <span class="keyword">val</span> t1 = <span class="type">Try</span> { <span class="string">"1"</span>.toInt }</span><br><span class="line">t1: <span class="type">Try</span>[<span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br><span class="line"><span class="comment">// converting to a Scalaz disjunction</span></span><br><span class="line">@ <span class="keyword">val</span> disjunction = t1 toDisjunction</span><br><span class="line">disjunction: <span class="type">Throwable</span> \/ <span class="type">Int</span> = \/-(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
+<p>The result of a <code>Try</code> is either a <code>Success</code> or  a <code>Failure</code>. This can very easily be translated to a Scalaz disjunction. A <code>Success</code> produces a right disjunction whereas a <code>Failure</code> produces a left disjunction.  </p>
+<h3 id="Converting-to-a-Validation"><a href="#Converting-to-a-Validation" class="headerlink" title="Converting to a Validation"></a>Converting to a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> validation = t1 toValidation</span><br><span class="line">validation: <span class="type">Validation</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
+<p>Similarly, if this <code>Try</code> were a part of validating your data like checking values in a JSON object, you can convert this to a Scalaz <code>Validation</code>.  </p>
+<h3 id="Converting-to-a-ValidationNel"><a href="#Converting-to-a-ValidationNel" class="headerlink" title="Converting to a ValidationNel"></a>Converting to a ValidationNel</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> nel = t1 toValidationNel</span><br><span class="line">nel: <span class="type">ValidationNel</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
+<p><code>ValidationNel</code> is useful for accumulating errors. We’ll cover all of this in coming posts.   </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>TryOps</code>. In coming posts we’ll look at <code>Validation</code> type which lets us represent, as you might have guessed, the result of validating an input. Similarly, if we want to accumulate all the results of validating inputs, we use <code>ValidationNel</code>. Both of these are subjects of coming posts.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clzdqgvvl0045ndru4y912qwh" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-tupleops" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/05/scalaz-tupleops/" class="article-date">
@@ -217,7 +268,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="clzcc0nsf0048ujrucyp675bv" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="clzdqgvvl0047ndruaach38il" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -271,7 +322,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="clzcc0nsf0044ujrugveg14fp" data-title="Scalaz StringOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="clzdqgvvl0043ndru065m06f7" data-title="Scalaz StringOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-stringops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -321,7 +372,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clzcc0nse003tujru275uhanh" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clzdqgvvk003vndrufwzn881n" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -399,7 +450,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="clzcc0nsd003bujru89nsakct" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="clzdqgvvj003endru64h8gemz" data-title="Scalaz Enum" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -451,7 +502,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="clzcc0nsf003yujruc6s12iu0" data-title="Scalaz Show" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="clzdqgvvl0040ndruapcge8qw" data-title="Scalaz Show" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -523,7 +574,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="clzcc0nse003vujru4cutgw6l" data-title="Scalaz Order" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="clzdqgvvk003yndrufh6h37s7" data-title="Scalaz Order" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -590,7 +641,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="clzcc0nsd003eujrucxmn1g1z" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="clzdqgvvj003gndruhwmw4f2r" data-title="Scalaz Equal" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -662,7 +713,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="clzcc0nsf0043ujru6o0o4o1u" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="clzdqgvvl0048ndrue82q335f" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -719,7 +770,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="clzcc0nsf0046ujru803a9c1i" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="clzdqgvvl004andrudqi4auz7" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -776,7 +827,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clzcc0nsd003gujrufr7n023q" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clzdqgvvj003jndrubdt06c99" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -807,7 +858,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 11.11px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -817,6 +868,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
+          </li>
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
@@ -852,10 +907,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
-          </li>
-        
-          <li>
-            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
           </li>
         
       </ul>

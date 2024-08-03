@@ -4,14 +4,19 @@
   <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
   
   
-  <title>Archives: 2018 | Fasih Khatib</title>
+  <title>Detecting disguised email addresses in a corpus of text | Fasih Khatib</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Fasih Khatib">
-<meta property="og:url" content="http://fasihkhatib.com/archives/2018/index.html">
+  <meta name="description" content="I’d recently written about an experimental library to detect PII. When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a revie">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Detecting disguised email addresses in a corpus of text">
+<meta property="og:url" content="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/index.html">
 <meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="I’d recently written about an experimental library to detect PII. When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a revie">
 <meta property="og:locale">
+<meta property="article:published_time" content="2024-08-03T06:08:36.000Z">
+<meta property="article:modified_time" content="2024-08-03T06:08:36.644Z">
 <meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="python">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
@@ -178,211 +183,67 @@ mjx-container[display="true"] + br {
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2018" class="archive-year">2018</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" class="archive-article-date">
-  <time datetime="2018-11-12T03:32:15.000Z" itemprop="datePublished">Nov 12</time>
+        <section id="main"><article id="post-Detecting-disguised-email-addresses-in-a-corpus-of-text" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" class="article-date">
+  <time datetime="2024-08-03T06:08:36.000Z" itemprop="datePublished">2024-08-03</time>
 </a>
-      
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/">Assumptions Underlying Ordinary Least Squares</a>
+    <h1 class="article-title" itemprop="name">
+      Detecting disguised email addresses in a corpus of text
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" class="archive-article-date">
-  <time datetime="2018-11-01T13:46:43.000Z" itemprop="datePublished">Nov 1</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/">Bivariate Linear Regression</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" class="archive-article-date">
-  <time datetime="2018-10-28T12:05:15.000Z" itemprop="datePublished">Oct 28</time>
-</a>
+        <p>I’d recently written about <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">an experimental library to detect PII.</a> When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a review or a comment can contain email address in the form “johndoeatgmaildotcom”. This led me to update the library so that emails like these can also be flagged. In a nutshell, I had to update the regex which was used to find the email.  </p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>This is best explained with a few examples. In all of the examples, we begin with a proper email and disguise it one step at a time.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">column = Column(name=<span class="string">"comment"</span>)</span><br><span class="line">detector = ColumnValueRegexDetector()</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcom"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.co.uk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcodotuk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"myemailis:john.doeatproviderdotcom"</span>) == Email()</span><br></pre></td></tr></table></figure>  
+<p>All of these assertions pass and the regex detector is able to flag all of these examples as email.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/">Introduction to Linear Regression</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/" class="archive-article-date">
-  <time datetime="2018-10-24T16:05:58.000Z" itemprop="datePublished">Oct 24</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="clzdqgvva000hndru5tx3a7jo" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/" class="archive-article-date">
-  <time datetime="2018-10-21T12:12:11.000Z" itemprop="datePublished">Oct 21</time>
-</a>
+        <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">Implementing TSum: An Algorithm for Table Summarization</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/05/20/JVM-JIT-Loop-Unrolling/" class="archive-article-date">
-  <time datetime="2018-05-20T17:48:06.000Z" itemprop="datePublished">May 20</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/05/20/JVM-JIT-Loop-Unrolling/">JVM JIT - Loop Unrolling</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/05/10/JVM-JIT-Compiling-to-Assembly/" class="archive-article-date">
-  <time datetime="2018-05-10T15:44:30.000Z" itemprop="datePublished">May 10</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/05/10/JVM-JIT-Compiling-to-Assembly/">JVM JIT - Compiling to Assembly</a>
-    </h1>
-  
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
 
-    </header>
+    </footer>
   </div>
-</article>
   
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/04/29/JVM-JIT-Inlining/" class="archive-article-date">
-  <time datetime="2018-04-29T05:04:32.000Z" itemprop="datePublished">Apr 29</time>
-</a>
-      
+<nav id="article-nav">
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/04/29/JVM-JIT-Inlining/">JVM JIT - Inlining</a>
-    </h1>
   
+    <a href="/2024/08/02/An-experiemental-library-to-detect-PII/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">An experiemental library to detect PII</div>
+    </a>
+  
+</nav>
 
-    </header>
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/04/17/JVM-JIT-Introduction/" class="archive-article-date">
-  <time datetime="2018-04-17T15:01:00.000Z" itemprop="datePublished">Apr 17</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/04/17/JVM-JIT-Introduction/">JVM JIT - Introduction</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2018/01/06/transducers/" class="archive-article-date">
-  <time datetime="2018-01-06T10:48:11.000Z" itemprop="datePublished">Jan 6</time>
-</a>
-      
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2018/01/06/transducers/">Transducers</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
-
+</section>
 
 </section>
         
@@ -473,11 +334,13 @@ mjx-container[display="true"] + br {
 <script>
   var disqus_shortname = 'https-thescalaguy-github-io';
   
+  var disqus_url = 'http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/';
+  
   (function(){
     var dsq = document.createElement('script');
     dsq.type = 'text/javascript';
     dsq.async = true;
-    dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
     (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
   })();
 </script>

@@ -180,6 +180,110 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-unit-testing-with-specs" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/16/unit-testing-with-specs/" class="article-date">
+  <time datetime="2017-11-16T15:13:38.000Z" itemprop="datePublished">2017-11-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/16/unit-testing-with-specs/">Unit Testing with Specs</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a target="_blank" rel="noopener" href="https://clojure.org/about/spec">clojure.spec</a> is a standard, expressive, powerful, and integrated system for specification and testing. It lets you define the shape of your data, and place contraints on it. Once the shape, and constraints are defined, clojure.spec can then generate sample data which you can use to test your functions. In this post I’ll walk you through how you can use clojure.spec in conjunction with other libraries to write unit tests.</p>
+<h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><p>As developers, we are accustomed to writing example-based tests - we provide a known input, look at the resulting output, and assert that it matches our expectations. Although there is nothing wrong with this approach, there are a few drawbacks:  </p>
+<ol>
+<li>It is expensive as it takes longer to complete.</li>
+<li>It is easier to miss out on the corner cases.</li>
+<li>It is more prone to pesticide paradox.<sup><a target="_blank" rel="noopener" href="https://sqa.stackexchange.com/a/6442">[1]</a></sup></li>
+</ol>
+<p>In contrast, clojure.spec allows you to do generative, property-based testing. Generative testing allows you to specify <em>what kind</em> of data you are looking for. This is done by using generators. A generator is a declarative description of possible inputs to a function.<sup><a target="_blank" rel="noopener" href="https://nofluffjuststuff.com/conference/raleigh/2013/08/session?id=29335">[2]</a></sup> Property-based testing allows you to specify <em>how</em> your program is supposed to behave, given an input. A property is a high-level specification of behavior that should hold for a range of inputs.<sup><a target="_blank" rel="noopener" href="http://www.scalatest.org/user_guide/property_based_testing">[3]</a></sup></p>
+<h2 id="Setup"><a href="#Setup" class="headerlink" title="Setup"></a>Setup</h2><h3 id="Creating-an-App"><a href="#Creating-an-App" class="headerlink" title="Creating an App"></a>Creating an App</h3><p>We’ll begin by creating an app using <code>lein</code> and defining the dependencies. So go ahead and execute the following to create your project:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lein new app clj-spec</span><br></pre></td></tr></table></figure>
+<h3 id="Adding-Dependencies"><a href="#Adding-Dependencies" class="headerlink" title="Adding Dependencies"></a>Adding Dependencies</h3><p>Next we’ll add a few dependencies. <code>cd</code> into <code>clj-spec</code> and open <code>project.clj</code>. Add the following to your <code>:dependencies</code>  </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[org.clojure/clojure <span class="string">"1.8.0"</span>]</span><br><span class="line">[clojure-future-spec <span class="string">"1.9.0-beta4"</span>]  </span><br><span class="line">[org.clojure/test.check <span class="string">"0.9.0"</span>]  </span><br><span class="line">[circleci/bond <span class="string">"0.3.0"</span>] </span><br><span class="line">[cloverage <span class="string">"1.0.9"</span>]</span><br></pre></td></tr></table></figure>  
+<p><code>clojure.spec</code> comes as a part of Clojure 1.9 which, as of writing, isn’t out yet. If you’re on Clojure 1.8, as I am, you can use <a target="_blank" rel="noopener" href="https://github.com/tonsky/clojure-future-spec"><code>clojure-future-spec</code></a> which will give you the same APIs. <code>circleci/bond</code> is a stubbing library which we’ll use to stub IO, network calls, database calls, etc. <code>cloverage</code> is the tool we’ll use to see the coverage of our tests.</p>
+<h2 id="Using-clojure-spec"><a href="#Using-clojure-spec" class="headerlink" title="Using clojure.spec"></a>Using <code>clojure.spec</code></h2><h3 id="Simple-Specs"><a href="#Simple-Specs" class="headerlink" title="Simple Specs"></a>Simple Specs</h3><p>Fire up a REPL by executing <code>lein repl</code> and <code>require</code> the required namespaces ;)</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[clojure.spec.alpha <span class="symbol">:as</span> s])</span><br><span class="line"><span class="literal">nil</span></span><br><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[clojure.spec.gen.alpha <span class="symbol">:as</span> gen])</span><br><span class="line"><span class="literal">nil</span></span><br><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[clojure.future <span class="symbol">:refer</span> <span class="symbol">:all</span>])</span><br><span class="line"><span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<p><code>spec</code> will let us define the shape of our data, and constraints on it. <code>gen</code> will let us generate the sample data.  </p>
+<p>Let’s write a simple spec which we can use to generate integers.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">s/def</span> <span class="symbol">::n</span> int?)</span><br><span class="line"><span class="symbol">:clj-spec.core/n</span></span><br></pre></td></tr></table></figure>
+<p>We’ve defined a spec <code>::n</code> which will constrain the sample data to only be integers. Notice the use of double colons to create a namespace-qualified symbol; this is a requirement of the spec library. Now let’s generate some sample data.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">gen/generate</span> (<span class="name">s/gen</span> <span class="symbol">::n</span>))</span><br><span class="line"><span class="number">-29454</span></span><br></pre></td></tr></table></figure>
+<p><code>s/gen</code> takes a spec as an input and returns a generator which will produce conforming data. <code>gen/generate</code> exercises this generator to return a single sample value. You can produce multiple values by using <code>gen/sample</code>:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">gen/sample</span> (<span class="name">s/gen</span> <span class="symbol">::n</span>) <span class="number">5</span>)</span><br><span class="line">(<span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">-1</span> <span class="number">0</span>)</span><br></pre></td></tr></table></figure>  
+<p>We could have done the same thing more succinctly by using the in-built functions as follows:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">gen/generate</span> (<span class="name">gen/vector</span> (<span class="name">gen/int</span>) <span class="number">5</span>))</span><br><span class="line">[<span class="number">25</span> <span class="number">-29</span> <span class="number">-13</span> <span class="number">26</span> <span class="number">-8</span>]</span><br></pre></td></tr></table></figure>
+<h3 id="Spec-ing-Maps"><a href="#Spec-ing-Maps" class="headerlink" title="Spec-ing Maps"></a>Spec-ing Maps</h3><p>Let’s say we have a map which represents a person and looks like this:  </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">{<span class="symbol">:name</span> <span class="string">"John Doe"</span></span><br><span class="line"> <span class="symbol">:age</span> <span class="number">32</span>}</span><br></pre></td></tr></table></figure>
+<p>Let’s spec this. </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name">s/def</span> <span class="symbol">::name</span> string?)</span><br><span class="line">(<span class="name">s/def</span> <span class="symbol">::age</span> int?)</span><br><span class="line">(<span class="name">s/def</span> <span class="symbol">::person</span> (<span class="name">s/keys</span> <span class="symbol">:req-un</span> [<span class="symbol">::name</span> <span class="symbol">::age</span>]))</span><br></pre></td></tr></table></figure>
+<p>We’ve defined <code>::name</code> to be a string, and <code>::age</code> to be an integer (positive or negative). You can make your specs as strict or as lenient as you choose. Finally, we define <code>::person</code> to be a map which requires the keys <code>::name</code> and <code>::age</code>, albiet without namespace-qualification. Let’s see this in action:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">gen/generate</span> (<span class="name">s/gen</span> <span class="symbol">::person</span>))</span><br><span class="line">{<span class="symbol">:name</span> <span class="string">"KXYXcbk"</span><span class="punctuation">,</span> <span class="symbol">:age</span> <span class="number">107706</span>}</span><br></pre></td></tr></table></figure>
+<p>By now you must have a fair idea of how you can spec your data and have sample values generated that match those specs. Next we’ll look at how we can do property-based testing with specs.</p>
+<h2 id="Using-test-check"><a href="#Using-test-check" class="headerlink" title="Using test.check"></a>Using <code>test.check</code></h2><p><code>test.check</code> allows us to do property-based testing. Property-based tests make statements about the output of your code based on the input, and these statements are verified for many different possible inputs.<sup><a target="_blank" rel="noopener" href="http://blog.jessitron.com/2013/04/property-based-testing-what-is-it.html">[4]</a></sup></p>
+<h3 id="A-Simple-Function"><a href="#A-Simple-Function" class="headerlink" title="A Simple Function"></a>A Simple Function</h3><figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">defn</span> <span class="title">even-or-odd</span></span><br><span class="line">  [coll]</span><br><span class="line">  (<span class="name"><span class="built_in">map</span></span> #(<span class="name"><span class="built_in">cond</span></span></span><br><span class="line">          (<span class="name"><span class="built_in">even?</span></span> %) <span class="symbol">:even</span></span><br><span class="line">          <span class="symbol">:else</span> <span class="symbol">:odd</span>) coll))</span><br></pre></td></tr></table></figure>
+<p>We’ll begin by testing the simple function <code>even-or-odd</code>. We know that for all even numbers we should get <code>:even</code> and for all odd numbers we should get <code>:odd</code>. Let’s express this as a property of the function. Begin by <code>require</code>-ing a couple more namespaces.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[clojure.test.check <span class="symbol">:as</span> tc])</span><br><span class="line"><span class="literal">nil</span></span><br><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[clojure.test.check.properties <span class="symbol">:as</span> prop])</span><br><span class="line"><span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<p>Now for the actual property.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">def</span> <span class="title">property</span></span><br><span class="line">  (<span class="name">prop/for-all</span> [v (<span class="name">gen/vector</span> (<span class="name">gen/choose</span> <span class="number">0</span> <span class="number">1</span>))]</span><br><span class="line">    (<span class="name"><span class="built_in">let</span></span> [result (<span class="name">even-or-odd</span> v)</span><br><span class="line">          zeroes-and-ones (<span class="name">group-by</span> zero? v)</span><br><span class="line">          zeroes (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">          ones (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)</span><br><span class="line">          evens-and-odds (<span class="name">group-by</span> #(<span class="name"><span class="built_in">=</span></span> <span class="symbol">:even</span> %) result)</span><br><span class="line">          evens (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">          odds (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)]</span><br><span class="line">      (<span class="name"><span class="built_in">and</span></span> (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> zeroes) (<span class="name"><span class="built_in">count</span></span> evens))</span><br><span class="line">           (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> ones) (<span class="name"><span class="built_in">count</span></span> odds))))))</span><br></pre></td></tr></table></figure>
+<p>We have a generator which will create a vector of 0s and 1s only. We pass that vector as an input to our function. Additionally, we know that the number of 0s should equal the number of <code>:even</code>s returned and that the number of 1s should equal the number of <code>:odd</code>s returned.</p>
+<p>Next, let’s test this property.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">tc/quick-check</span> <span class="number">100</span> property)</span><br><span class="line">{<span class="symbol">:result</span> <span class="literal">true</span><span class="punctuation">,</span> <span class="symbol">:num-tests</span> <span class="number">100</span><span class="punctuation">,</span> <span class="symbol">:seed</span> <span class="number">1510754879429</span>}</span><br></pre></td></tr></table></figure>
+<p>Awesome! We ran the test a 100 times and passed. The added benefit is that the input generated will be different every time you run the test.</p>
+<h3 id="Using-bond"><a href="#Using-bond" class="headerlink" title="Using bond"></a>Using <code>bond</code></h3><p><code>bond</code> is a library which will let you stub side-effecting functions like database calls. We’ll require the namespce and modify our code to save even numbers to database.</p>
+<p>First, the namespace.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">require</span> '[bond.james <span class="symbol">:as</span> bond])</span><br><span class="line"><span class="literal">nil</span></span><br></pre></td></tr></table></figure>
+<p>Next, the code.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">defn</span> <span class="title">save</span></span><br><span class="line">  [n]</span><br><span class="line">  <span class="comment">;; let's assume there's a database call here</span></span><br><span class="line">  <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">(<span class="keyword">defn</span> <span class="title">even-or-odd</span></span><br><span class="line">  [coll]</span><br><span class="line">  (<span class="name"><span class="built_in">map</span></span> #(<span class="name"><span class="built_in">cond</span></span></span><br><span class="line">          (<span class="name"><span class="built_in">even?</span></span> %) (<span class="name"><span class="built_in">do</span></span></span><br><span class="line">                      (<span class="name">save</span> %) <span class="comment">;; save to database</span></span><br><span class="line">                      <span class="symbol">:even</span>)</span><br><span class="line">          <span class="symbol">:else</span> <span class="symbol">:odd</span>) coll))</span><br></pre></td></tr></table></figure> 
+<p>Now let’s update the property and stub <code>save</code>.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">def</span> <span class="title">property</span></span><br><span class="line">  (<span class="name">prop/for-all</span> [v (<span class="name">gen/vector</span> (<span class="name">gen/choose</span> <span class="number">0</span> <span class="number">1</span>))]</span><br><span class="line">    (<span class="name">bond/with-stub</span> [save]</span><br><span class="line">      (<span class="name"><span class="built_in">let</span></span> [result (<span class="name">even-or-odd</span> v)</span><br><span class="line">            zeroes-and-ones (<span class="name">group-by</span> zero? v)</span><br><span class="line">            zeroes (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">            ones (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)</span><br><span class="line">            evens-and-odds (<span class="name">group-by</span> #(<span class="name"><span class="built_in">=</span></span> <span class="symbol">:even</span> %) result)</span><br><span class="line">            evens (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">            odds (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)]</span><br><span class="line">        (<span class="name"><span class="built_in">and</span></span> (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> zeroes) (<span class="name"><span class="built_in">count</span></span> evens))</span><br><span class="line">             (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> ones) (<span class="name"><span class="built_in">count</span></span> odds))</span><br><span class="line">             (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> zeroes) (<span class="name"><span class="built_in">-&gt;</span></span> save bond/calls count)))))))</span><br></pre></td></tr></table></figure>
+<p>Notice how we’re using <code>bond/with-stub</code> and telling it to stub <code>save</code> function which calls the database. Later, we assert that the number of times that the databse was called is equal to the number of evens in the vector. Let’s verify the property.</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">clj-spec.core=&gt; (<span class="name">tc/quick-check</span> <span class="number">10000</span> property)</span><br><span class="line">{<span class="symbol">:result</span> <span class="literal">true</span><span class="punctuation">,</span> <span class="symbol">:num-tests</span> <span class="number">10000</span><span class="punctuation">,</span> <span class="symbol">:seed</span> <span class="number">1510834022725</span>}</span><br></pre></td></tr></table></figure>
+<p>Voilà! It works!</p>
+<p>The last part of this post is about finding out test coverage using <code>cloverage</code>. For that, we’ll be moving our code to <code>core.clj</code> and writing test under the <code>test</code> directory.</p>
+<h2 id="Using-cloverage"><a href="#Using-cloverage" class="headerlink" title="Using cloverage"></a>Using <code>cloverage</code></h2><p>To see <code>cloverage</code> in action, we’ll need to add our functions to <code>core.clj</code>. Here’s what it’ll look like:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="built_in">ns</span></span> clj-spec.core</span><br><span class="line">  (<span class="symbol">:gen-class</span>))</span><br><span class="line"></span><br><span class="line">(<span class="keyword">defn</span> <span class="title">save</span></span><br><span class="line">  [n]</span><br><span class="line">  <span class="comment">;; let's assume there's a database call here</span></span><br><span class="line">  <span class="literal">nil</span>)</span><br><span class="line"></span><br><span class="line">(<span class="keyword">defn</span> <span class="title">even-or-odd</span></span><br><span class="line">  [coll]</span><br><span class="line">  (<span class="name"><span class="built_in">map</span></span> #(<span class="name"><span class="built_in">cond</span></span></span><br><span class="line">          (<span class="name"><span class="built_in">even?</span></span> %) (<span class="name"><span class="built_in">do</span></span></span><br><span class="line">                      (<span class="name">save</span> %) <span class="comment">;; save to database</span></span><br><span class="line">                      <span class="symbol">:even</span>)</span><br><span class="line">          <span class="symbol">:else</span> <span class="symbol">:odd</span>) coll))</span><br><span class="line"></span><br><span class="line">(<span class="keyword">defn</span> <span class="title">-main</span></span><br><span class="line">  <span class="string">"I don't do a whole lot ... yet."</span></span><br><span class="line">  [&amp; args]</span><br><span class="line">  (<span class="name">println</span> <span class="string">"Hello, World!"</span>))</span><br></pre></td></tr></table></figure>
+<p>Update your <code>clj-spec.core-test</code> to the following: </p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">(<span class="name"><span class="built_in">ns</span></span> clj-spec.core-test</span><br><span class="line">  (<span class="symbol">:require</span> [bond.james <span class="symbol">:as</span> bond]</span><br><span class="line">            [clojure.test.check.properties <span class="symbol">:as</span> prop]</span><br><span class="line">            [clojure.spec.gen.alpha <span class="symbol">:as</span> gen]</span><br><span class="line">            [clojure.test.check.clojure-test <span class="symbol">:refer</span> <span class="symbol">:all</span>]</span><br><span class="line">            [clj-spec.core <span class="symbol">:refer</span> <span class="symbol">:all</span>]))</span><br><span class="line"></span><br><span class="line">(<span class="name">defspec</span> even-odd-test</span><br><span class="line"> <span class="number">100</span></span><br><span class="line"> (<span class="name">prop/for-all</span> [v (<span class="name">gen/vector</span> (<span class="name">gen/choose</span> <span class="number">0</span> <span class="number">1</span>))]</span><br><span class="line">   (<span class="name">bond/with-stub</span> [save]</span><br><span class="line">     (<span class="name"><span class="built_in">let</span></span> [result (<span class="name">even-or-odd</span> v)</span><br><span class="line">           zeroes-and-ones (<span class="name">group-by</span> zero? v)</span><br><span class="line">           zeroes (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">           ones (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)</span><br><span class="line">           evens-and-odds (<span class="name">group-by</span> #(<span class="name"><span class="built_in">=</span></span> <span class="symbol">:even</span> %) result)</span><br><span class="line">           evens (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">true</span>)</span><br><span class="line">           odds (<span class="name"><span class="built_in">get</span></span> zeroes-and-ones <span class="literal">false</span>)]</span><br><span class="line">       (<span class="name"><span class="built_in">and</span></span> (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> zeroes) (<span class="name"><span class="built_in">count</span></span> evens))</span><br><span class="line">            (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> ones) (<span class="name"><span class="built_in">count</span></span> odds))</span><br><span class="line">            (<span class="name"><span class="built_in">=</span></span> (<span class="name"><span class="built_in">count</span></span> zeroes) (<span class="name"><span class="built_in">-&gt;</span></span> save bond/calls count)))))))</span><br></pre></td></tr></table></figure>
+<p>Here we are using the <code>defspec</code> macro to run the same property-based test a 100 times only this time we’ll run the test via command-line using <code>lein</code>. Execute the following command to run the test and see the coverage.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lein run -m cloverage.coverage -t 'clj-spec.core-test' -n 'clj-spec.core'</span><br></pre></td></tr></table></figure>
+<p>This will make use of <code>cloverage</code> to run the tests. <code>-t</code> denotes our test namespace and <code>-n</code> denotes the namespace for whom the tests are written. You’ll get an output like this:</p>
+<figure class="highlight clojure"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">Produced output in /Users/fasih/Personal/clj-spec/target/coverage .</span><br><span class="line">HTML: file:///Users/fasih/Personal/clj-spec/target/coverage/index.html</span><br><span class="line"></span><br><span class="line">|---------------+---------+---------|</span><br><span class="line">|     Namespace | % Forms | % Lines |</span><br><span class="line">|---------------+---------+---------|</span><br><span class="line">| clj-spec.core |   <span class="number">82.61</span> |   <span class="number">88.89</span> |</span><br><span class="line">|---------------+---------+---------|</span><br><span class="line">|     ALL FILES |   <span class="number">82.61</span> |   <span class="number">88.89</span> |</span><br><span class="line">|---------------+---------+---------|</span><br></pre></td></tr></table></figure>
+<p>Perfect!! Now we know how much coverage we have. The HTML file has a nice graphical representation of which lines we’ve covered with our tests.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on using <code>clojure.spec</code> to write generative, property-based tests in both the REPL and source files. Generative testing automates the task of having to come up with examples for your tests. Where to go from here? Each of these libraries is pretty powerful in itself and will provide you with the necessary tools to write powerful, robust, and expressive tests that require minimal effort. So, head over to the offical docs to learn more.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="clzdqgvvm004hndruhzw8bjvt" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/clojure/" rel="tag">clojure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/testing/" rel="tag">testing</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-monad" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/10/13/monad/" class="article-date">
@@ -231,7 +335,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="clzcc0nsc002xujru7eru4435" data-title="Monad" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="clzdqgvvi0032ndrufvzf5n76" data-title="Monad" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -310,7 +414,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="clzcc0nsc002sujru1oagg9x7" data-title="Functor" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="clzdqgvvi002zndru4wtbf0vg" data-title="Functor" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -381,7 +485,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="clzcc0nsc0031ujru82segopr" data-title="Monoid" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="clzdqgvvi0034ndrub9shfa06" data-title="Monoid" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/10/monoid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -460,7 +564,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="clzcc0nsc002uujru1dsqf938" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="clzdqgvvi002xndrugkmyc024" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -509,7 +613,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="clzcc0nse003oujru718m7a7h" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="clzdqgvvk003qndruaaqz7c3e" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -592,7 +696,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="clzcc0nse003jujruegh1e5ra" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="clzdqgvvk003lndru04js72pk" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -666,7 +770,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="clzcc0nse003qujru89f17v72" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="clzdqgvvk003tndru3rcx5t6w" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -739,7 +843,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="clzcc0nsd0039ujruema3ac08" data-title="Scalaz Either" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="clzdqgvvj003bndruaaqb8jn1" data-title="Scalaz Either" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -815,7 +919,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clzcc0nsg004bujruhkua1f2r" data-title="Scalaz Validation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clzdqgvvm004cndru7qbndh4d" data-title="Scalaz Validation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -871,7 +975,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="clzcc0nse003lujru9znj7umj" data-title="Scalaz MapOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="clzdqgvvk003ondru0wx36yw3" data-title="Scalaz MapOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-mapops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -933,60 +1037,9 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="clzcc0nsd0036ujrugitk0d8v" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="clzdqgvvj0039ndruhq981enr" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-tryops" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/06/scalaz-tryops/" class="article-date">
-  <time datetime="2017-07-06T07:11:25.000Z" itemprop="datePublished">2017-07-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/06/scalaz-tryops/">Scalaz TryOps</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/TryOps.scala"><code>TryOps</code></a> and the goodies it provides to work with <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.9.3/scala/util/Try.html"><code>scala.util.Try</code></a>. To recap, here’s what <code>Try</code> does:  </p>
-<p><em>The Try type represents a computation that may either result in an exception, or return a successfully computed value. It’s similar to, but semantically different from the scala.util.Either type.</em>  </p>
-<h3 id="Converting-to-a-Disjunction"><a href="#Converting-to-a-Disjunction" class="headerlink" title="Converting to a Disjunction"></a>Converting to a Disjunction</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="comment">// an operation that may potentially throw an exception</span></span><br><span class="line">@ <span class="keyword">val</span> t1 = <span class="type">Try</span> { <span class="string">"1"</span>.toInt }</span><br><span class="line">t1: <span class="type">Try</span>[<span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br><span class="line"><span class="comment">// converting to a Scalaz disjunction</span></span><br><span class="line">@ <span class="keyword">val</span> disjunction = t1 toDisjunction</span><br><span class="line">disjunction: <span class="type">Throwable</span> \/ <span class="type">Int</span> = \/-(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>The result of a <code>Try</code> is either a <code>Success</code> or  a <code>Failure</code>. This can very easily be translated to a Scalaz disjunction. A <code>Success</code> produces a right disjunction whereas a <code>Failure</code> produces a left disjunction.  </p>
-<h3 id="Converting-to-a-Validation"><a href="#Converting-to-a-Validation" class="headerlink" title="Converting to a Validation"></a>Converting to a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> validation = t1 toValidation</span><br><span class="line">validation: <span class="type">Validation</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>Similarly, if this <code>Try</code> were a part of validating your data like checking values in a JSON object, you can convert this to a Scalaz <code>Validation</code>.  </p>
-<h3 id="Converting-to-a-ValidationNel"><a href="#Converting-to-a-ValidationNel" class="headerlink" title="Converting to a ValidationNel"></a>Converting to a ValidationNel</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> nel = t1 toValidationNel</span><br><span class="line">nel: <span class="type">ValidationNel</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p><code>ValidationNel</code> is useful for accumulating errors. We’ll cover all of this in coming posts.   </p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>TryOps</code>. In coming posts we’ll look at <code>Validation</code> type which lets us represent, as you might have guessed, the result of validating an input. Similarly, if we want to accumulate all the results of validating inputs, we use <code>ValidationNel</code>. Both of these are subjects of coming posts.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clzcc0nsf0040ujru24c24m1n" data-title="Scalaz TryOps" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1015,7 +1068,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 11.11px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1025,6 +1078,10 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
+          </li>
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
@@ -1060,10 +1117,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
         
           <li>
             <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
-          </li>
-        
-          <li>
-            <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
           </li>
         
       </ul>
