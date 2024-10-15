@@ -184,6 +184,65 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Implementing-TSum-with-Dask" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/04/07/Implementing-TSum-with-Dask/" class="article-date">
+  <time datetime="2024-04-07T06:15:43.000Z" itemprop="datePublished">2024-04-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/04/07/Implementing-TSum-with-Dask/">Implementing TSum with Dask</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of the <a href="/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/">previous blog posts</a> I’d written about implementing TSum, a table-summarization algorithm from Google Research. The implementation was written using Javascript and was meant for small datasets that can be summarized within the browser itself. I recently ported the implementation to <a target="_blank" rel="noopener" href="https://www.dask.org/">Dask</a> so that it can be used for larger datasets that consist of many rows. In a nutshell, it lets us summarize a Dask DataFrame and find representative patterns within it. In this post we’ll see how to use the algorithm to summarize a Dask DataFrame, and run benchmarks to see its performance. </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>Although the library is designed to be used in production on data stored in a warehouse, it can also be used to summarize CSV or Parquet files. In essence, anything that can be read into a Dask DataFrame can be summarized.</p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><h3 id="Summarizing-data"><a href="#Summarizing-data" class="headerlink" title="Summarizing data"></a>Summarizing data</h3><p>Imagine that we have customer data stored in a datawarehouse that we’d like to summarize. For example, how would we best describe the customer’s behavior given the data? In essence, we’d like to find patterns within this dataset. In scenarios like these, TSum works well. As an example of data summarization, we’ll use the patient data given in the <a target="_blank" rel="noopener" href="https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/41683.pdf">research paper</a> and pass it to the summarization algorithm.  </p>
+<p>We’ll begin by adding a function to generate some test data. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">data</span>(<span class="params">n=<span class="number">1</span></span>):</span><br><span class="line">    <span class="keyword">return</span> [</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"high"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"adult"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"low"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"M"</span>, <span class="string">"age"</span>: <span class="string">"teen"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"high"</span>},</span><br><span class="line">        {<span class="string">"gender"</span>: <span class="string">"F"</span>, <span class="string">"age"</span>: <span class="string">"child"</span>, <span class="string">"blood_pressure"</span>: <span class="string">"normal"</span>},</span><br><span class="line">    ] * <span class="built_in">int</span>(n)</span><br></pre></td></tr></table></figure>
+<p>We’ll then add code to summarize this data.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> cattrs</span><br><span class="line"><span class="keyword">import</span> dask.dataframe <span class="keyword">as</span> dd</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">import</span> tabulate</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> tsum <span class="keyword">import</span> summarize</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">from</span> dask.distributed <span class="keyword">import</span> LocalCluster</span><br><span class="line"></span><br><span class="line">    cluster = LocalCluster(n_workers=<span class="number">1</span>, nthreads=<span class="number">8</span>, diagnostics_port=<span class="number">8787</span>)</span><br><span class="line">    client = cluster.get_client()</span><br><span class="line"></span><br><span class="line">    df = pd.DataFrame.from_records(data=data(n=<span class="number">1</span>))</span><br><span class="line">    ddf = dd.from_pandas(df, npartitions=<span class="number">4</span>)</span><br><span class="line">    t0 = time.perf_counter()</span><br><span class="line">    patterns = summarize(ddf=ddf)</span><br><span class="line">    t1 = time.perf_counter()</span><br><span class="line"></span><br><span class="line">    dicts = [cattrs.unstructure(_) <span class="keyword">for</span> _ <span class="keyword">in</span> patterns]</span><br><span class="line">    <span class="built_in">print</span>(json.dumps(dicts, indent=<span class="number">4</span>))</span><br></pre></td></tr></table></figure>
+<p>Upon running the script we get the following patterns.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"pattern"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"gender"</span><span class="punctuation">:</span> <span class="string">"M"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"age"</span><span class="punctuation">:</span> <span class="string">"adult"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"saving"</span><span class="punctuation">:</span> <span class="number">3313</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"coverage"</span><span class="punctuation">:</span> <span class="number">50.0</span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">        <span class="attr">"pattern"</span><span class="punctuation">:</span> <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"age"</span><span class="punctuation">:</span> <span class="string">"child"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"blood_pressure"</span><span class="punctuation">:</span> <span class="string">"low"</span></span><br><span class="line">        <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"saving"</span><span class="punctuation">:</span> <span class="number">1684</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">"coverage"</span><span class="punctuation">:</span> <span class="number">30.0</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line"><span class="punctuation">]</span></span><br></pre></td></tr></table></figure>
+<p>This indicates that the patterns that best describe our data are “adult males”, which comprise 50% of the data, followed by “children with low blood pressure”, which comprise 30% of the data. We can verify this by looking at the data returned from the <code>data</code> function, and from the patterns mentioned in the paper.</p>
+<h3 id="Running-benchmarks"><a href="#Running-benchmarks" class="headerlink" title="Running benchmarks"></a>Running benchmarks</h3><p>To run the benchmarks, we’ll modify the script and create DataFrames with increasing number of rows. The benchmarks are being run on my local machine which has an Intel i7-8750H, and 16GB of RAM. The script which runs the benchmark is given below.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">from</span> dask.distributed <span class="keyword">import</span> LocalCluster</span><br><span class="line"></span><br><span class="line">    cluster = LocalCluster(n_workers=<span class="number">1</span>, nthreads=<span class="number">8</span>, diagnostics_port=<span class="number">8787</span>)</span><br><span class="line">    client = cluster.get_client()</span><br><span class="line">    table = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> n <span class="keyword">in</span> [<span class="number">1</span>, <span class="number">1e1</span>, <span class="number">1e2</span>, <span class="number">1e3</span>, <span class="number">1e4</span>, <span class="number">1e5</span>, <span class="number">1e6</span>]:</span><br><span class="line">        df = pd.DataFrame.from_records(data=data(n=n))</span><br><span class="line">        ddf = dd.from_pandas(df, npartitions=<span class="number">4</span>)</span><br><span class="line">        t0 = time.perf_counter()</span><br><span class="line">        summarize(ddf=ddf)</span><br><span class="line">        t1 = time.perf_counter()</span><br><span class="line">        table.append(</span><br><span class="line">            {</span><br><span class="line">                <span class="string">"Rows"</span>: <span class="built_in">len</span>(ddf),</span><br><span class="line">                <span class="string">"Time Taken (seconds)"</span>: (t1 - t0),</span><br><span class="line">            }</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(tabulate.tabulate(table))</span><br></pre></td></tr></table></figure>   
+<p>This is the output generated. As we can see, it takes 17 minutes for 1e6 rows.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--------  ---------</span><br><span class="line">      10    14.5076</span><br><span class="line">     100    24.1455</span><br><span class="line">    1000    23.4862</span><br><span class="line">   10000    23.4842</span><br><span class="line">  100000    32.8378</span><br><span class="line"> 1000000   121.013</span><br><span class="line">10000000  1050.46</span><br><span class="line">--------  ---------</span><br></pre></td></tr></table></figure>   
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can summarize a Dask DataFrame using TSum. The library is available on PyPI and can be installed with the following command.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install tsum</span><br></pre></td></tr></table></figure>  
+<p><a target="_blank" rel="noopener" href="https://github.com/thescalaguy/tsum-dask">The code is available on GitHub.</a> Contributions welcome.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm2a0cn16000plfruez8o2irt" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithms/" rel="tag">algorithms</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Running-Database-Migrations" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/03/31/Running-Database-Migrations/" class="article-date">
@@ -221,7 +280,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clzs2k8dt001rypru3qsb7wg8" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm2a0cn1a001rlfruhc0rhxhz" data-title="Running Database Migrations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -301,7 +360,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clzs2k8dt001yypru8rx70awt" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm2a0cn1b0021lfrucx935fgp" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -371,7 +430,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clzs2k8do000lypru3jxpej44" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm2a0cn16000klfru00pd7g1s" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -491,7 +550,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clzs2k8du0023ypru3wqf4tm7" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cm2a0cn1b0028lfru6ptc743r" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -569,7 +628,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clzs2k8du0021yprua5osbz83" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm2a0cn1b0023lfru5nr16vd5" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -617,7 +676,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clzs2k8ds001jypru6ouhhadw" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm2a0cn19001mlfrubqvc23iz" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -667,7 +726,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clzs2k8dw0030ypru3l3wfhe4" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm2a0cn1d002zlfruhns895h1" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -725,7 +784,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clzs2k8dr001cyprudxq80nc7" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm2a0cn19001hlfruacef74va" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -795,7 +854,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clzs2k8ds001eypru416k5s44" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm2a0cn19001elfruh5bc00ga" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -851,7 +910,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clzs2k8dr0017ypru2a9beu7n" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm2a0cn19001clfrubfo57xaw" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -914,74 +973,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="clzs2k8dr0019ypru91j56g2a" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm2a0cn180017lfrucycu8eew" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/misc/" rel="tag">misc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Palestine-and-Israel-from-the-perspective-of-collective-consciousness" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" class="article-date">
-  <time datetime="2024-03-01T15:03:20.000Z" itemprop="datePublished">2024-03-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/">Palestine and Israel from the perspective of collective consciousness</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I recently read in a book that the Chinese word for crisis is weiji (危机). It consists of two characters: wei (危) meaning danger, and jei (机) meaning a point of inflection. In other words, a crisis is both a perilous circumstance and a catalyst for change. If handled correctly, a crisis can become an essential component and a powerful force for good. In this essay I am going to look at the Palestine and Israel crisis as weiji. I will draw on the collective consciousness of people on both sides to provide a stance that, I believe, will pave the way for long-term peace. This essay is my perspective, and I am only one of many people seeing the crisis unfold from a distance. I understand that this is a sensitive subject, and I will take every care to handle it as such. I am sure that I will inadvertently say things that people on both the sides will find insensitive, and for that I apologise from the beginning.</p>
-<p>I’ll begin by introducing Moshe and Moosa, two young boys on either side of the conflict, and wind the clock forward a couple of times, one decade at a time, to show how they develop their consciousnesses. However, I’d like you to start by reflecting on your own position on the Palestine and Israel crisis, and hopefully watch it transform as we progress through the essay.</p>
-<p>Let me introduce Moshe. He is 15 years old, and lives in the beautiful city of Tel Aviv. Like many kids his age living in the modern state of Israel, Tel Aviv is the only home he has known. He dreams of growing up and going to the university to follow in the footsteps of Jonas Salk. He is aware of the ever-present state of tension, and has heard the sirens go off as rockets land in his home city. In his history class he has studied about the Holocaust, the migration of the Jewish people in search of a home, and how that led to the formation of the modern state of Israel. He has also heard about the destruction of the Temple of Solomon from his rabbi. His consciousness as a young 15 year old kid is that of hopes and dreams, and his consciousness as an Israeli Jew is that of persecution, expulsion, and the search for a place to call home.  </p>
-<p>Let me now introduce Moosa. He, too, is 15 years old and lives in the beseiged city of Gaza. Like many kids his age living in under siege, Gaza is the only home he has known. He dreams of growing up and going to the university to become a surgeon after having seen the effects of shrapnel. He, too, is aware of the ever-present state of tension, and vividly remembers fighter jets and exploding bombs. He studies in a dilapidated school, and in his history class he has studied the formation of the modern state of Israel. He has heard the stories of the Naqbah from his grandfather, who wears the key to their old house around his neck. He yearns to go back and see the house his grandfather grew up in. His consciousness, as a young 15 year old kid, is that of hopes and dreams, and his consciousness as a Palestinian Muslim / Christian is that of persecution, expulsion, and of yearning to go back to the land his family once called home, and perhaps to play among the olive trees.</p>
-<p>Take a moment to pause and reflect on the original position you started with. We shall now wind the clock forward a decade to a time where both Moshe and Moosa are 25 years old.  </p>
-<p>Moshe studied <sup>[1]</sup> medicine at the prestigious Tel Aviv University. He runs a successful practice, and is married to the love of his life that he met at the university. In the last 10 years, however, his country has come under attack twice. He now worries that, in the future, his children may not have a place to call home. He plans to run for political office with the hope of influencing policies and ensuring the security of Israel. His consciousness is that of someone looking out for his people; this is afterall his homeland.  </p>
-<p>Moosa got married to the girl who lives two houses from where he lives; they went to school together. He, too, is a doctor and runs a medical practice. In the last 10 years his city has twice witnessed a blockade, once for 90 days at a stretch. During this period there was only a trickle of food, and medical supplies; he had to scrounge for syringes, bandages, and medicines. He is among the many people who have lived through the blockade, including many young children. He has seen kids develop symptoms of post traumatic stress, and worries that the same will befall his children in the future. He plans to join the local political movement in hopes of bringing international pressure on the state of Israel. His consciousness is that of someone looking out for his people; this is afterall the only place left to call home.  </p>
-<p>Take a moment to pause and reflect on the original position you started with. We shall now wind the clock forward a decade to a time where both Moshe and Moosa are 35 years old.  </p>
-<p>Both Moshe and Moosa ran for political office, and now hold the highest position there is. While Moshe turns West to look for allies, Moosa turns East. They both use diplomatic, and military means to secure the place they call home. Their consciousnesses are of their nations, etched indelibly with the events of the last two decades. Nations of the world watch as the days unfold, and take the side of either Moshe or Moosa. People on each side portray the other in the most negative light.  </p>
-<p>Take a moment to pause and reflect on the original position you started with.  </p>
-<p>We begin to see the inflection point when we look at the crisis from the perspective of collective consciousnesses; there is a common thread of humanity that connects both Moshe and Moosa. To make this clear, I’d like to introduce one more Moshe or Moosa, someone I admire, and that is Moosa ibn Maimoon (Moshe, the son of Maimoon), also known as Rambam (רמב״ם) or more commonly as Maimonides. He was a prominent philosopher and polymath among both the Jewish and Islamic worlds. </p>
-<p>Maimonides was born in either 1138 or 1135 in Andalusia<sup>[2]</sup>. During his early years, he studied Torah with his father and became interested in science and philosophy. He read Greek philosophers’ writings that were available in Arabic, as well as Islamic sciences and traditions. In 1148, however, after the Almohads conquered Cordoba, Maimonides’ family chose exile. He moved to Fez in Morocco, and eventually to Fustat in Egypt. He took up the profession of physician, for which he gained renown, and later became the physician of Salah ad Deen (Saladin). Among his notable achievements are treatises on medical and scientific studies, and the systematic codification of the Halakha, the way of life for the Jewish people.  </p>
-<p>Rambam’s life exemplifies a consciousness that offers peace to both Moshe and Moosa.</p>
-<p>Take a moment to pause and reflect on the original position you started with.  </p>
-<p>While what is inscribed in Moshe and Moosa’s consciousnesses, as well as those of their nations and humanity, will endure, it is up to them to determine what will be etched in the future. I will now posit that the route to reconciliation stems from the life of Prophet Mohammed (pbuh), and provides a thread of humanity that can bind the consciousnesses of the two nations. His life, like that of Moshe, Moosa, and Rambam was the one of persecution, expulsion, and of finding a place to call home. He eventually found it in the city of Medina.</p>
-<p>After migrating to Medina, Prophet Mohammed (pbuh) dictated what is called The Constitution of Medina.<sup>[3]</sup>. It mentions the rights and duties of the different tribes, Muslim and Jewish, and envisions a multi-religious Medina. While the complete text of the Constitution is left out for the sake of brevity, we shall look at two statements that truly capture the essence of this essay.  </p>
-<p>“They (Muslims) shall constitute a separate Ummah as distinguished from the people (of the world) … And the Jews of Banu ‘Awf shall be considered as one Ummah along with the believers — for the Jews their religion, and for the Muslims theirs, be one client or patron.”  </p>
-<p>The word the Constitution uses is Ummah which translates to a community. However, a closer look at the word reveals its profundity. Ummah dervies from Umm or Amm which means mother. Ummah is, therefore, people who are so close that they might have descended from the same mother. This is an apt description for the followers of the two Abrahamic faiths; one descends from Ishaq (Issac), and the other from Ismail (Ishmael). It is within the realm of reason to view the people of both the faiths coexisting side-by-side in harmony. </p>
-<p>We can now reframe the Palestine and Israel conflict as the one where two Ummahs lay claim to the land of their common ancestor Abraham. This, in my opinion, is the most peaceful way to look at the crisis.</p>
-<p>Let us now critique the essay by saying that the juxtaposition between Moshe and Moosa is wrong, and that the examples of Rambam and Prophet Mohammed (pbuh) are out of place. Perhaps this criticism is correct, and all we have is an amalgamation of random thoughts that have been weaved together. In it’s defense, we can say that the alternative is eternal tension, animosity, and war.  </p>
-<p>The path ahead, should the passage of time unfold itself to bring this essay into reality, is long and arduous. Whatever wrong, perceived or genuine, that has been to both the sides can only be partially undone. However, there is also hope of lasting peace and serenity in the intertwined consciousnesses of both Moshe and Moosa. The walls that they have built will take time to come down but it only takes a kind word, an extended hand, and a gracious smile to connect the two hearts.</p>
-<p>This is me looking for peace in the land of the prophets. Thank you for reading.</p>
-<h3 id="Footnotes"><a href="#Footnotes" class="headerlink" title="Footnotes:"></a>Footnotes:</h3><p>[1] I have but the faintest idea at what age people graduate medical school.<br>[2] I am using Wikipedia as my source. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maimonides">Maimonides</a>.<br>[3] I am using Wikipedia again. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Constitution_of_Medina">The Constitution of Medina</a>.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="clzs2k8ds001hypru1suohb8v" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1010,7 +1004,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1020,6 +1014,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/10/15/Low-Level-Design-1-Todo-List/">Low Level Design 1 - Todo List</a>
+          </li>
         
           <li>
             <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
@@ -1055,10 +1053,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
-          </li>
-        
-          <li>
-            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
           </li>
         
       </ul>

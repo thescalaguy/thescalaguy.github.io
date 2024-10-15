@@ -184,6 +184,68 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-booleanops" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/10/scalaz-booleanops/" class="article-date">
+  <time datetime="2017-07-10T09:41:40.000Z" itemprop="datePublished">2017-07-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/10/scalaz-booleanops/">Scalaz BooleanOps</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/BooleanOps.scala"><code>BooleanOps</code></a> and the goodies it provides to work with <code>Boolean</code>s. As always, we’ll go straight to examples.  </p>
+<h3 id="Unless"><a href="#Unless" class="headerlink" title="Unless"></a>Unless</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">val</span> t = <span class="literal">true</span></span><br><span class="line">t: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ <span class="keyword">val</span> f = <span class="literal">false</span></span><br><span class="line">f: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line"><span class="comment">// executes the given side-effect if this boolean value is false</span></span><br><span class="line">@ t unless <span class="string">"this won't print"</span>.println</span><br><span class="line"></span><br><span class="line">@ f unless <span class="string">"this will print"</span>.println</span><br><span class="line"><span class="string">"this will print"</span></span><br></pre></td></tr></table></figure>  
+<p>As the comment for <code>unless</code> states:  </p>
+<p><em>Executes the given side-effect if this boolean value is false.</em>  </p>
+<p>A mnemonic to remember the working is: “Unless the value is true, execute the side-effecting function”.  </p>
+<h3 id="When"><a href="#When" class="headerlink" title="When"></a>When</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// executes the given side-effect if this boolean value is true</span></span><br><span class="line">@ t when <span class="string">"this will print"</span>.println</span><br><span class="line"><span class="string">"this will print"</span></span><br><span class="line"></span><br><span class="line">@ f when <span class="string">"this won't print"</span>.println</span><br></pre></td></tr></table></figure>  
+<p>The “opposite” of <code>unless</code> is <code>when</code> which executes the function when the value is true. As the comment for <code>when</code> states:  </p>
+<p><em>Executes the given side-effect if this boolean value is true.</em>   </p>
+<p>A mnemonic to remember the working is: “When the value is true, execute the side-effecting function”.  </p>
+<h3 id="Folding-a-Boolean"><a href="#Folding-a-Boolean" class="headerlink" title="Folding a Boolean"></a>Folding a Boolean</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t fold[<span class="type">String</span>](<span class="string">"this will be returned when true"</span>, <span class="string">"this will be returned when false"</span>)</span><br><span class="line">res8: <span class="type">String</span> = <span class="string">"this will be returned when true"</span></span><br><span class="line">@ f fold[<span class="type">String</span>](<span class="string">"this will be returned when true"</span>, <span class="string">"this will be returned when false"</span>)</span><br><span class="line">res9: <span class="type">String</span> = <span class="string">"this will be returned when false"</span></span><br></pre></td></tr></table></figure>  
+<p><code>fold</code> lets you decide what value to return depending on whether it is true or false.   </p>
+<h3 id="Converting-to-an-Option"><a href="#Converting-to-an-Option" class="headerlink" title="Converting to an Option"></a>Converting to an Option</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t option <span class="string">"this will create a Some() with this string in it"</span></span><br><span class="line">res10: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">Some</span>(<span class="string">"this will create a Some() with this string in it"</span>)</span><br><span class="line">@ f option <span class="string">"this will result in a None"</span></span><br><span class="line">res11: <span class="type">Option</span>[<span class="type">String</span>] = <span class="type">None</span></span><br></pre></td></tr></table></figure>  
+<p><code>option</code> lets us convert a <code>Boolean</code> into an <code>Option</code> in a type-safe manner. A true results in a <code>Some</code> containing the value passed to <code>option</code> whereas a false results in an <code>Option</code> of whatever the type of the argument is.  </p>
+<h3 id="Ternary-Operator"><a href="#Ternary-Operator" class="headerlink" title="Ternary Operator"></a>Ternary Operator</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t ? <span class="string">"true"</span> | <span class="string">"false"</span></span><br><span class="line">res13: <span class="type">String</span> = <span class="string">"true"</span></span><br><span class="line">@ f ? <span class="string">"true"</span> | <span class="string">"false"</span></span><br><span class="line">res14: <span class="type">String</span> = <span class="string">"false"</span></span><br></pre></td></tr></table></figure>  
+<p>Scalaz also provides a ternary operator to work with <code>Boolean</code>s. The ternary operator is actually a combination of <code>?</code> and <code>|</code>. <code>?</code> is the conditional operator that results in the creation of an object of <code>Conditional</code> and <code>|</code> is a method of that object.  </p>
+<h3 id="Miscellaneous"><a href="#Miscellaneous" class="headerlink" title="Miscellaneous"></a>Miscellaneous</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t ?? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res15: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">@ f ?? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res16: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>()</span><br></pre></td></tr></table></figure>  
+<p><code>??</code> returns the given argument if the value is true, otherwise, the zero element for the type of the given argument. In our case, the “zero” element for <code>List</code> is an empty <code>List</code>.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ t !? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res17: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>()</span><br><span class="line">@ f !? <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res18: <span class="type">List</span>[<span class="type">Int</span>] = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>   
+<p><code>!?</code> is the opposite of <code>??</code> and returns the argument if the value is false or the zero element otherwise.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of our post on <code>BooleanOps</code>. There’s a lot more functions provided but I’ve chosen to cover those which I feel will be the most useful.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cm2a0cn1e003dlfru9qt34e5h" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-tryops" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/06/scalaz-tryops/" class="article-date">
@@ -219,7 +281,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="clzs2k8dz0043ypru98ps526i" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cm2a0cn1g0048lfru945zazl5" data-title="Scalaz TryOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -272,7 +334,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="clzs2k8dz0047yprubih70wtf" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="cm2a0cn1h004alfru3mjnaqgo" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -326,7 +388,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="clzs2k8dz0045ypru31u22x9b" data-title="Scalaz StringOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="cm2a0cn1g0046lfru0p2v7cz1" data-title="Scalaz StringOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/05/scalaz-stringops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -376,7 +438,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="clzs2k8dy003typrucns3dsgo" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cm2a0cn1f003ulfru27sq6ekr" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -454,7 +516,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="clzs2k8dx0039ypru75d7h8yz" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cm2a0cn1f003ilfru8gjt4afa" data-title="Scalaz Enum" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -506,7 +568,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="clzs2k8dz0041ypruciah6l7u" data-title="Scalaz Show" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cm2a0cn1g0041lfrueile9sea" data-title="Scalaz Show" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -578,7 +640,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="clzs2k8dz003wypru79v0g4hu" data-title="Scalaz Order" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cm2a0cn1g003zlfruf72k7afs" data-title="Scalaz Order" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -645,7 +707,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="clzs2k8dy003hypru5g9n5ode" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm2a0cn1f003klfruev1d261d" data-title="Scalaz Equal" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -717,7 +779,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="clzs2k8e0004aypru7i05bk6b" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm2a0cn1h004blfrudn1vekke" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -774,7 +836,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="clzs2k8e0004cyprudi65fb5u" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm2a0cn1h004dlfru1dh36e0x" data-title="Scalaz Under the Hoods" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -831,7 +893,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="clzs2k8dy003jypruhk2eaduv" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm2a0cn1f003nlfru6b6tghrt" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -862,7 +924,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -872,6 +934,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/10/15/Low-Level-Design-1-Todo-List/">Low Level Design 1 - Todo List</a>
+          </li>
         
           <li>
             <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
@@ -907,10 +973,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
-          </li>
-        
-          <li>
-            <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
           </li>
         
       </ul>
