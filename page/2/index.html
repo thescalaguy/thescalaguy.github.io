@@ -184,6 +184,70 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Scaling-Python-Microservices-Part-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/" class="article-date">
+  <time datetime="2024-05-12T11:51:14.000Z" itemprop="datePublished">2024-05-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of the <a href="/2024/03/25/Scaling-Python-Microservices/">previous posts</a> we saw how we can scale a Python microservice and allow it to connect, theoretically, to an infinite number of databases. The way we did this is by fetching the database connection information at runtime from another microservice using the unique identifier of the customer. This allowed us to scale horizontally to some extent. However, there is still the limitation that the data of the customer may be so large that it would exceed the limit of the database when it is scaled vertically. In this post we’ll look at how to extend the architecture we saw previously and shard the data across servers. We’ll continue to use relational databases and see how we can shard the data using Postgres <code>PARTITION BY</code>.</p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>The gist of scaling by sharding is to split the table into multiple partitions and let each of these be hosted on a separate host. For the purpose of this post we’ll use a simple setup that consists of four partitions that are spread over two hosts. We’ll use Postgres’ Foreign Data Wrapper (FDW) to connect one instance of Postgres to another instance of Postgres. We’ll store partitions in both these hosts, and create a table which uses these partitions. Querying this table would allow us to query data from all the partitions. </p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>My setup has two instances of Postgres, both of which will host partitions. One of them will also contain the base table which will use these partitions. We’ll begin by logging into the first instance and creating the FDW extension which ships natively with Postgres.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> EXTENSION postgres_fdw;</span><br></pre></td></tr></table></figure>  
+<p>Next, we’ll tell the first instance that there is a second instance of Postgres that we can connect to. Since both of these instances are running as Docker containers, I will use the hostname in the SQL query.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> SERVER postgres_5 <span class="keyword">FOREIGN</span> DATA WRAPPER postgres_fdw OPTIONS (host <span class="string">'postgres_5'</span>, dbname <span class="string">'postgres'</span>);</span><br></pre></td></tr></table></figure>  
+<p>Next, we’ll create a user mapping. This allows the user of the first instance to log into the second instance as one of its users. We’re simply mapping the <code>postgres</code> user of the first instance to the <code>postgres</code> user of the second instance.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> MAPPING <span class="keyword">FOR</span> postgres SERVER postgres_5 OPTIONS (<span class="keyword">user</span> <span class="string">'postgres'</span>, password <span class="string">'my-secret-pw'</span>);</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll create the base table. There are a couple of things to notice. First, we use the <code>PARTITION BY</code> clause to specify that the table is partitioned. Second, there is no primary key on this table. Specifying a primary key prevents us from using foreign tables so we’ll omit them.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">) <span class="keyword">PARTITION</span> <span class="keyword">BY</span> HASH (quarter);</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll create two partitions that reside on the first instance. We could, if the data were large enough, host each of these on separate instances. For the purpose of this post, we’ll host them on the same instance. </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_0 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">0</span>);</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_1 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">1</span>);</span><br></pre></td></tr></table></figure>  
+<p>We’ll now switch to the second instance and create two tables which will host the remaining two partitions.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_2 (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_3 (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>Once this is done, we’ll go back to the first instance and designate these tables as partitions of the base table.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">FOREIGN</span> <span class="keyword">TABLE</span> person_2 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">2</span>) SERVER postgres_5;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">FOREIGN</span> <span class="keyword">TABLE</span> person_3 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">3</span>) SERVER postgres_5;</span><br></pre></td></tr></table></figure>  
+<p>That’s it. This is all we need to partition data across multiple Postgres hosts. We’ll now run a benchmark to insert data into the table and its partitions.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ab -p /dev/null -T <span class="string">"Content-Type: application/json"</span> -n 5000 -c 100 -H <span class="string">"X-Customer-ID: 4"</span> http://localhost:5000/person</span><br></pre></td></tr></table></figure>  
+<p>Once the benchmark is complete, we can query the base table to see that we have 5000 rows.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> person;</span><br><span class="line"></span><br><span class="line">count</span><br><span class="line"><span class="number">5000</span></span><br></pre></td></tr></table></figure>  
+<p>What I like about this approach is that it is built using functionality that is native to Postgres - FDW, partitions, and external tables. Additionally, the sharding is transparent to the application; it sees a single Postgres instance.</p>
+<p>Finito.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="clzs2k8dt001typru0i9w608y" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Implementing-TSum-with-Dask" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/04/07/Implementing-TSum-with-Dask/" class="article-date">
@@ -227,7 +291,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm2a0cn16000plfruez8o2irt" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clzs2k8do000oyprugwab6ywn" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -280,7 +344,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm2a0cn1a001rlfruhc0rhxhz" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clzs2k8dt001rypru3qsb7wg8" data-title="Running Database Migrations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -360,7 +424,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm2a0cn1b0021lfrucx935fgp" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clzs2k8dt001yypru8rx70awt" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -430,7 +494,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm2a0cn16000klfru00pd7g1s" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clzs2k8do000lypru3jxpej44" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -550,7 +614,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cm2a0cn1b0028lfru6ptc743r" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clzs2k8du0023ypru3wqf4tm7" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -628,7 +692,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm2a0cn1b0023lfru5nr16vd5" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clzs2k8du0021yprua5osbz83" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -676,7 +740,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm2a0cn19001mlfrubqvc23iz" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clzs2k8ds001jypru6ouhhadw" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -726,7 +790,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm2a0cn1d002zlfruhns895h1" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clzs2k8dw0030ypru3l3wfhe4" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -784,7 +848,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm2a0cn19001hlfruacef74va" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clzs2k8dr001cyprudxq80nc7" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -854,7 +918,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm2a0cn19001elfruh5bc00ga" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clzs2k8ds001eypru416k5s44" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -910,72 +974,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm2a0cn19001clfrubfo57xaw" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clzs2k8dr0017ypru2a9beu7n" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/misc/" rel="tag">misc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" class="article-date">
-  <time datetime="2024-03-02T13:32:20.000Z" itemprop="datePublished">2024-03-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/">Palestine and Israel from the perspective of collective consciousness, 2nd essay</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I’d shared the first essay with my close friends in hopes of receiving feedback. I heard back from one of them saying that perhaps my essay, although hopeful, came a few years too late, and that it would be difficult to explain my stance to the people on either side, given everything that has transpired in the last few decades. This second essay is in defense of the first, and I shall try to explain why peace is still the way forward. As always, I shall handle this topic with utmost sensitivity, and I apologise if I inadvertently say things that come across as insensitive.  </p>
-<p>Let’s recap the first essay. We saw Moshe and Moosa, two 15 year old kids on either side of the conflict, who grow up to find themselves facing each other to defend what they consider to be their home. We then looked at the examples of Rambam, and Prophet Mohammed (pbuh) to see what the path to peace would look like. The story of Moshe, and Moosa remained incomplete. Like in the first essay, we will wind the clock forward a decade and look at the various ways in which things can unfold. Finally, we will posit that peace is still the only option.   </p>
-<p>Take a moment to reflect on your position on this issue. I hope that in the course of this essay I am able to allay any doubts you may have, and convince you to act towards making peace.</p>
-<p>The first point that my friend had raised was that my essay is a few years too late. I’d like to address this by using the weiji (危机) metaphor that views a crisis as both a perilous situation, and a catalyst for change. It is the severity of the crisis that prompted me to write the essay, which will hopefully become the catalyst for lasting peace.  </p>
-<p>The second point that my friend had raised was that both the nations have tried to make peace in the past, and are yet to reach it. I’d like to respond by saying that the negotiations and treaties that were signed leave a lot to be desired. There is still lingering resentment and animosity on either side that shows from time to time. Also, the consequence of breaking down of the peace process is eternal war. Therefore, it stands to reason that attempts be made to ensure that it does not come to pass. It may, from the consciousnesses of the two nations, and of humanity, feel like rolling a boulder up the hill only to find it roll back down. To this I say that this is the only good pursuit there is.  </p>
-<p>The final point that my friend had raised was that perhaps Moshe would not want peace. This requires a more nuanced answer and we need to look beyond the consciousnesses of the two nations, and into the ones of those that surround them. We will look at these consciousnesses, and wind the clock forward a decade and reflect on the consequences of Moshe’s decisions. I’d like to retierate that I firmly believe in there being a common thread of humanity that ties Moshe and Moosa together, as we saw in the first essay, and that both Moshe and Moosa want peace and security for their homeland. </p>
-<p>Let us now look at the theater of war.  </p>
-<p>Moshe’s nation, Israel, shares its border with 4 other nations. It has, at different points in time, been at war with its neighbors. All of them, however, share the consciousness of faith with Moosa. Further to the East is the nation where Moosa’s religion of Islam originated, and further to the West is another nation observant of the same faith. While Moshe’s nation, by itself, is militarily strong, and has powerful allies, there is a risk of conflict opening on multiple fronts.  </p>
-<p>In contrast, Moosa lives in Gaza, a small strip of land which is surrounded by Moshe’s nation on 2 sides, the sea on 1 side, and a neutral nation on 1 side which observes the same faith as he does.</p>
-<p>Take a moment and reflect on the intricacies of the situation. In isolation, the war between Moshe and Moosa can be framed as a geopolitical dispute over borders. A borader look at the war reveals, given Moshe’s neighbors, that it can turn into a geo-religious-political dispute.  </p>
-<p>We’ll now look at two possible outcomes and wind the clock forward a decade to see how they may unfold. One, Moshe wins and manages to subdue Moosa, and his people militarily. Two, Moshe and Moosa end up in a stalemate. I posit that both of these outcomes are lose-lose for Moshe, and Moosa, and we shall see why.  </p>
-<p>Let us look at the first scenario where Moshe wins using military means, and manages to subdue Moosa and his nation. Such a victory is very myopic, and as counterintuitive as it may sound, goes against the original objective of securing his homeland. Given the collective consciousness of faith that Moosa’s nation shares with Moshe’s neighbors, near and far, there is now an ever-present threat of going to war with them, and perhaps simultaneously. It may happen either immediately, in the near future, in the far future, or never at all; the threat, however, shall remain. If it does happen, it risks drawing other nations of the world into it.  </p>
-<p>Also, military victory would come at a cost of significant civilian casualties to Moosa’s nation. While Moshe and his nation wins, they will forever be remembered, in the collective consciousness of humanity, as those who inflicted pain on those who had nothing to do with the war.  </p>
-<p>Those that do live through the war may now be left with no place to call home; Moshe did to Moosa’s people that which was done to his, and perhaps it will weigh heavily on him.</p>
-<p>Take a moment and reflect on this outcome.</p>
-<p>Let us now look at the second scenario where Moshe and Moosa end up in a stalemate.  </p>
-<p>In this scenario, neither Moshe nor Moosa win. After a long, drawn out war, Moshe and Moosa reach an agreement of sort that ends hostilities temporarily. In the course of the war, Moosa loses his wife and 2 daughters. I posit that such a scenario makes the next war even worse than the previous.  </p>
-<p>With time the military technology would advance, and with that the weapons of Moshe and Moosa. The nations that share the consciousness of faith with Moosa would do everything they can to help him, both militarily and diplomatically. Similarly, Moshe’s allies would help him militarily and diplomatically. Moshe would not have, still, achieved the objective of securing his homeland. Similar to the situation discussed previously, it has infact deteriorated the security of his nation. There is now a looming threat of Moosa retaliating with more fervor, and of drawing other nations into it.  </p>
-<p>Take a moment and reflect on this outcome.  </p>
-<p>I hope that this essay addresses any doubts as to why peace is the only way forward. The examples of Rambam, and Prophet Mohammed (pbuh) were deliberate as they tie Moshe and Moosa together. Let us envision a future where Moshe and Moosa sit across a table, say Salam Alaikum or Shalom Aleichem to the other, as children of Abraham and of humanity, heal the wounds that have been inflicted, bridge the divides that have been created, and bring their people a step closer to eternal peace. The road ahead is long, and paved with thorns, but what lies at the end is worth the walk.  </p>
-<p>This is me still looking for peace in the land of the prophets. Thank you for reading.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm2a0cn180017lfrucycu8eew" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -993,7 +994,7 @@ mjx-container[display="true"] + br {
 
   <nav id="page-nav">
     
-    <a class="extend prev" rel="prev" href="/">← Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/3/">Next →</a>
+    <a class="extend prev" rel="prev" href="/">← Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/3/">Next →</a>
   </nav>
 
 </section>
@@ -1004,7 +1005,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 12.22px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1014,6 +1015,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
+          </li>
         
           <li>
             <a href="/2024/10/15/Low-Level-Design-1-Todo-List/">Low Level Design 1 - Todo List</a>
@@ -1049,10 +1054,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
-          </li>
-        
-          <li>
-            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
           </li>
         
       </ul>

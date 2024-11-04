@@ -184,6 +184,62 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Programming-Puzzles-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/11/04/Programming-Puzzles-3/" class="article-date">
+  <time datetime="2024-11-04T03:36:57.000Z" itemprop="datePublished">2024-11-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post, and hopefully in the next few posts, I’d like to devle into the topic of dynamic programming. The aim is to develop an intuition for when it is applicable by solving a few puzzles. I’ll be referring to the chapter on dynamic programming in ‘Introduction to Algorithms’ by CLRS, and elucidating it in my own words.</p>
+<h1 id="Dynamic-Programming"><a href="#Dynamic-Programming" class="headerlink" title="Dynamic Programming"></a>Dynamic Programming</h1><p>The chapter opens with the definition of dynamic programming: it is a technique for solving problems by combining solutions to subproblems. The subproblems may have subsubproblems that are common between them. A dynamic programming algorithm solves these subsubproblems only once and saves the result, thereby avoiding unnecessary work. The term “programming” refers to a tabular method in which the results of subsubproblems are saved in a table and reused when the same subsubproblem is encountered again.</p>
+<p>All of this is abstract so let’s look at a concrete example of computing the Fibonacci series.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="keyword">return</span> n <span class="keyword">if</span> n &lt; <span class="number">2</span> <span class="keyword">else</span> fibonacci(n - <span class="number">1</span>) + fibonacci(n - <span class="number">2</span>)</span><br></pre></td></tr></table></figure>
+<p>The call graph for <code>fibonacci(4)</code> is given below.</p>
+<img src="/2024/11/04/Programming-Puzzles-3/Fibonacci.png" class="">
+<p>As we can see, we’re computing <code>fibonacci(2)</code> twice. In other words, the subsubproblem of computing <code>fibonacci(2)</code> is shared between <code>fibonacci(4)</code> and <code>fibonacci(3)</code>. A dynamic programming algorithm would solve this subsubproblem only once and save the result in a table and reuse it. Let’s see what that looks like.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    T = [<span class="number">0</span>, <span class="number">1</span>] + ([<span class="literal">None</span>] * (n - <span class="number">2</span>))</span><br><span class="line">    <span class="keyword">return</span> fibonacci_helper(n=n - <span class="number">1</span>, T=T)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci_helper</span>(<span class="params">n: <span class="built_in">int</span>, T: <span class="built_in">list</span>[<span class="built_in">int</span> | <span class="literal">None</span>]</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="keyword">if</span> T[n] <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        T[n] = fibonacci_helper(n - <span class="number">1</span>, T) + fibonacci_helper(n - <span class="number">2</span>, T)</span><br><span class="line">    <span class="keyword">return</span> T[n]</span><br></pre></td></tr></table></figure>  
+<p>In the code above, we create a table <code>T</code> which stores the Fibonacci numbers. If an entry exists in the table, we return it immediately. Otherwise, we compute and store it. This recursive approach, with results of subsubproblems stored in a table, is called “top-down with memoziation”; the table is called the “memo”. We begin with the original problem and then proceed to solve it by finding solutions to smaller subproblems. The procedure which computes the solution is said to be “memoized” as it remembers the previous computations.  </p>
+<p>Another approach is called “bottom-up” in which the solutions to the smaller subproblems are computed first. This depends on the notion that subproblems have “size”. In this approach, a solution to the subproblem is found only when the solutions to its smaller subsubproblems have been found. We can apply this approach when computing the Fibonacci series.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    T = [<span class="number">0</span>, <span class="number">1</span>] + ([<span class="literal">None</span>] * (n - <span class="number">2</span>))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, n):</span><br><span class="line">        T[i] = T[i - <span class="number">1</span>] + T[i - <span class="number">2</span>]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> T[n - <span class="number">1</span>]</span><br></pre></td></tr></table></figure>  
+<p>As we can see, the larger numbers in the Fibonacci series are computed only when the smaller numbers have been computed.   </p>
+<p>This was a small example of how dynamic programming algorithms work. They are applied to problems where subproblems share subsubproblems. The solutions to these subsubproblems are stored in a table and reused when they are encountered again. This enables the algorithm to work more efficiently as it avoids the rework of solving the subsubproblems.  </p>
+<p>In the next post we’ll look at another example of dynamic programming that’s presented in the book and implement it in Python to further our understanding of the subject.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm32h05gi0000jhru23ky1uxe" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/epi/" rel="tag">epi</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Low-Level-Design-1-Todo-List" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/10/15/Low-Level-Design-1-Todo-List/" class="article-date">
@@ -288,7 +344,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm2a0cn180019lfrug7pr7kzj" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm2a0c4b90003qxru1ojc5n64" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -334,7 +390,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm2a0cn15000elfrugspf8gmu" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="clzs2k8dn000gyprucyug7zrb" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -386,7 +442,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm2a0cn130007lfru5udjafxs" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="clzs2k8dl0006ypru7nf9hzad" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -436,7 +492,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm2a0cn130006lfru9j5p298k" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="clzs2k8dm0008ypru8nd4b0yb" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -502,7 +558,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm2a0cn1b0026lfru6mc9bdhl" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="clzs2k8du0028ypru1i26b36p" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -555,7 +611,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm2a0cn1a001olfru2sps8jbz" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="clzs2k8ds001oypru90gi2xhn" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -635,7 +691,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm2a0cn1a001wlfru4ehc3dn2" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="clzs2k8ds001mypru2o162l78" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -715,7 +771,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm2a0cn14000clfruf8bqez7g" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="clzs2k8dn000cypru7pk178ka" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -761,7 +817,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm2a0cn110003lfrugpt2ds4e" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="clzs2k8dk0003ypru2z8022ro" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -883,7 +939,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm2a0cn15000ilfrugyhhgx4z" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="clzs2k8do000jypru7v6p5t8m" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -954,73 +1010,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm2a0cn1a001ylfruapn31bk8" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="clzs2k8dt001wypruekpjaau6" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Scaling-Python-Microservices-Part-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/" class="article-date">
-  <time datetime="2024-05-12T11:51:14.000Z" itemprop="datePublished">2024-05-12</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/05/12/Scaling-Python-Microservices-Part-2/">Scaling Python Microservices Part 2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In one of the <a href="/2024/03/25/Scaling-Python-Microservices/">previous posts</a> we saw how we can scale a Python microservice and allow it to connect, theoretically, to an infinite number of databases. The way we did this is by fetching the database connection information at runtime from another microservice using the unique identifier of the customer. This allowed us to scale horizontally to some extent. However, there is still the limitation that the data of the customer may be so large that it would exceed the limit of the database when it is scaled vertically. In this post we’ll look at how to extend the architecture we saw previously and shard the data across servers. We’ll continue to use relational databases and see how we can shard the data using Postgres <code>PARTITION BY</code>.</p>
-<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>The gist of scaling by sharding is to split the table into multiple partitions and let each of these be hosted on a separate host. For the purpose of this post we’ll use a simple setup that consists of four partitions that are spread over two hosts. We’ll use Postgres’ Foreign Data Wrapper (FDW) to connect one instance of Postgres to another instance of Postgres. We’ll store partitions in both these hosts, and create a table which uses these partitions. Querying this table would allow us to query data from all the partitions. </p>
-<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>My setup has two instances of Postgres, both of which will host partitions. One of them will also contain the base table which will use these partitions. We’ll begin by logging into the first instance and creating the FDW extension which ships natively with Postgres.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> EXTENSION postgres_fdw;</span><br></pre></td></tr></table></figure>  
-<p>Next, we’ll tell the first instance that there is a second instance of Postgres that we can connect to. Since both of these instances are running as Docker containers, I will use the hostname in the SQL query.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> SERVER postgres_5 <span class="keyword">FOREIGN</span> DATA WRAPPER postgres_fdw OPTIONS (host <span class="string">'postgres_5'</span>, dbname <span class="string">'postgres'</span>);</span><br></pre></td></tr></table></figure>  
-<p>Next, we’ll create a user mapping. This allows the user of the first instance to log into the second instance as one of its users. We’re simply mapping the <code>postgres</code> user of the first instance to the <code>postgres</code> user of the second instance.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">USER</span> MAPPING <span class="keyword">FOR</span> postgres SERVER postgres_5 OPTIONS (<span class="keyword">user</span> <span class="string">'postgres'</span>, password <span class="string">'my-secret-pw'</span>);</span><br></pre></td></tr></table></figure>
-<p>Next, we’ll create the base table. There are a couple of things to notice. First, we use the <code>PARTITION BY</code> clause to specify that the table is partitioned. Second, there is no primary key on this table. Specifying a primary key prevents us from using foreign tables so we’ll omit them.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">) <span class="keyword">PARTITION</span> <span class="keyword">BY</span> HASH (quarter);</span><br></pre></td></tr></table></figure>
-<p>Next, we’ll create two partitions that reside on the first instance. We could, if the data were large enough, host each of these on separate instances. For the purpose of this post, we’ll host them on the same instance. </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_0 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">0</span>);</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_1 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">1</span>);</span><br></pre></td></tr></table></figure>  
-<p>We’ll now switch to the second instance and create two tables which will host the remaining two partitions.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_2 (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person_3 (</span><br><span class="line">  id BIGSERIAL <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  quarter <span class="type">BIGINT</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p>Once this is done, we’ll go back to the first instance and designate these tables as partitions of the base table.</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">FOREIGN</span> <span class="keyword">TABLE</span> person_2 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">2</span>) SERVER postgres_5;</span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">FOREIGN</span> <span class="keyword">TABLE</span> person_3 <span class="keyword">PARTITION</span> <span class="keyword">OF</span> person <span class="keyword">FOR</span> <span class="keyword">VALUES</span> <span class="keyword">WITH</span> (MODULUS <span class="number">4</span>, REMAINDER <span class="number">3</span>) SERVER postgres_5;</span><br></pre></td></tr></table></figure>  
-<p>That’s it. This is all we need to partition data across multiple Postgres hosts. We’ll now run a benchmark to insert data into the table and its partitions.</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ab -p /dev/null -T <span class="string">"Content-Type: application/json"</span> -n 5000 -c 100 -H <span class="string">"X-Customer-ID: 4"</span> http://localhost:5000/person</span><br></pre></td></tr></table></figure>  
-<p>Once the benchmark is complete, we can query the base table to see that we have 5000 rows.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> person;</span><br><span class="line"></span><br><span class="line">count</span><br><span class="line"><span class="number">5000</span></span><br></pre></td></tr></table></figure>  
-<p>What I like about this approach is that it is built using functionality that is native to Postgres - FDW, partitions, and external tables. Additionally, the sharding is transparent to the application; it sees a single Postgres instance.</p>
-<p>Finito.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm2a0cn1a001tlfru6ms5163z" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1038,7 +1030,7 @@ mjx-container[display="true"] + br {
 
   <nav id="page-nav">
     
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/2/">Next →</a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/2/">Next →</a>
   </nav>
 
 </section>
@@ -1049,7 +1041,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 11.11px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 12.22px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1059,6 +1051,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
+          </li>
         
           <li>
             <a href="/2024/10/15/Low-Level-Design-1-Todo-List/">Low Level Design 1 - Todo List</a>
@@ -1094,10 +1090,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
-          </li>
-        
-          <li>
-            <a href="/2024/06/10/Factoring-Quadratics/">Factoring Quadratics</a>
           </li>
         
       </ul>
