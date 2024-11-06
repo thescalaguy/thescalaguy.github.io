@@ -30,7 +30,11 @@
 <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
 
   
-<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
 
@@ -184,6 +188,77 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Scaling-Python-Microservices-Part-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/" class="article-date">
+  <time datetime="2024-05-19T12:05:46.000Z" itemprop="datePublished">2024-05-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices Part 3</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In a <a href="/2024/03/21/Setting-up-a-Python-microservice/">previous blog post</a> we’d seen how to use OpenTelemetry and Parca to instrument two microservcies. Imagine that our architecture has grown and we now have many microservices. For example, there is a microservice that is used to send emails, another which keeps track of user profile information, etc. We’d previously hardcoded the HTTP address of the second microservice to make a call from the first microservice. We could have, in a production environment, added a DNS entry which points to the load balancer and used that instead. However, when there are many microservcies, it becomes cumbersome to add these entries. Furthermore, any new microservice which depends on another microservice now needs to have the address as a part of its configuration. Maintaining a single repository, which can be used to find the microservices and their addresses, becomes difficult to maintain. An easier way to find services is to use service discovery - a dynamic way for one service to find another. In this post we’ll modify the previous architecture and add service discovery using Zookeeper.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>In a nutshell, we’ll use Zookeeper for service registration and discovery. We’ll modify our <code>create_app</code> factory function to make one more function call which registers the service as it starts. The function call creates an ephemeral node in Zookeeper at a specified path and stores the host and port. Any service which needs to find another service looks for it on the same path. We’ll create a small library for all of this which will make things easier.</p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>We’ll begin by creating a simple attr class to represent a service.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@define(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Service</span>:</span><br><span class="line">    host: <span class="built_in">str</span></span><br><span class="line">    port: <span class="built_in">int</span></span><br></pre></td></tr></table></figure>  
+<p>We’ll be using the <code>kazoo</code> Python library to interact with Zookeeper. The next step is to create a private variable which will be used to store the Zookeeper client.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_zk: KazooClient | <span class="literal">None</span> = <span class="literal">None</span></span><br></pre></td></tr></table></figure>  
+<p>Next we’ll add the function which will be called as a part of the <code>create_app</code> factory function.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">init_zookeeper_and_register</span>():</span><br><span class="line">    _init_zookeeper()</span><br><span class="line">    _register_service()</span><br></pre></td></tr></table></figure>  
+<p>In this function we’ll first initialize the connection to Zookeeper and then register our service. We’ll see both of these functions next, starting with the one to init Zookeeper.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_init_zookeeper</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> _zk:</span><br><span class="line">        _zk = KazooClient(hosts=<span class="string">'127.0.0.1:2181'</span>)</span><br><span class="line">        _zk.start(timeout=<span class="number">5</span>)</span><br><span class="line">        _zk.add_listener(_state_change_listener)</span><br></pre></td></tr></table></figure>  
+<p>The <code>_zk</code> variable is meant to be a singleton. I was unable to find whether this is thread-safe or not but for the sake of this post we’ll assume it is. The <code>start</code> method creates a connection to Zookeeper synchronously and raises an error if no connection could be made in <code>timeout</code> seconds. We also add a listener to respond to changes in the state of a Zookeeper connection. This enables us to respond to scenarios where the connection drops momentarily. Since we’ll be creating ephemeral nodes in Zookeeper, they’ll be removed in the case of a session loss and would need to be recreated. In the listener we recreate the node upon a successful reconnection.  </p>
+<p>Next we’ll look at the function to register the service.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_register_service</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    service = os.environ.get(<span class="string">"SERVICE"</span>)</span><br><span class="line">    host = socket.getfqdn()</span><br><span class="line">    port = os.environ.get(<span class="string">"PORT"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> service</span><br><span class="line">    <span class="keyword">assert</span> host</span><br><span class="line">    <span class="keyword">assert</span> port</span><br><span class="line"></span><br><span class="line">    identifier = <span class="built_in">str</span>(uuid4())</span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{identifier}</span>"</span></span><br><span class="line">    data = {<span class="string">"host"</span>: host, <span class="string">"port"</span>: <span class="built_in">int</span>(port)}</span><br><span class="line">    data_bytes = json.dumps(data).encode(<span class="string">"utf-8"</span>)</span><br><span class="line"></span><br><span class="line">    _zk.create(path, data_bytes, ephemeral=<span class="literal">True</span>, makepath=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>  
+<p>We get the name of the service and the port it is running on as environment variables. The host is retrieved as the fully-qualified domain name of the machine we’re on. Although the example is running on my local machine, it may work on a cloud provider like AWS. We then create a UUID identifier for the service, and a path on which the service will be registered. The information stored on the path is a JSON containing the host and the port of the service. Finally, we create an ephemeral node on the path and store the host and port.  </p>
+<p>Next we’ll look at the function which handles changes in connection state.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_state_change_listener</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="keyword">if</span> state == KazooState.CONNECTED:</span><br><span class="line">        _register_service()</span><br></pre></td></tr></table></figure>  
+<p>We simply re-register the service upon reconnection.  </p>
+<p>Finally, we’ll look at the function which retrieves an instance of the service from Zookeeper.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_service_from_zookeeper</span>(<span class="params">service: <span class="built_in">str</span></span>) -&gt; Service | <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line">    <span class="keyword">assert</span> _zk</span><br><span class="line"></span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>"</span></span><br><span class="line">    children = _zk.get_children(path)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> children:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    idx = random.randint(<span class="number">0</span>, <span class="built_in">len</span>(children) - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    child = children[idx]</span><br><span class="line">    config, _ = _zk.get(<span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{child}</span>"</span>)</span><br><span class="line">    config = config.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">    config = json.loads(config)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Service(**config)</span><br></pre></td></tr></table></figure>  
+<p>To get a service we get all the children at the path <code>/providers/SERVICE_NAME</code>. This returns a list of UUIDs, each of which represents an instance of the service. We randomly pick one of these instances and fetch the information associated with it. What we get back is a two-tuple containing the host and port, and an instance of ZStat which we can ignore. We decode and parse the returned information to get an instance of <code>dict</code>. This is then used to return an instance of <code>Service</code>. We can then use this information to make a call to the returned service.  </p>
+<p>This is all we need to create a small set of utility functions to register and discover services. All we need to do to register the service as a part of the Flask application process is to add a function call in the <code>create_app</code> factory function.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create_app</span>() -&gt; Flask:</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment"># -- Initialize Zookeeper and register the service.</span></span><br><span class="line">    init_zookeeper_and_register()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> app</span><br><span class="line"></span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll retrieve the information about the second service in the first service right before we make the call.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">make_request</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    service = get_service_from_zookeeper(service=<span class="string">"second"</span>)</span><br><span class="line">    url = <span class="string">f"http://<span class="subst">{service.host}</span>:<span class="subst">{service.port}</span>"</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>  
+<p>As an aside, the service will automatically be deregistered once it stops running. This is because we created an ephemeral node in Zookeeper and it only persists as long as the session that created it is alive. When the service stops, the session is disconnected, and the node is removed from Zookeeper.</p>
+<h3 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h3><p>The rationale behind registering and discovering services from Zookeeper is to make it easy to create new services and to find the ones that we need. It’s even more convenient when there is a shared library which contains the code that we saw above. For the sake of simplicity, we’ll assume all our services are written in Python and there is a single library that we need. The library could also contain an enum that represents all the services that are registered with Zookeeper. For example, to make a call to an email microservice, we could have code that looks like the following.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">email_service = Service.EMAIL_SERVICE.value</span><br><span class="line">service = get_service_from_zookeeper(service=email_service)</span><br></pre></td></tr></table></figure>  
+<p>This, in my opinion, is much simpler than adding a DNS entry. The benefits add up over time and result in code that is both readable and maintainable.  </p>
+<p>That’s it. That’s how we can register and retrieve services from Zookeeper. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">Code is available on Github.</a></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm35hkpne0021skru1ydjf7xr" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Scaling-Python-Microservices-Part-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/05/12/Scaling-Python-Microservices-Part-2/" class="article-date">
@@ -232,7 +307,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="clzs2k8dt001typru0i9w608y" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm35hkpne001zskru9emf3j2e" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -291,7 +366,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="clzs2k8do000oyprugwab6ywn" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm35hkpn9000pskrugqu87ya0" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -344,7 +419,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="clzs2k8dt001rypru3qsb7wg8" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm35hkpnd001wskrubvv58zzk" data-title="Running Database Migrations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -424,7 +499,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="clzs2k8dt001yypru8rx70awt" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm35hkpne0024skruh5zh9qhb" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -494,7 +569,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="clzs2k8do000lypru3jxpej44" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm35hkpn9000kskrubme5gamh" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -614,7 +689,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="clzs2k8du0023ypru3wqf4tm7" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cm35hkpnf0029skru3up79ofg" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -692,7 +767,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="clzs2k8du0021yprua5osbz83" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm35hkpne0026skru1clv9idr" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -740,7 +815,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="clzs2k8ds001jypru6ouhhadw" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm35hkpnc001hskrugb2s6c8w" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -790,7 +865,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="clzs2k8dw0030ypru3l3wfhe4" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm35hkpng0030skrufctr0e1z" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -848,7 +923,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="clzs2k8dr001cyprudxq80nc7" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm35hkpnc001cskru3mdkefdy" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -918,65 +993,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="clzs2k8ds001eypru416k5s44" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm35hkpnc001mskrubbd63q42" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/misc/" rel="tag">misc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" class="article-date">
-  <time datetime="2024-03-04T04:55:22.000Z" itemprop="datePublished">2024-03-04</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/">Palestine and Israel from the perspective of collective consciousness, 3rd essay</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In the last two essays I mentioned the examples of Rambam, and Prophet Mohammed (pbuh), and how they pave the way for long-term peace. In this essay I’d like to introduce you to Rambam, and hopefully convey my admiration and reverence for him. While I originally wanted to title this essay as either “Revering Rambam” or “An Ode to Rambam”, I decided to call it “3rd essay” to make it a continuation of the previous two. In the same spirit, I shall handle this subject with sensitivity, and respect. If I inadvertently say something insensitive or disrespectful, I apologise from the beginning. The intention of this essay is to introduce you, the reader, to who I consider to be the most influential Judaeo-Arabic minds.  </p>
-<p>Let’s begin this essay with a thought experiment. I’d like you to close your eyes and imagine yourself standing in a park, or a cafe, or a meadow, or some place you consider beautiful. I’d like you to appreciate the beauty in its entirety, and then focus on the individual elements like the sights, the sounds, the smells, etc. that together make the scene beautiful. I posit that the beauty of Rambam’s thinking, like that of yours, is in the coalescence of individual elements. These are elements from his Jewish heritage, and those from his exposure to Islamic, and to some extent Christian, cultures.  </p>
-<p>Let us now look at Rambam’s life and works. I’ll start by attempting to piece together his life from whatever information I have. By the end of this essay, I hope to have conveyed what I suggested in the previous two, which is that Moshe and Moosa share a common thread of humanity through Rambam. </p>
-<p>Moosa Ibn Maimoon al-Andalusi, also known as Moshe Ben Maimon ha-Sefaradi in Hebrew, known as Rambam, was born in the Arabic metropolis of Córdoba in 1135 or 1138. Descending from a long line of rabbanic scholars who preserved their genealogy, along with their titles, going back seven generations, he was one of two sons. He was quite fond of his younger brother, David, whom he educated and, as we will see later, trusted in affairs of business.<sup>[1]</sup>  </p>
-<p>Rambam was born towards the end of the golden age of Jewish culture in Spain, when the power of the governing dynasty of the Almovarids began to dwindle. They had granted Jews and Christians the <em>dhimmi</em> status. When we return to the Constitution of Medina, which Prophet Mohammed (pbuh) dictated, it states that any Muslim, even the weakest, is permitted to provide protection (<em>dhimmah</em>) to another person, and that it is binding on the rest of the Muslim Ummah. While the Constitution intends for it to be binding on Muslims living in Medina at the time, we can extrapolate that if the ruler of a nation grants <em>dhimmi</em> status to a group of people then it becomes binding on his subjects.</p>
-<p>The Almohads rose to power, signaling the end of the golden age. Chroniclers describe the challenges of life as a Jew during the Almohad conquest, as well as persecution, when Abd al-Mu’min, the Almohad ruler, launched his conquest of North Africa and Andalusia.<sup>[2]</sup> Rambam’s family was forced to leave Cordoba, and eventualy moved to Fez, and then to Fustat.<sup>[3]</sup> During this period, Rambam was studying medicine, astronomy, rabbinic literature, and serving as an apprentice rabbinic judge.<sup>[4]</sup>  </p>
-<p>Rambam engaged in the precious stone trade in Fustat until the death of his brother David, who died in the Indian Ocean while doing business.<sup>[5]</sup> The Maimonides family had entrusted David with their savings in the hopes of growing their wealth. Rambam was deeply affected by his brother’s death, and in a letter found in the Cairo Geniza, a collection of Jewish manuscripts discovered in a storehouse (<em>gheniza</em>) of a synagogue in Fustat, Rambam laments how a tremendous sorrow had befallen him.<sup>[6]</sup>  </p>
-<p>The death of David led to financial hardship for the family of Rambam who had to take up the profession of the court-physician. Fustat, by now, was under the Ayyubid dynasty.<sup>[7]</sup> He confirms that he had studied both the theory and practice of medicine, and perhaps may have been preparing himself to become a physician. He did eventually gain renown for his profession, and even remarked that his attendance as a physician on Salah ad Deen’s courtesans was a fortunate turn in his life.<sup>[8]</sup> He even attendeed Salah ad Deen himself<sup>[9]</sup> and continued as a court-physician after his death.  </p>
-<p>He continued as a physician and passed away in 1204 in Fustat. His final resting place is in the city of Tiberias in Israel, and is one of the most important sites of pilgrimage.<sup>[10]</sup>   </p>
-<p>Take a moment to pause and reflect on the life of Rambam as that of, first and foremost, someone following the Jewish faith, and an intellectual living in the Mediterranean world. For a historian, however, the term “Mediterranean world” is problematic because the cultural boundaries are flexible; they can go from Italy in the West to Palestine in the East.<sup>[11]</sup> However, we can say that the Mediterranean world of the Islamic middle ages was one of economic relationships, exchange of books, science, and ideas, all of which contributed to the multifaceted universe in which Rambam lived.<sup>[12]</sup> We’ll take a quick look at only two of his sayings to demonstrate the brilliance of his ideas, beginning with another thought experiment; offering an overview of his work is beyond the scope of this essay.  </p>
-<p>The first saying, the thought experiment, serves as a guide for how we can think about Moshe and Moosa. In his book Dalalat al-Ha’irin, The Guide for the Perplexed, he states that when the process of thought is interrupted, “at first thought” (bi-awwal fikra), it is prone to create ideas that are incorrect, incomplete, or even dangerous.<sup>[13]</sup> Pause for a moment and reflect on your thoughts regarding Moshe and Moosa. I believe that, as Rambam stated, your first thought (fikra) was to see the other, depending on whose side you are on, in the most negative light. In the spirit of what has been mentioned in the Guide, we can take a minute to pause, reflect, and let the initial thought fade away to make place for the next. </p>
-<p>Finally, I’d like to quote him from Commentary on the Mishnah. In that he writes that one should listen to the truth regardless of who says it; Isma’ al-haqq mi-man qalahu.<sup>[14]</sup> This is similar in structure to the advise of Ibn ‘Abbas, the cousin of Prophet Mohammed (pbuh) who said that one should take wisdom wherever it comes from, even if it comes from the non-wise. It is possible Rambam may have read this in Kindi’s Al Qutayba<sup>[15]</sup> since Jewish philosophers at his time read the work of their Muslim contemporaries. What matters less is whether he read it in the book, or if the idea was commonplace. What matters truly is the principle of reaching for knowledge and truth, whatever the source may be; this is the thread that ties Rambam with ‘Ibn Abbas.  </p>
-<p>This is me as I continue to look for peace in the land of the prophets.</p>
-<h3 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h3><p>[1] Page 4, Davidson HA. Moses Maimonides: The Man and His Works. Oxford University Press, USA; 2010.<br>[2] Page 11, Davidson HA. Moses Maimonides: The Man and His Works. Oxford University Press, USA; 2010.<br>[3] Page 8, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[4] Page 20, Davidson HA. Moses Maimonides: The Man and His Works. Oxford University Press, USA; 2010.<br>[5] Page 9, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[6] Wikipedia contributors. Maimonides - Wikipedia [Internet]. 2024. Available from: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Maimonides">https://en.wikipedia.org/wiki/Maimonides</a><br>[7] Page 9, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[8] Page 35, Davidson HA. Moses Maimonides: The Man and His Works. Oxford University Press, USA; 2010.<br>[9] Page 36, Davidson HA. Moses Maimonides: The Man and His Works. Oxford University Press, USA; 2010.<br>[10] Wikipedia contributors. Tomb of Maimonides [Internet]. Wikipedia. 2024. Available from: <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Tomb_of_Maimonides">https://en.wikipedia.org/wiki/Tomb_of_Maimonides</a><br>[11] Page 9, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[12] Page 5, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[13] Preface, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[14] Page 11, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.<br>[15] Page 12, Stroumsa S. Maimonides in his world: Portrait of a Mediterranean Thinker. Princeton University Press; 2011.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="clzs2k8dr0017ypru2a9beu7n" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1005,7 +1024,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 12.22px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1015,6 +1034,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
+          </li>
         
           <li>
             <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
@@ -1050,10 +1073,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium</a>
-          </li>
-        
-          <li>
-            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
           </li>
         
       </ul>
@@ -1132,23 +1151,6 @@ mjx-container[display="true"] + br {
             all[i].SourceElement().parentNode.className += ' has-jax';
     });
 </script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({{ JSON.stringify(config) }});
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i=0; i < all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-  });
-</script>
-
-<script type="text/javascript" src="{{ src }}">
-</script>
-<!-- End: Injected MathJax -->
-<!-- hexo-inject:end -->
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

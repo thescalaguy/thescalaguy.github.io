@@ -30,7 +30,11 @@
 <link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
 
   
-<meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
   direction: ltr;
 }
 
@@ -184,6 +188,74 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-JVM-JIT-Introduction" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/17/JVM-JIT-Introduction/" class="article-date">
+  <time datetime="2018-04-17T15:01:00.000Z" itemprop="datePublished">2018-04-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/04/17/JVM-JIT-Introduction/">JVM JIT - Introduction</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h2><p>My day job requires me to write code in Clojure. This means the code is eventually compiled to bytecode and run on the JVM. Intrigued by how the JVM does what it does, I decided to dig a little deeper and look at how it optimizes the code on the fly. In this series of posts I will be looking at JVM JIT (Just-In-Time) compiler.</p>
+<h2 id="Myriad-ways-to-run-a-program"><a href="#Myriad-ways-to-run-a-program" class="headerlink" title="Myriad ways to run a program"></a>Myriad ways to run a program</h2><p>Before I go into how JVM JIT works, I want to take a quick look at how interpreted and compiled languages work. For this post, I’ll take a look at the working of Python (an interpreted language) and C (a compiled language).</p>
+<h3 id="Python"><a href="#Python" class="headerlink" title="Python"></a>Python</h3><p>Python, by default, ships with <a target="_blank" rel="noopener" href="https://github.com/python/cpython">CPython</a> - the original Python interpreter that runs C code for every bytecode. There’s other implementations like <a target="_blank" rel="noopener" href="http://ironpython.net/">IronPython</a> or <a target="_blank" rel="noopener" href="https://pypy.org">PyPy</a>. IronPython turns Python into a fully compiled language running on top of Microsoft’s .NET Common Language Runtime (CLR) whereas PyPy turns Python into a JIT compiled language. For the sake of this post, however, I will look at CPython and how it works.</p>
+<p>I’ll start with some code which will print the bytecodes for another Python file that is passed to it. </p>
+<figure class="highlight python"><figcaption><span>bytecode.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sys <span class="keyword">import</span> argv</span><br><span class="line"><span class="keyword">from</span> dis <span class="keyword">import</span> dis</span><br><span class="line"></span><br><span class="line">script, path = argv</span><br><span class="line">source_file = <span class="built_in">open</span>(path)</span><br><span class="line">source_code = source_file.read()</span><br><span class="line">compiled = <span class="built_in">compile</span>(source_code, <span class="string">"&lt;string&gt;"</span>, <span class="string">"exec"</span>)</span><br><span class="line">bytecodes = dis(compiled)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(bytecodes)</span><br><span class="line">source_file.close()</span><br></pre></td></tr></table></figure>
+<p>Next, here’s some code that’ll print numbers.</p>
+<figure class="highlight python"><figcaption><span>print_numbers.py</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> n <span class="keyword">in</span> [<span class="number">101</span>, <span class="number">102</span>, <span class="number">103</span>]:</span><br><span class="line">    <span class="built_in">print</span>(n)</span><br></pre></td></tr></table></figure>
+<p>Now, let’s run the code and see the bytecodes we get.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python3 bytecode.py print_numbers.py</span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">  1           0 SETUP_LOOP              20 (to 22)</span><br><span class="line">              2 LOAD_CONST               4 ((101, 102, 103))</span><br><span class="line">              4 GET_ITER</span><br><span class="line">        &gt;&gt;    6 FOR_ITER                12 (to 20)</span><br><span class="line">              8 STORE_NAME               0 (n)</span><br><span class="line"></span><br><span class="line">  2          10 LOAD_NAME                1 (print)</span><br><span class="line">             12 LOAD_NAME                0 (n)</span><br><span class="line">             14 CALL_FUNCTION            1</span><br><span class="line">             16 POP_TOP</span><br><span class="line">             18 JUMP_ABSOLUTE            6</span><br><span class="line">        &gt;&gt;   20 POP_BLOCK</span><br><span class="line">        &gt;&gt;   22 LOAD_CONST               3 (None)</span><br><span class="line">             24 RETURN_VALUE</span><br><span class="line">None</span><br></pre></td></tr></table></figure>
+<p>The loop starts on line #4. For every element in the list, we’re pushing <code>print</code> and <code>n</code> onto the stack, calling the function, popping the stack, and repeating the loop. For each of the bytecodes, there’s associated C code i.e. <code>FOR_ITER</code>, <code>STORE_NAME</code>, etc. have associated C code.   </p>
+<p>This is a very simple way to run a program and also a very inefficient one. We’re repeating the stack operations and jumps over and over again. There’s no scope for optimizations like loop unrolling.</p>
+<h3 id="C"><a href="#C" class="headerlink" title="C"></a>C</h3><p>In contrast to Python is C. All the C code is compiled to assembly ahead-of-time. Here’s a simple C program which will print “EVEN” if a number is even. </p>
+<figure class="highlight c"><figcaption><span>numbers.c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span> {</span><br><span class="line">  <span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">1</span>; i &lt; <span class="number">10000</span>; i += <span class="number">2</span>) {</span><br><span class="line">    <span class="keyword">if</span>( i % <span class="number">2</span> == <span class="number">0</span> ) {</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">"EVEN!"</span>);</span><br><span class="line">    } <span class="keyword">else</span> {</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">""</span>);</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>Next, let’s compile this code.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -S numbers.c</span><br></pre></td></tr></table></figure>
+<p>This will generate <code>numbers.s</code>. The assembly is fairly long so I’ll just cover the relevant parts.</p>
+<figure class="highlight plaintext"><figcaption><span>numbers.s</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">LBB0_1:</span><br><span class="line">        cmpl    $10000, -8(%rbp) </span><br><span class="line">        jge     LBB0_7</span><br><span class="line">        ...</span><br><span class="line">        idivl   %ecx</span><br><span class="line">        cmpl    $0, %edx</span><br><span class="line">        jne     LBB0_4</span><br><span class="line">        leaq    L_.str(%rip), %rdi</span><br><span class="line">        ...</span><br><span class="line">        callq   _printf</span><br><span class="line">        movl    %eax, -16(%rbp)</span><br><span class="line">        jmp     LBB0_5</span><br><span class="line">LBB0_4:</span><br><span class="line">        leaq    L_.str.1(%rip), %rdi</span><br><span class="line">        movb    $0, %al</span><br><span class="line">        callq   _printf</span><br><span class="line">        ...</span><br><span class="line">LBB0_5:</span><br><span class="line">        jmp     LBB0_6</span><br><span class="line">LBB0_6:</span><br><span class="line">        ...</span><br><span class="line">        addl    $2, %eax</span><br><span class="line">        ...</span><br><span class="line">        jmp     LBB0_1</span><br><span class="line">        ...</span><br><span class="line">LBB0_7:</span><br><span class="line">        ...</span><br><span class="line">        retq</span><br><span class="line">        ...</span><br><span class="line">L_.str:</span><br><span class="line">        .asciz  "EVEN!"</span><br><span class="line">L_.str.1:</span><br><span class="line">        .space  1</span><br></pre></td></tr></table></figure>
+<p>Lines #2 - #3 show that if we’ve reached the limit of 10k, we’ll jump to <code>LBB0_7</code> and the program ends.<br>If not, on line #5 we perform a signed division (<code>idivl</code>) and check if it is not zero. If it is not zero, we jump to <code>LBB0_4</code> and print <code>L_.str.1</code> which is just a whitespace.  </p>
+<p>We will always end up making this jump because we’ll never reach the condition where we have an even number. This is the problem with ahead-of-time compilation where you cannot speculate what the data is going to be and therefore you have to be ready to handle all the possibilities.  </p>
+<h3 id="JVM-JIT"><a href="#JVM-JIT" class="headerlink" title="JVM JIT"></a>JVM JIT</h3><p>JVM JIT combines the best of both the worlds. When you execute your program the first time, the bytecodes are interpreted. As the code continues to execute, JVM collects statistics about it and the more frequently used code (“hot” code) is compiled to assembly. In addition, there are optimizations like loop unrolling. Loop unrolling looks like this:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Plain ol' loop</span></span><br><span class="line"><span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">3</span>; i++) {</span><br><span class="line">    System.out.println(arr[i]);</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="comment">// Unrolled</span></span><br><span class="line">System.out.println(arr[<span class="number">0</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">1</span>]);</span><br><span class="line">System.out.println(arr[<span class="number">2</span>]);</span><br></pre></td></tr></table></figure>
+<p>Unrolling a loop helps avoid jumps and thus makes execution faster. </p>
+<p>Also, since JVM collects statistics about code, it can make optimizations on the fly. For example, in the case where an even number is never reached, JVM can generate assembly code that’ll only have the <code>else</code> part of the branch.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>JVM does some fairly intersting optimizations under the hood. The aim of this series of posts is to cover as much of this as possible. We’ll start simple and build upon this as we go. </p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cm35hkpna000uskru9n0m3mno" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/" rel="tag">compilers</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-transducers" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/01/06/transducers/" class="article-date">
@@ -250,7 +322,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="clzs2k8e0004jyprue55obgtm" data-title="Transducers" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="cm35hkpnl004qskru3cs38my8" data-title="Transducers" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/01/06/transducers/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -326,7 +398,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="clzs2k8dx0037ypru3wg6eh34" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="cm35hkpnh003dskrucki5aw7g" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -430,7 +502,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="clzs2k8e0004gypru5bv6g5vs" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="cm35hkpnl004sskrucvrc9ak2" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -497,7 +569,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="clzs2k8dx0034yprud3yp6ucb" data-title="Monad" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cm35hkpnh003bskrua300fdft" data-title="Monad" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -576,7 +648,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="clzs2k8dw002xypruhoz1c9f5" data-title="Functor" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cm35hkpnh0039skru2lma7ko3" data-title="Functor" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -647,7 +719,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="clzs2k8dw0032yprubjxg3od9" data-title="Monoid" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cm35hkpnh0036skru3azl1ut8" data-title="Monoid" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/10/monoid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -726,7 +798,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="clzs2k8dw002vypru43t2h2rc" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cm35hkpnh0034skru7pv9a751" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -775,7 +847,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="clzs2k8dz003yypruc8o1ewzq" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cm35hkpnj003xskru1nacczx7" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -858,7 +930,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="clzs2k8dy003rypru57mn7fv3" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cm35hkpnj003vskruby7v4c6f" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -932,7 +1004,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="clzs2k8dy003oypru306n9xrn" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cm35hkpnj0042skrues3hgsyg" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1005,85 +1077,9 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="clzs2k8dx003eypru6vmx7883" data-title="Scalaz Either" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cm35hkpni003lskrueuqzdajw" data-title="Scalaz Either" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-validation" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/11/scalaz-validation/" class="article-date">
-  <time datetime="2017-07-11T09:33:41.000Z" itemprop="datePublished">2017-07-11</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/11/scalaz-validation/">Scalaz Validation</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>In this post we’ll look at Scalaz <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/Validation.scala"><code>Validation</code></a> which you can use to validate the data in your system. Data validation is a part and parcel of software development; you have to check the data that comes into your system or it may lead to unexpected behavior and / or cause your system to fail. Scalaz provides you with <code>Validation</code> to validate your data. <code>Validation</code> is an applicative functor. An applicative functor has more structure than a functor but less than a monad.<sup><a target="_blank" rel="noopener" href="https://wiki.haskell.org/Applicative_functor">[1]</a></sup>  </p>
-<h2 id="Motivating-Example"><a href="#Motivating-Example" class="headerlink" title="Motivating Example"></a>Motivating Example</h2><p>So let’s say we have a <code>Version</code> class representing the major and minor version of our software like so:<sup><a target="_blank" rel="noopener" href="http://arosien.github.io/scalaz-base-talk-201208/#slide20">[2]</a></sup> </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br></pre></td></tr></table></figure>   
-<p>Then, a negative value in either of major or minor would be invalid. We could ensure that we never get a negative value in either the major or minor by using <code>require</code> like so:<sup><a target="_blank" rel="noopener" href="http://arosien.github.io/scalaz-base-talk-201208/#slide23">[3]</a></sup>  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>) </span>{</span><br><span class="line">  require(major &gt;= <span class="number">0</span>, <span class="string">"major must be &gt;= 0: %s"</span>.format(major))</span><br><span class="line">  require(minor &gt;= <span class="number">0</span>, <span class="string">"minor must be &gt;= 0: %s"</span>.format(minor))</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
-<p>The problem here is that we’ll have to handle exceptions and we don’t want side-effects. Let’s use <code>Validation</code> to do it in a more functional way.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="comment">// paste mode in Ammonite REPL is { .. CODE HERE .. } and not :paste</span></span><br><span class="line">@ {</span><br><span class="line">  <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br><span class="line">  <span class="class"><span class="keyword">object</span> <span class="title">Version</span> </span>{</span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">createNew</span></span>(major: <span class="type">Int</span>, minor: <span class="type">Int</span>): <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = {</span><br><span class="line">            <span class="keyword">val</span> isValidMajor = (major &gt;= <span class="number">0</span>) ? <span class="literal">true</span> | <span class="literal">false</span></span><br><span class="line">            <span class="keyword">val</span> isValidMinor = (minor &gt;= <span class="number">0</span>) ? <span class="literal">true</span> | <span class="literal">false</span></span><br><span class="line"></span><br><span class="line">            (isValidMajor, isValidMinor) <span class="keyword">match</span> {</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">false</span>, <span class="literal">true</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">true</span>, <span class="literal">false</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"minor &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">false</span>, <span class="literal">false</span>) =&gt; <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major and minor &lt; 0"</span>).failure</span><br><span class="line">              <span class="keyword">case</span> (<span class="literal">true</span>, <span class="literal">true</span>) =&gt; <span class="keyword">new</span> <span class="type">Version</span>(major, minor).success</span><br><span class="line">            }</span><br><span class="line">        }</span><br><span class="line">     }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Version</span></span></span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Version</span></span></span><br><span class="line">@ <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">res5: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  java.lang.<span class="type">IllegalArgumentException</span>: major and minor &lt; <span class="number">0</span></span><br><span class="line">)</span><br><span class="line">@ <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">res6: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
-<p>What we’ve done here is add a <code>createNew</code> to the companion object of <code>Version</code> that returns a <code>Validation</code>. Validating the input can result in either a <code>Success</code> or <code>Failure</code>. We create a <code>Success</code> by calling <code>success</code> on the value and a <code>Failure</code> by calling <code>failure</code> on the value. Once we have a <code>Validation</code>, there are numerous ways in which we can deal with it.  </p>
-<h3 id="Providing-Default-Values"><a href="#Providing-Default-Values" class="headerlink" title="Providing Default Values"></a>Providing Default Values</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> invalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">invalid: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  java.lang.<span class="type">IllegalArgumentException</span>: major and minor &lt; <span class="number">0</span></span><br><span class="line">)</span><br><span class="line">@ <span class="keyword">val</span> <span class="keyword">default</span> = invalid | <span class="keyword">new</span> <span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line"><span class="keyword">default</span>: <span class="type">Version</span> = <span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>)</span><br></pre></td></tr></table></figure>  
-<p>There’s a convenient <code>|</code> operator (<code>getOrElse</code>) that lets you provide a default value if the result of the validation is a <code>Failure</code>. Here we are assigning the value 1 to major and 0 to minor.  </p>
-<h3 id="Folding-a-Validation"><a href="#Folding-a-Validation" class="headerlink" title="Folding a Validation"></a>Folding a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> valid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">0</span>)</span><br><span class="line">valid: <span class="type">Validation</span>[<span class="type">IllegalArgumentException</span>, <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">0</span>))</span><br><span class="line">@ valid fold(</span><br><span class="line">    f =&gt; <span class="string">s"Validation failed because <span class="subst">${f getMessage}</span>"</span>.println,</span><br><span class="line">    v =&gt; <span class="string">s"Version is <span class="subst">$v</span>"</span>.println</span><br><span class="line">  )</span><br><span class="line"><span class="string">"Version is Version(1,0)"</span></span><br><span class="line">@ invalid fold(</span><br><span class="line">    f =&gt; <span class="string">s"Validation failed because <span class="subst">${f getMessage}</span>"</span>.println,</span><br><span class="line">    v =&gt; <span class="string">s"Version is <span class="subst">$v</span>"</span>.println</span><br><span class="line">  )</span><br><span class="line"><span class="string">"Validation failed because major and minor &lt; 0"</span></span><br></pre></td></tr></table></figure>  
-<p>Akin to a disjunction, it’s possible to <code>fold</code> a <code>Validation</code>. <code>Failure</code> will be the first argument and <code>Success</code> will be the second. If you want to fold just on the <code>Success</code> part, you can use <code>foldRight</code>.  </p>
-<p><hr></p>
-<h5 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE:"></a>NOTE:</h5><p>Both <code>fold</code> and <code>foldRight</code> should return values. Here I’ve just printed out the values to the console which is a side-effect. I’ve done this to keep the examples simple.</p>
-<hr>
-
-<h3 id="Composing-Validations"><a href="#Composing-Validations" class="headerlink" title="Composing Validations"></a>Composing Validations</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">@ {</span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Version</span>(<span class="params">major: <span class="type">Int</span>, minor: <span class="type">Int</span></span>)</span></span><br><span class="line">    <span class="class"><span class="keyword">object</span> <span class="title">Version</span> </span>{</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">isValidMajor</span></span>(major: <span class="type">Int</span>) = </span><br><span class="line">        (major &gt;= <span class="number">0</span>) ?</span><br><span class="line">        major.success[<span class="type">IllegalArgumentException</span>] |</span><br><span class="line">        <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"major &lt; 0"</span>).failure</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">isValidMinor</span></span>(minor: <span class="type">Int</span>) = </span><br><span class="line">        (minor &gt;= <span class="number">0</span>) ?</span><br><span class="line">        minor.success[<span class="type">IllegalArgumentException</span>] |</span><br><span class="line">        <span class="keyword">new</span> <span class="type">IllegalArgumentException</span>(<span class="string">"minor &lt; 0"</span>).failure</span><br><span class="line"></span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">createNew</span></span>(major: <span class="type">Int</span>, minor: <span class="type">Int</span>) = {</span><br><span class="line">        (isValidMajor(major).toValidationNel |@| isValidMinor(minor).toValidationNel) {</span><br><span class="line">          <span class="type">Version</span>(_, _)</span><br><span class="line">        }</span><br><span class="line">      }</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Version</span></span></span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Version</span></span></span><br></pre></td></tr></table></figure>  
-<p>When we started building the <code>Version</code> example, we used pattern matching to check if the major and minor versions were correct. However, there’s a more succinct way to collect all the errors. In the example above, we’ve turned <code>isValidMajor</code> and <code>isValidMinor</code> into methods that return a <code>Validation</code> instead of simply a <code>Boolean</code>.   </p>
-<p>The magic is in <code>createNew</code>. Here we convert the <code>Validation</code> into a <code>NonEmptyList</code>. <code>toValidationNel</code> wraps the <code>Failure</code> in a <code>NonEmptyList</code> but keeps the <code>Success</code> as-is. The <code>|@|</code> is an <code>ApplicativeBuilder</code> which lets us combine the failures together. If we get all successes, we construct a <code>Version</code> out of it. Let’s see this in action:  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> bothInvalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">-1</span>)</span><br><span class="line">bothInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: major &lt; <span class="number">0</span>,java.lang.<span class="type">IllegalArgumentException</span>: minor &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> majorInvalid = <span class="type">Version</span>.createNew(<span class="number">-1</span>, <span class="number">0</span>)</span><br><span class="line">majorInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: major &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> minorInvalid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">-1</span>)</span><br><span class="line">minorInvalid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(</span><br><span class="line">  <span class="type">NonEmpty</span>[java.lang.<span class="type">IllegalArgumentException</span>: minor &lt; <span class="number">0</span>]</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> bothValid = <span class="type">Version</span>.createNew(<span class="number">1</span>, <span class="number">1</span>)</span><br><span class="line">bothValid: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
-<p>So, in case of both the major and minor being invalid, we get a non-empty list with both the errors in it. This is very convenient and also very extensible. If you need to add an extra check, you can write a new <code>isValidXXX</code> method and make it return a <code>Validation</code>. You can then use the <code>ApplicativeBuilder</code> to your advantage. Using simply booleans would need checking a large number of possible cases.  </p>
-<h3 id="Mapping-Success-and-Failure"><a href="#Mapping-Success-and-Failure" class="headerlink" title="Mapping Success and Failure"></a>Mapping <code>Success</code> and <code>Failure</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> errMsgs = bothInvalid bimap(</span><br><span class="line">    f =&gt; f map { _.getMessage },</span><br><span class="line">    identity,</span><br><span class="line">  )</span><br><span class="line">errMsgs: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">String</span>], <span class="type">Version</span>] = <span class="type">Failure</span>(<span class="type">NonEmpty</span>[major &lt; <span class="number">0</span>,minor &lt; <span class="number">0</span>])</span><br></pre></td></tr></table></figure>  
-<p>It’s possible to map over <code>Success</code> and <code>Failure</code> and apply any transformations you want. For example, we represent errors with <code>IllegalArgumentException</code>s and we may be coding a rest API and we’d like to send back the strings representing the errors. In the example above, I’ve used <code>bimap</code> to map <code>Success</code> and <code>Failure</code>. For every failure, I am extracting the string using <code>getMessage</code> and leaving the success as-is by using <code>identity</code>. </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> theVersion = bothValid bimap(</span><br><span class="line">    f =&gt; f map { _.getMessage },</span><br><span class="line">    identity,</span><br><span class="line">  )</span><br><span class="line">theVersion: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">String</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
-<p>Similar to <code>bimap</code> is <code>map</code> which just maps the <code>Success</code> part of the <code>Validation</code>.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> theValue = bothValid map { v =&gt; <span class="type">Version</span>(v.major + <span class="number">1</span>, v.minor * <span class="number">2</span>) }</span><br><span class="line">theValue: <span class="type">Validation</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Success</span>(<span class="type">Version</span>(<span class="number">2</span>, <span class="number">2</span>))</span><br></pre></td></tr></table></figure>  
-<p>Remember that <code>bimap</code> and <code>map</code> return a <code>Validation</code>. They don’t extract values out of it. You’ll have to use <code>fold</code>, etc. to get the values out.  </p>
-<h3 id="Running-a-Side-Effect-on-Success"><a href="#Running-a-Side-Effect-on-Success" class="headerlink" title="Running a Side-Effect on Success"></a>Running a Side-Effect on <code>Success</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ bothValid foreach { v =&gt; <span class="string">s"Begin build process for version <span class="subst">$v</span>"</span>.println }</span><br><span class="line"><span class="string">"Begin build process for version Version(1,1)"</span></span><br></pre></td></tr></table></figure>  
-<p><code>foreach</code> lets you run a side-effecting function if the result of the <code>Validation</code> is a <code>Success</code>. For example, using the <code>Version</code>, you could begin a build process or similar.  </p>
-<h3 id="Checking-if-it-is-a-Success-or-Failure"><a href="#Checking-if-it-is-a-Success-or-Failure" class="headerlink" title="Checking if it is a Success or Failure"></a>Checking if it is a <code>Success</code> or <code>Failure</code></h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> isSuccess = bothValid isSuccess</span><br><span class="line">isSuccess: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isFailure = bothInvalid isFailure</span><br><span class="line">isFailure: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isSuccessSatisfying = bothValid exists { _.major &lt; <span class="number">5</span> }</span><br><span class="line">isSuccessSatisfying: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> isSuccessSatisfyingOrFailure = bothValid forall { _.major === <span class="number">5</span> }</span><br><span class="line">isSuccessSatisfyingOrFailure: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
-<p>There are numerous ways in which we can check if the <code>Validation</code> resulted in a <code>Success</code> or a <code>Failure</code>. The simplest way is to use one of <code>isSuccess</code> or <code>isFailure</code>. Similarly, <code>exists</code> will return true if the validation is a success value satisfying the given predicate and <code>forall</code> will return true if the validation is a failure value or the success value satisfies the given predicate.  </p>
-<h3 id="Converting-to-Other-Datatypes"><a href="#Converting-to-Other-Datatypes" class="headerlink" title="Converting to Other Datatypes"></a>Converting to Other Datatypes</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> list = bothValid toList</span><br><span class="line">list: <span class="type">List</span>[<span class="type">Version</span>] = <span class="type">List</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> stream = bothValid toStream</span><br><span class="line">stream: <span class="type">Stream</span>[<span class="type">Version</span>] = <span class="type">Stream</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br><span class="line"></span><br><span class="line">@ <span class="keyword">val</span> either = bothValid toEither</span><br><span class="line">either: <span class="type">Either</span>[<span class="type">NonEmptyList</span>[<span class="type">IllegalArgumentException</span>], <span class="type">Version</span>] = <span class="type">Right</span>(<span class="type">Version</span>(<span class="number">1</span>, <span class="number">1</span>))</span><br></pre></td></tr></table></figure>  
-<p>Scalaz also provides convenience methods to convert the <code>Validation</code> to different datatypes like <code>List</code>, <code>Stream</code>, <code>Either</code>, etc.  </p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>There’s a lot more methods than can be covered in a post. Hopefully this post gave you an idea about what’s possible with <code>Validation</code>s.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="clzs2k8e0004eypru5bpn2f09" data-title="Scalaz Validation" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1112,7 +1108,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 12.22px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 12.22px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1122,6 +1118,10 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
+          </li>
         
           <li>
             <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
@@ -1157,10 +1157,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
         
           <li>
             <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium</a>
-          </li>
-        
-          <li>
-            <a href="/2024/06/17/A-note-on-exponents/">A note on exponents</a>
           </li>
         
       </ul>
@@ -1239,23 +1235,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
             all[i].SourceElement().parentNode.className += ' has-jax';
     });
 </script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({{ JSON.stringify(config) }});
-</script>
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i=0; i < all.length; i += 1) {
-      all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-  });
-</script>
-
-<script type="text/javascript" src="{{ src }}">
-</script>
-<!-- End: Injected MathJax -->
-<!-- hexo-inject:end -->
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
