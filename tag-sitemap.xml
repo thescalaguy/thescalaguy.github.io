@@ -72,13 +72,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/design-patterns/</loc>
-        <lastmod>2024-10-15T05:33:21.369Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/tags/scala/</loc>
         <lastmod>2024-11-05T11:50:23.211Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -102,6 +95,13 @@
     <url>
         <loc>http://fasihkhatib.com/tags/epi/</loc>
         <lastmod>2024-11-06T06:16:05.640Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/tags/design-patterns/</loc>
+        <lastmod>2024-11-21T05:16:11.723Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>
