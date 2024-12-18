@@ -188,6 +188,73 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-equals" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/06/28/scalaz-equals/" class="article-date">
+  <time datetime="2017-06-28T15:03:52.000Z" itemprop="datePublished">2017-06-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/06/28/scalaz-equals/">Scalaz Equal</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll finally start using Scalaz. We’ll look at how to get Scalaz using <code>sbt</code> and look at how it provides us with type-safe equality checking.  </p>
+<h2 id="Getting-Scalaz"><a href="#Getting-Scalaz" class="headerlink" title="Getting Scalaz"></a>Getting Scalaz</h2><p>Add the following line to your <code>build.sbt</code> file:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">libraryDependencies += <span class="string">"org.scalaz"</span> %% <span class="string">"scalaz-core"</span> % <span class="string">"7.2.14"</span></span><br></pre></td></tr></table></figure>  
+<p><hr> </p>
+<h5 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE:"></a>NOTE:</h5><p>I highly recommend <a target="_blank" rel="noopener" href="http://ammonite.io/">Ammonite Scala REPL</a>. It provides a lot of improvements over the standard REPL like being able to import library dependencies straight from the console. I’ll be using Ammonite REPL henceforth because it’ll help me keep the examples in the REPL. However, there isn’t any difference beyond how to get the dependencies.</p>
+<hr>  
+
+<h2 id="Fire-Up-the-REPL"><a href="#Fire-Up-the-REPL" class="headerlink" title="Fire Up the REPL"></a>Fire Up the REPL</h2><p>No matter what your preferred REPL is, let’s get started.  </p>
+<h3 id="Standard-REPL"><a href="#Standard-REPL" class="headerlink" title="Standard REPL"></a>Standard REPL</h3><p>Start the REPL by executing <code>sbt console</code>. Then, execute the following:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br></pre></td></tr></table></figure>  
+<h3 id="Ammonite"><a href="#Ammonite" class="headerlink" title="Ammonite"></a>Ammonite</h3><p>Start the REPL by executing the <code>amm</code> command. Then, execute the following:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> $ivy.`org.scalaz::scalaz-core:<span class="number">7.2</span><span class="number">.14</span>`</span><br><span class="line"><span class="keyword">import</span> $ivy.$</span><br><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br></pre></td></tr></table></figure>
+<h2 id="Equality-Checking"><a href="#Equality-Checking" class="headerlink" title="Equality Checking"></a>Equality Checking</h2><p>We can compare two values in Scala using <code>==</code> (double equals). The issue, however, is that it will let us compare unrelated types like a string with an integer and such a comparison would always yield false.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> == <span class="string">"1"</span></span><br><span class="line">res3: <span class="type">Boolean</span> = <span class="literal">false</span></span><br></pre></td></tr></table></figure>  
+<p>The <code>==</code> operator that Scala provides is a null-safe comparison operator and not type-safe. What if we want type-safety, too? This is where Scalaz’s <code>===</code> (triple equals) comes in. It’ll complain when you try to compare unrelated types.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> === <span class="string">"1"</span></span><br><span class="line">cmd4.sc:<span class="number">1</span>: <span class="class"><span class="keyword">type</span> <span class="title">mismatch</span></span>;</span><br><span class="line"> found   : <span class="type">String</span>(<span class="string">"1"</span>)</span><br><span class="line"> required: <span class="type">Int</span></span><br><span class="line"><span class="keyword">val</span> res4 = <span class="number">1</span> === <span class="string">"1"</span></span><br><span class="line">                 ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<p>Similarly, we can check for inequalities. The Scala operator <code>!=</code> is null-safe but not type-safe.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> != <span class="string">"1"</span></span><br><span class="line">res4: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>  
+<p>Here’s the Scalaz way to check for inequality using <code>=/=</code> operator which is both type-safe and null-safe:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1</span> =/= <span class="string">"1"</span></span><br><span class="line">cmd5.sc:<span class="number">1</span>: <span class="class"><span class="keyword">type</span> <span class="title">mismatch</span></span>;</span><br><span class="line"> found   : <span class="type">String</span>(<span class="string">"1"</span>)</span><br><span class="line"> required: <span class="type">Int</span></span><br><span class="line"><span class="keyword">val</span> res5 = <span class="number">1</span> =/= <span class="string">"1"</span></span><br><span class="line">                 ^</span><br><span class="line"><span class="type">Compilation</span> <span class="type">Failed</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Under-the-Hoods"><a href="#Under-the-Hoods" class="headerlink" title="Under the Hoods"></a>Under the Hoods</h2><p>As always, there are type classes at play here. There is an <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Equal.scala"><code>Equal</code></a> trait which provides an <code>equal</code> to check if the two values are equal and of the same type.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">equal</span></span>(a1: <span class="type">F</span>, a2: <span class="type">F</span>): <span class="type">Boolean</span></span><br></pre></td></tr></table></figure>  
+<p>Since all this magic is done using type classes, how about we put it to use and write code to compare two <code>Person</code> objects?  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params">id: <span class="type">Int</span>, name: <span class="type">String</span></span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Person</span></span></span><br><span class="line">@ <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">PersonEquals</span> <span class="keyword">extends</span> <span class="title">Equal</span>[<span class="type">Person</span>] </span>{</span><br><span class="line">    <span class="comment">// we are using Scalaz === internally</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">equal</span></span>(a1: <span class="type">Person</span>, a2: <span class="type">Person</span>): <span class="type">Boolean</span> = a1.id === a2.id &amp;&amp; a1.name === a2.name </span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">PersonEquals</span></span></span><br><span class="line">@ <span class="type">Person</span>(<span class="number">1</span>, <span class="string">"John"</span>) === <span class="type">Person</span>(<span class="number">2</span>, <span class="string">"Jane"</span>)</span><br><span class="line">res7: <span class="type">Boolean</span> = <span class="literal">false</span></span><br><span class="line">@ <span class="type">Person</span>(<span class="number">1</span>, <span class="string">"John"</span>) =/= <span class="type">Person</span>(<span class="number">2</span>, <span class="string">"Jane"</span>)</span><br><span class="line">res8: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Scalaz <code>===</code> lets you check for equality in a type-safe way. More often than not, this is what you need. Trying to compare values of dissimilar types is usually not needed. Using <code>===</code> ensures that such comparisons lead to errors at compile-time instead of waiting for them to surface at run-time. This makes debugging much more efficient.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm4t9en7x003vgkru51o3ftdz" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-types-of-polymorphism" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/06/27/scalaz-types-of-polymorphism/" class="article-date">
@@ -244,7 +311,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm3vobpa7004l96ruaa1h0am7" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm4t9en80004vgkruh73kdozh" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -301,7 +368,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm3vobpa7004p96ru148whcxh" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm4t9en7z004lgkrudwvvfuos" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -358,7 +425,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm3vobpa5003x96ru8byy04cy" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm4t9en7x003xgkru7fxlhb5d" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -401,6 +468,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a data warehouse with Apache Pinot and Debezium</a>
+          </li>
+        
+          <li>
             <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
           </li>
         
@@ -434,10 +505,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
-          </li>
-        
-          <li>
-            <a href="/2024/06/24/Programming-Puzzles-1/">Programming Puzzles 1</a>
           </li>
         
       </ul>
