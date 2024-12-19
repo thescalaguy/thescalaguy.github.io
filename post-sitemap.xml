@@ -7,6 +7,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/</loc>
+        <lastmod>2024-12-19T05:01:25.366Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/</loc>
         <lastmod>2024-12-18T02:13:04.466Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -119,14 +127,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
-        <lastmod>2024-06-19T10:13:08.188Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2018/01/06/transducers/</loc>
         <lastmod>2024-06-19T10:13:08.188Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -135,7 +135,15 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
+        <loc>http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/</loc>
+        <lastmod>2024-06-19T10:13:08.188Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -151,23 +159,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/11/scalaz-mapops/</loc>
-        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/</loc>
-        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/04/scalaz-optionops/</loc>
+        <loc>http://fasihkhatib.com/2017/08/01/scalaz-lens/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -183,7 +175,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/05/scalaz-stringops/</loc>
+        <loc>http://fasihkhatib.com/2017/07/01/scalaz-show/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -191,7 +183,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/01/scalaz-show/</loc>
+        <loc>http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -207,7 +199,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/</loc>
+        <loc>http://fasihkhatib.com/2017/07/05/scalaz-tupleops/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -215,7 +207,23 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/07/05/scalaz-tupleops/</loc>
+        <loc>http://fasihkhatib.com/2017/07/04/scalaz-optionops/</loc>
+        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/07/05/scalaz-stringops/</loc>
+        <lastmod>2024-06-19T10:13:08.187Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/</loc>
         <lastmod>2024-06-19T10:13:08.187Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -231,7 +239,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
+        <loc>http://fasihkhatib.com/2017/08/08/category-theory-intro/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -239,7 +247,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/08/08/category-theory-intro/</loc>
+        <loc>http://fasihkhatib.com/2017/09/05/functors/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -255,39 +263,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2017/12/06/one-year-an-engineer/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/06/28/scalaz-equals/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/06/23/scalaz-introduction/</loc>
-        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
         <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -311,8 +287,32 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
-        <lastmod>2024-06-19T10:13:08.185Z</lastmod>
+        <loc>http://fasihkhatib.com/2017/07/17/scalaz-either/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/06/28/scalaz-equals/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/10/13/monad/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2017/06/23/scalaz-introduction/</loc>
+        <lastmod>2024-06-19T10:13:08.186Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -335,8 +335,8 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/</loc>
-        <lastmod>2024-06-19T10:13:08.184Z</lastmod>
+        <loc>http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/</loc>
+        <lastmod>2024-06-19T10:13:08.185Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
 
@@ -352,6 +352,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/</loc>
+        <lastmod>2024-06-19T10:13:08.184Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/</loc>
         <lastmod>2024-06-19T10:13:08.184Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -383,7 +391,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/</loc>
+        <loc>http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/</loc>
         <lastmod>2024-06-19T10:13:08.176Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -391,7 +399,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/</loc>
+        <loc>http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/</loc>
         <lastmod>2024-06-19T10:13:08.176Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -431,6 +439,14 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/</loc>
+        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -448,14 +464,6 @@
 
     <url>
         <loc>http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/</loc>
-        <lastmod>2024-06-19T10:13:08.172Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/</loc>
         <lastmod>2024-06-19T10:13:08.172Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -487,23 +495,15 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/</loc>
-        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
-        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/</loc>
+        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -519,7 +519,7 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/</loc>
+        <loc>http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/</loc>
         <lastmod>2024-06-19T10:13:08.171Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -535,39 +535,15 @@
     </url>
 
     <url>
+        <loc>http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/</loc>
+        <lastmod>2024-06-19T10:13:08.171Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
         <loc>http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/</loc>
-        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.6</priority>
-
-    </url>
-
-    <url>
-        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
@@ -584,6 +560,38 @@
 
     <url>
         <loc>http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/10/21/Implementing-TSum-An-Algorithm-for-Table-Summarization/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/</loc>
+        <lastmod>2024-06-19T10:13:08.170Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/</loc>
         <lastmod>2024-06-19T10:13:08.170Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
