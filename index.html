@@ -214,35 +214,27 @@ mjx-container[display="true"] + br {
 <h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>The JSON stored in the <code>source</code> column contains the user agent of the device used to to place the order. Let’s say we’d like to find out the most common user agents. To do this, we’d need to extract the value from the JSON and store it in a new column. This will be a two-step process. First, we’ll update the schema to add a new “user_agent” column. Second, we’ll update the table definition to reflect this change in schema.  </p>
 <p>Let’s start by updating the schema. We’ll add the following column to the <code>dimensionFieldSpecs</code>.  </p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">{</span><br><span class="line">    "name": "user_agent",</span><br><span class="line">    "dataType": "STRING",</span><br><span class="line">    "notNull": false</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
-<p>Notice how we’ve set <code>notNull</code> to <code>false</code>. This allows the column to contain null values in case the user agent is unavailable. Let’s POST this updated schema to Pinot by executing the following curl command.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -F schemaName=@tables/001-order/order_schema.json localhost:9000/schemas | jq .</span><br></pre></td></tr></table></figure>  
+<p>Notice how we’ve set <code>notNull</code> to <code>false</code>. This allows the column to contain null values in case the user agent is unavailable. Let’s PUT this updated schema to Pinot by executing the following curl command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -F schemaName=@tables/002-orders/orders_schema.json localhost:9000/schemas/orders | jq .</span><br></pre></td></tr></table></figure>  
 <p>If we open the query console after updating the schema, we’ll see the following error on the screen. It mentions that the segments are invalid because they were created from an older version of the schema and that to reflect the changes, we’d need to reload the table’s segments. We’ll get to this in a minute.</p>
 <img src="/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/error.png" class="">  
 <p>Next, let’s update the table by adding a new column. We’ll add the following to the <code>transformConfigs</code>. Notice how we’re referencing the <code>source</code> column in the <code>jsonPath</code> transform function.</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"columnName"</span><span class="punctuation">:</span> <span class="string">"user_agent"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"transformFunction"</span><span class="punctuation">:</span> <span class="string">"jsonPath(source, '$.user_agent')"</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
-<p>If we were to POST this new table definition, we’d get an error saying that the table already exists. We’ll need to delete the table and recreate it. We delete the table and its associated metadata with the following curl command.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XDELETE localhost:9000/tables/orders | jq .</span><br></pre></td></tr></table></figure>  
-<p>We’ll now POST the updated config for the <code>orders</code> table.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST -H 'Content-Type: application/json' -d @tables/001-order/order_table.json localhost:9000/tables | jq .</span><br></pre></td></tr></table></figure>  
+<p>Let’s PUT this updated config.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -H 'Content-Type: application/json' -d @tables/002-orders/orders_table.json localhost:9000/tables/orders | jq .</span><br></pre></td></tr></table></figure>
 <p>To ensure that the column is extracted even as more rows are generated by Debezium, we’ll rerun the Python script which added dummy data.  </p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python faker/data.py</span><br></pre></td></tr></table></figure>  
-<p>We can now query the table and sort it in descending order on the <code>id</code> column to see the new rows. Upon doing so, we find that the column has been extracted properly. We can repeat the query and sort in ascending order to check if the same is true for older rows. </p>
+<p>We’ll now reload the segments to let the changes take effect by executing the following command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST localhost:9000/segments/orders/reload | jq .</span><br></pre></td></tr></table></figure>
+<p>We can now reload the query console to see the changes take effect.</p>
 <img src="/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/query.png" class="">  
-<p>Let’s repeat the exercise we did above but this time we’ll add a new <code>dummy</code> column in the <code>orders</code> table in Postgres; its value will also be <code>dummy</code>. We’ll execute the following SQL commands to add this new column.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ALTER</span> <span class="keyword">TABLE</span> public.orders <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> dummy TEXT;</span><br><span class="line"><span class="keyword">UPDATE</span> public.orders <span class="keyword">SET</span> dummy <span class="operator">=</span> <span class="string">'dummy'</span>;</span><br></pre></td></tr></table></figure>  
-<p>This will cause Debezium to emit events into Kafka for every row and each of these rows will contain the new column with its values. Let’s query Pinot to see this change reflected in the <code>source</code> column. We’ll execute the following query.  </p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> id, </span><br><span class="line">       JSON_EXTRACT_SCALAR(source, <span class="string">'$.dummy'</span>, <span class="string">'STRING'</span>, <span class="string">'...'</span>) <span class="keyword">AS</span> dummy</span><br><span class="line"><span class="keyword">from</span> orders limit <span class="number">10</span></span><br></pre></td></tr></table></figure>  
-<p>Upon querying Pinot we find that <code>source</code> column in Pinot now contains the <code>dummy</code> field. We can see this in the screenshot below.  </p>
-<img src="/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/dummy.png" class="">  
-<p>Although the example is contrived, it goes on to show that we can use Debezium to stream the latest state of the row into Pinot and use SQL to access this field. We could have, like we did for the <code>user_agent</code> column, extracted this into a column of its own, too. This avoids having to run expensive backfills since all we need to do is extract values from the <code>source</code> column in the table.  </p>
-<p>Before we move on to the error that we saw earlier, we’ll quickly discuss schema evolution in Pinot. In Pinot, we may only add columns to the table. If we’d like to drop a column or rename it, we’ll have to create a brand new table.   </p>
-<p>Now about the error that we saw earlier. Whenever a table’s schema is updated or when indexes are modified, we need to reload all the segments. This can be done either from the UI or from the API. However, deleting and recreating a table performs a table re-bootstrap and applies the new schema and transform functions to it.   </p>
-<p>That’s it. That’s how we can extract fields from the Debezium payload and evolve the schema.</p>
+<p>Finally, a quick callout on schema evolution in Pinot. In Pinot schemas and tables, columns may only be added and not removed. This ensures backward compatibility.</p>
+<p>That’s it. That’s how we can extract fields out of the <code>source</code> payload and into a column of their own.</p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/" data-id="cm4uuu7a1000bderu0qw1abcy" data-title="Creating a data warehouse with Apache Pinot and Debezium 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/" data-id="cm4uynib8000un9ru1us31i9d" data-title="Creating a data warehouse with Apache Pinot and Debezium 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -311,7 +303,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm4uuu7a1000cderu3bc20t2n" data-title="Creating a data warehouse with Apache Pinot and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm4uynib6000en9rugahs0nmj" data-title="Creating a data warehouse with Apache Pinot and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -410,7 +402,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm4uuu7a80026deruaq11fdws" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm4uynibd0028n9ru17871w6q" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -515,7 +507,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm4uuu7a80023deruejphdey4" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm4uynibd0021n9ruahqf4wyz" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -571,7 +563,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm4uuu7a8001yderugp3a7zma" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm4uynibd0023n9rucimj480k" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -691,7 +683,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm4uuu7a50019derudz35ch9m" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm4uyniba001en9rucgq2cfa2" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -737,7 +729,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm4uuu7a3000kderu3grx8gp6" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm4uynib7000in9rudn9s5lqe" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -789,7 +781,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm4uuu7a3000mderu3gnt4a3t" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm4uynib40006n9ru69rpg525" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -839,7 +831,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm4uuu7a00008derucz0f2u2m" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm4uynib6000bn9ruehihh2e5" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -905,7 +897,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm4uuu7aa002nderu105p30yx" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm4uynibe002pn9ru8hyf6c5l" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -958,7 +950,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm4uuu7a7001wderufurl8myi" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm4uynibc001yn9ru6ttv9158" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1038,7 +1030,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm4uuu7a80021deru4pb6ao0l" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm4uynibc001rn9ruhni017mh" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
