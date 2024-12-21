@@ -188,91 +188,6 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
-    <article id="post-JVM-JIT-Loop-Unrolling" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/05/20/JVM-JIT-Loop-Unrolling/" class="article-date">
-  <time datetime="2018-05-20T17:48:06.000Z" itemprop="datePublished">2018-05-20</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/05/20/JVM-JIT-Loop-Unrolling/">JVM JIT - Loop Unrolling</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In the <a href="/2018/05/10/JVM-JIT-Compiling-to-Assembly/">previous post</a> we looked at how JVM generates assembly code and how we can take a look at it. In this post we will look at yet another optimization technique called loop unrolling. </p>
-<h3 id="What-is-loop-unrolling"><a href="#What-is-loop-unrolling" class="headerlink" title="What is loop unrolling?"></a>What is loop unrolling?</h3><p>To quote <a target="_blank" rel="noopener" href="http://www.oracle.com/technetwork/java/whitepaper-135217.html">The Java HotSpot Performance Engine Architecture</a>,</p>
-<blockquote>
-<p>the Server VM features loop unrolling, a standard compiler optimization that enables faster loop execution. Loop unrolling increases the loop body size while simultaneously decreasing the number of iterations.</p>
-</blockquote>
-<p>Okay so it is an optimization that makes our loops faster by increasing the body size, and reducing the iterations. This is much better explained by example.</p>
-<p>A loop like this:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i++) {</span><br><span class="line">    S(i);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
-<p>can be unrolled into this:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; N; i += <span class="number">4</span>) {</span><br><span class="line">    S(i);</span><br><span class="line">    S(i+<span class="number">1</span>);</span><br><span class="line">    S(i+<span class="number">2</span>);</span><br><span class="line">    S(i+<span class="number">3</span>);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
-<p>So the size of the loop has increased because instead of calling method <code>S</code> just once per iteration, we call it 4x. The iterations have reduced because we now have a stride of 4 (<code>i += 4</code>). This is a space-time tradeoff because you gain speed by increasing the size of the program. If this <code>for</code> loop were to be a part of a hot method that got compiled to assembly, more code cache would be consumed because of unrolling.   </p>
-<p>Loop unrolling, however, wins at a different front — speed. By increasing the stride of the loop, we’re reducing the number of jumps that the CPU has to make. Jumps are costly and a reduction in jumps is a huge performance boost.  </p>
-<h3 id="Loop-unrolling-in-action"><a href="#Loop-unrolling-in-action" class="headerlink" title="Loop unrolling in action"></a>Loop unrolling in action</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.openjdk.jmh.annotations.*;</span><br><span class="line"><span class="keyword">import</span> java.util.concurrent.TimeUnit;</span><br><span class="line"></span><br><span class="line"><span class="meta">@Warmup(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)</span></span><br><span class="line"><span class="meta">@Measurement(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)</span></span><br><span class="line"><span class="meta">@Fork(value = 1, jvmArgsPrepend = {"-XX:+UnlockDiagnosticVMOptions", "-XX:+PrintAssembly"})</span></span><br><span class="line"><span class="meta">@BenchmarkMode(Mode.AverageTime)</span></span><br><span class="line"><span class="meta">@OutputTimeUnit(TimeUnit.NANOSECONDS)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MyBenchmark</span> {</span><br><span class="line">    <span class="meta">@Benchmark</span></span><br><span class="line">    <span class="meta">@CompilerControl(CompilerControl.Mode.DONT_INLINE)</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">testMethod</span><span class="params">()</span> {</span><br><span class="line">        <span class="type">int</span>[] nums = <span class="keyword">new</span> <span class="title class_">int</span>[<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; nums.length; i++) {</span><br><span class="line">            nums[i] = <span class="number">0x42</span>;</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure> 
-<p>The code above is a JMH benchmark which will fork 1 JVM (<code>@Fork</code>), warm it for 10 iterations (<code>@Warmup</code>), then run our benchmark for 5 iterations (<code>@Measurement</code>). The generated assembly looks like this:  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">0x00000001296ac845: cmp    %r10d,%ebp</span><br><span class="line">0x00000001296ac848: jae    0x00000001296ac8b4</span><br><span class="line">0x00000001296ac84a: movl   $0x42,0x10(%rbx,%rbp,4)</span><br><span class="line">0x00000001296ac852: inc    %ebp               </span><br><span class="line">0x00000001296ac854: cmp    %r11d,%ebp</span><br><span class="line">0x00000001296ac857: jl     0x00000001296ac845</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">0x00000001296ac880: vmovdqu %xmm0,0x10(%rbx,%rbp,4)  </span><br><span class="line">0x00000001296ac886: add    $0x4,%ebp          </span><br><span class="line">0x00000001296ac889: cmp    %r8d,%ebp</span><br><span class="line">0x00000001296ac88c: jl     0x00000001296ac880 </span><br></pre></td></tr></table></figure>
-<p>So the first block of code is moving <code>0x42</code> to some memory location (line #3), incrementing the counter <code>%ebp</code> (line #4), and jumping back to the start of the loop for the next iteration (line #6). Then there is the second block which increments the counter by 4 (line #11) and uses <code>vmovdqu</code> (line #10).  </p>
-<p>In the second block, <code>vmovdqu</code> moves <code>%xmm0</code> (a 128-bit register) to some memory location (line #10) i.e. we’re writing 4 32-bit numbers in one go. This is equivalent of writing <code>nums[0 .. 3]</code> in one iteration.  </p>
-<p>This means that our entire loop which writes 10 array elements will not run for 10 iterations at all. It  will run for 4 — 2 iterations to write 8 elements in groups of 4 each (block 2), and 2 more to write the remaining 2 elements (block 1). </p>
-<p>What we saw above was loop unrolling to enable vectorization. Since this happened without any effort on our part, it’s called auto-vectorization.</p>
-<h3 id="What-is-vectorization"><a href="#What-is-vectorization" class="headerlink" title="What is vectorization?"></a>What is vectorization?</h3><p>There are certain CPU instructions which are capable of operating on multiple data elements simultaneously. Such instructions are called SIMD instructions — Single Instruction Multiple Data or vectorized instructions. In the example above, all 4 elements were packed into a single register <code>XMM0</code> and then moved to their memory location with <code>vmovdqu</code>. This results in faster processing by saving jumps and clock cycles. </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">+--------|--------|--------|--------+</span><br><span class="line">|  0x42  |  0x42  |  0x42  |  0x42  | xmm0</span><br><span class="line">+--------|--------|--------|--------+</span><br><span class="line">     ↓       ↓         ↓        ↓     </span><br></pre></td></tr></table></figure>
-<p>Auto-vectorization is when the compiler converts the scalar instructions (which operate on a single data element at a time) to vector instructions (which operate on multiple data elements at a time) without any effort on the part of the programmer.  </p>
-<p>Vectorizing the code enables superword level parallelism (SLP). SLP is a type of SIMD parallelism in which source and result operands are packed in a storage location. </p>
-<p><img src="/images/SLP.png" alt="An example of SLP">  </p>
-<p>The example shows statement packing in which the operands have been packed into registers and the scalar addition and multiplication have been replaced by their vectorized counterparts.   </p>
-<h3 id="How-does-loop-unrolling-enable-SLP"><a href="#How-does-loop-unrolling-enable-SLP" class="headerlink" title="How does loop unrolling enable SLP?"></a>How does loop unrolling enable SLP?</h3><p>Consider this loop:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;<span class="number">16</span>; i++) {</span><br><span class="line">    localdiff = ref[i] - curr[i];</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
-<p>This is a loop containing isomorphic statements — statements that contain same operations in the same order. Such statements are easy to unroll. So the loop above can be transformed as follows:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;<span class="number">16</span>; i+=<span class="number">4</span>) {</span><br><span class="line">    localdiff = ref[i+<span class="number">0</span>] - curr[i+<span class="number">0</span>];</span><br><span class="line">    diff += abs(localdiff);</span><br><span class="line">    </span><br><span class="line">    localdiff = ref[i+<span class="number">1</span>] - curr[i+<span class="number">1</span>];</span><br><span class="line">    diff += abs(localdiff);</span><br><span class="line"></span><br><span class="line">    localdiff = ref[i+<span class="number">2</span>] - curr[i+<span class="number">2</span>];</span><br><span class="line">    diff += abs(localdiff);</span><br><span class="line"></span><br><span class="line">    localdiff = ref[i+<span class="number">3</span>] - curr[i+<span class="number">3</span>];</span><br><span class="line">    diff += abs(localdiff);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>  
-<p>This can be further transformed as:  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i&lt;<span class="number">16</span>; i+=<span class="number">4</span>) {</span><br><span class="line">    localdiff0 = ref[i+<span class="number">0</span>] - curr[i+<span class="number">0</span>];</span><br><span class="line">    localdiff1 = ref[i+<span class="number">1</span>] - curr[i+<span class="number">1</span>];</span><br><span class="line">    localdiff2 = ref[i+<span class="number">2</span>] - curr[i+<span class="number">2</span>];</span><br><span class="line">    localdiff3 = ref[i+<span class="number">3</span>] - curr[i+<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">    diff += abs(localdiff0);</span><br><span class="line">    diff += abs(localdiff1);</span><br><span class="line">    diff += abs(localdiff2);</span><br><span class="line">    diff += abs(localdiff3);</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
-<p>Now it becomes easy to see how SLP can be used to speed up the execution of the loop. Loop unrolling sets the stage for SLP.  </p>
-<h3 id="Which-flags-control-loop-unrolling-and-SLP"><a href="#Which-flags-control-loop-unrolling-and-SLP" class="headerlink" title="Which flags control loop unrolling and SLP?"></a>Which flags control loop unrolling and SLP?</h3><p>There are a couple of flags - <code>-XX:LoopUnrollLimit</code> and <code>-XX:+UseSuperWord</code>. <code>LoopUnrollLimit</code> controls how many times your loop will be unrolled and <code>UseSuperWord</code> controls the transformation of scalar operations into vectorized operations.  </p>
-<h3 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h3><p>Loop unrolling makes your code faster by doing more per iteration and increasing the stride. It’s a space-time trade off where you make your code larger so that the execution takes less time. Loop unrolling can be taken a step further to make scalar instructions into vector instructions. These instructions operate on packed data and achieve more per instruction than their scalar counterparts.  </p>
-<p>The conversion from scalar instructions to vector instructions is called vectorization. Since this happens transparently to the programmer, it is called auto-vectorization.</p>
-<h3 id="Recommended-reading"><a href="#Recommended-reading" class="headerlink" title="Recommended reading"></a>Recommended reading</h3><p>There are a few blog posts that I recommend you read.</p>
-<p><a target="_blank" rel="noopener" href="https://web.archive.org/web/20180309233206/https://www.nayuki.io/page/a-fundamental-introduction-to-x86-assembly-programming">A fundamental introduction to x86 assembly programming</a><br>This post provides a brief introduction to x86 assembly programming. Having studied assembly programming in university a long time ago, the post is quick refresher on the basic concepts of assembly programming like addresing modes, registers, etc. I keep it handy and refer to it when I have to read the assembly code generated by JVM. </p>
-<p><a target="_blank" rel="noopener" href="https://web.archive.org/web/20170501051527/http://tutorials.jenkov.com:80/java-performance/jmh.html">JMH - Java Microbenchmark Harness</a><br>This post provides a brief introduction to JMH (Java Mirobenchmark Harness). What does JMH do?   </p>
-<blockquote>
-<p>JMH is a Java harness for building, running, and analysing nano/micro/milli/macro benchmarks written in Java and other languages targetting the JVM.  </p>
-</blockquote>
-<p>The post will show you how to write a simple benchmark, how to avoid common pitfalls, etc. It is a good read regardless of this series for two reasons: one, microbenchmarking is coming to Java 9 out-of-the-box and two, microbenchmarking is hard to get right.</p>
-<p><a target="_blank" rel="noopener" href="http://groups.csail.mit.edu/cag/slp/SLP-PLDI-2000.pdf">Exploiting Superword Level Parallelism with Multimedia Instruction Sets</a><br>This is the research paper on superword level parallelism. I’ve borrowed examples and diagrams from this paper. The paper will introduce you to what SLP is, and also provide an algorithm on how to find parts of code which are amenable to SLP.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/" data-id="cm4uyniba001an9ru2tmbfqvq" data-title="JVM JIT - Loop Unrolling" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2018/05/20/JVM-JIT-Loop-Unrolling/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/" rel="tag">compilers</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-JVM-JIT-Compiling-to-Assembly" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/05/10/JVM-JIT-Compiling-to-Assembly/" class="article-date">
@@ -328,7 +243,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/" data-id="cm4uynib9000yn9ru3lq112io" data-title="JVM JIT - Compiling to Assembly" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/" data-id="cm4y4t93w000xvjru6op4dfbl" data-title="JVM JIT - Compiling to Assembly" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/05/10/JVM-JIT-Compiling-to-Assembly/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -396,7 +311,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/" data-id="cm4uynib90013n9rufdqs36kv" data-title="JVM JIT - Inlining" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/" data-id="cm4y4t93w0010vjru9ifxfwwg" data-title="JVM JIT - Inlining" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -464,7 +379,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cm4uyniba0018n9ru32tq5xq0" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cm4y4t93w0011vjru6c2qbab7" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -546,7 +461,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="cm4uynibo0075n9ru6360fzig" data-title="Transducers" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="cm4y4t946004svjrufrdg0rzp" data-title="Transducers" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/01/06/transducers/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -622,7 +537,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="cm4uynibh003nn9ruck8a2g7r" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="cm4y4t944003zvjru7cti8w7t" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -726,7 +641,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="cm4uynibl0050n9ru7xmoci6x" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="cm4y4t947004vvjrueuvv844n" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -793,7 +708,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cm4uynibi003xn9ru6xjydkk6" data-title="Monad" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cm4y4t943003fvjru2ffq8o3j" data-title="Monad" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -872,7 +787,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cm4uynibh003ln9ru05p1es9j" data-title="Functor" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cm4y4t943003ivjrudceihsoq" data-title="Functor" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -943,7 +858,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cm4uynibh003in9ru2vuu8zyy" data-title="Monoid" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cm4y4t943003kvjru55xo85nd" data-title="Monoid" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/10/monoid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1022,7 +937,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cm4uynibh003gn9ru1pekep2k" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cm4y4t943003dvjruavdy7y7y" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1071,9 +986,92 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cm4uynibj0049n9ruae9a9fn5" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cm4y4t9450046vjru6row3fhm" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-scalaz-lens" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/01/scalaz-lens/" class="article-date">
+  <time datetime="2017-08-01T11:00:04.000Z" itemprop="datePublished">2017-08-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/01/scalaz-lens/">Scalaz Lens</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/5d453fe3e2548f829d26a3b033b82b36c06731fd/core/src/main/scala/scalaz/Lens.scala">Lens</a> which is a pure functional way of getting and setting data. Before we get into lenses, we’ll look at why we need lenses by looking at a simple example.  </p>
+<h2 id="Motivating-Example"><a href="#Motivating-Example" class="headerlink" title="Motivating Example"></a>Motivating Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Address</span>(<span class="params">city: <span class="type">String</span>, zip: <span class="type">Int</span></span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Address</span></span></span><br><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Person</span>(<span class="params">name: <span class="type">String</span>, address: <span class="type">Address</span></span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Person</span></span></span><br></pre></td></tr></table></figure>  
+<p>Say we have a class <code>Person</code> which has the name of the person and their address where the address is represented by <code>Address</code>. What we’d like to do is to change the address of the person. Let’s go ahead and create a <code>Person</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> p1 = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Doe Ville"</span>, <span class="number">7</span>))</span><br><span class="line">p1: <span class="type">Person</span> = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Doe Ville"</span>, <span class="number">7</span>))</span><br></pre></td></tr></table></figure>  
+<p>Changing the <code>Address</code> while maintaining immutability is fairly easy.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> p2 = p1.copy(</span><br><span class="line">    p1.name,</span><br><span class="line">    <span class="type">Address</span>(<span class="string">"Foo City"</span>, <span class="number">9</span>)</span><br><span class="line">  )</span><br><span class="line">p2: <span class="type">Person</span> = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Foo City"</span>, <span class="number">9</span>))</span><br></pre></td></tr></table></figure>  
+<p>The problem arises when things begin to nest. Let’s create an <code>Order</code> class representing an order placed by a <code>Person</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Order</span>(<span class="params">person: <span class="type">Person</span>, items: <span class="type">List</span>[<span class="type">String</span>]</span>)</span></span><br><span class="line">defined <span class="class"><span class="keyword">class</span> <span class="title">Order</span></span></span><br><span class="line">@ <span class="keyword">val</span> o1 = <span class="type">Order</span>(p1, <span class="type">List</span>(<span class="string">"shoes"</span>, <span class="string">"socks"</span>, <span class="string">"toothpaste"</span>))</span><br><span class="line">o1: <span class="type">Order</span> = <span class="type">Order</span>(<span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Doe Ville"</span>, <span class="number">7</span>)), <span class="type">List</span>(<span class="string">"shoes"</span>, <span class="string">"socks"</span>, <span class="string">"toothpaste"</span>))</span><br></pre></td></tr></table></figure>
+<p>Now, the person would like to change the address to which the items are delivered.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> o2 = o1.copy(</span><br><span class="line">    o1.person.copy(</span><br><span class="line">      o1.person.name,</span><br><span class="line">      <span class="type">Address</span>(<span class="string">"Foo City"</span>, <span class="number">9</span>)</span><br><span class="line">    ),</span><br><span class="line">    o1.items</span><br><span class="line">  )</span><br><span class="line">o2: <span class="type">Order</span> = <span class="type">Order</span>(<span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Foo City"</span>, <span class="number">9</span>)), <span class="type">List</span>(<span class="string">"shoes"</span>, <span class="string">"socks"</span>, <span class="string">"toothpaste"</span>))</span><br></pre></td></tr></table></figure>  
+<p>So, the deeper we nest, the uglier it gets. Lenses provide a succinct, functional way to do this.</p>
+<h2 id="Lens"><a href="#Lens" class="headerlink" title="Lens"></a>Lens</h2><p>Lenses are a way of focusing on a specific part of a deep data structure. Think of them as fancy getters and setters for deep data structures. I’ll begin by demonstrating how we can create and use a lens and then explain the lens laws.  </p>
+<h3 id="Creating-a-Lens"><a href="#Creating-a-Lens" class="headerlink" title="Creating a Lens"></a>Creating a Lens</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"></span><br><span class="line"><span class="comment">// creating a lens</span></span><br><span class="line">@ <span class="keyword">val</span> addressInPerson = <span class="type">Lens</span>.lensu[<span class="type">Person</span>, <span class="type">Address</span>] (</span><br><span class="line">    (p, address) =&gt; p.copy(address = address),</span><br><span class="line">    _.address</span><br><span class="line">  )</span><br><span class="line">addressInPerson: <span class="type">Lens</span>[<span class="type">Person</span>, <span class="type">Address</span>] = scalaz.<span class="type">LensFunctions</span>$$anon$<span class="number">5</span>@<span class="number">4e32</span>e2a2</span><br></pre></td></tr></table></figure>  
+<p>What we’ve done is create a lens that accepts a <code>Person</code> object and focuses on its <code>Address</code> field. <code>lensu</code> expects two functions - a setter and a getter. In the first function, the setter, we’re making a copy of the <code>Person</code> object passed to the lens and updating its address field with the new one. In the second function, the getter, we’re simply returning the address field. Lets see this in action by getting and setting values.  </p>
+<h3 id="Getting-a-Field"><a href="#Getting-a-Field" class="headerlink" title="Getting a Field"></a>Getting a Field</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ addressInPerson.get(p1)</span><br><span class="line">res12: <span class="type">Address</span> = <span class="type">Address</span>(<span class="string">"Doe Ville"</span>, <span class="number">7</span>)</span><br></pre></td></tr></table></figure>  
+<p>Once you create a lens, you get a <code>get</code> method which returns the address field in the <code>Person</code> object.</p>
+<h3 id="Setting-a-Field"><a href="#Setting-a-Field" class="headerlink" title="Setting a Field"></a>Setting a Field</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> p3 = addressInPerson.set(p1, <span class="type">Address</span>(<span class="string">"Bar Town"</span>, <span class="number">10</span>))</span><br><span class="line">p3: <span class="type">Person</span> = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Bar Town"</span>, <span class="number">10</span>))</span><br></pre></td></tr></table></figure>  
+<p>Similarly, there’s a <code>set</code> method which lets you set fields to specific values.  </p>
+<h3 id="Modifying-a-Field"><a href="#Modifying-a-Field" class="headerlink" title="Modifying a Field"></a>Modifying a Field</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> p4 = addressInPerson.mod({ a =&gt; a.copy(city = <span class="string">s"<span class="subst">${a.city}</span>, NY"</span>) }, p1)</span><br><span class="line">p4: <span class="type">Person</span> = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Doe Ville, NY"</span>, <span class="number">7</span>))</span><br></pre></td></tr></table></figure>
+<p><code>mod</code> lets you modify the field. It expects a function that maps <code>Address</code> to <code>Address</code>. In the example here, we’re appending “NY” to the name of the city.</p>
+<h2 id="Lenses-are-Composable"><a href="#Lenses-are-Composable" class="headerlink" title="Lenses are Composable"></a>Lenses are Composable</h2><p>The true power of lenses is in composing them. You can compose two lenses together to look deeper into a data structure. For example, we’ll create a lens which lets us access the address field of the person in an <code>Order</code>. We’ll do this by composing two lenses.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// creating the lens</span></span><br><span class="line">@ <span class="keyword">val</span> personInOrder = <span class="type">Lens</span>.lensu[cmd5.<span class="type">Order</span>, <span class="type">Person</span>] (</span><br><span class="line">    (o, person) =&gt; o.copy(person = person),</span><br><span class="line">    _.person</span><br><span class="line">  )</span><br><span class="line">personInOrder: <span class="type">Lens</span>[cmd5.<span class="type">Order</span>, <span class="type">Person</span>] = scalaz.<span class="type">LensFunctions</span>$$anon$<span class="number">5</span>@<span class="number">33</span>d58abf</span><br><span class="line"></span><br><span class="line"><span class="comment">// testing the lens</span></span><br><span class="line">@ personInOrder.get(o1)</span><br><span class="line">res16: <span class="type">Person</span> = <span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Doe Ville"</span>, <span class="number">7</span>))</span><br></pre></td></tr></table></figure>  
+<p>Ignore the <code>cmd.</code> prefix to <code>Order</code>. That is just an Ammonite REPL quirk to avoid confusing with the <code>Order</code> trait from Scalaz. Next, we’ll combine the two lenses we have.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> addressInOrder = personInOrder &gt;=&gt; addressInPerson</span><br><span class="line">addressInOrder: <span class="type">LensFamily</span>[cmd5.<span class="type">Order</span>, cmd5.<span class="type">Order</span>, <span class="type">Address</span>, <span class="type">Address</span>] = scalaz.<span class="type">LensFamilyFunctions</span>$$anon$<span class="number">4</span>@<span class="number">73679</span>b13</span><br></pre></td></tr></table></figure>  
+<p><code>&gt;=&gt;</code> is the symbolic alias for <code>andThen</code>. The way you read what we’ve done is: <em>get the person from the order AND THEN get the address from that person</em>.  </p>
+<p>This allows you to truly keep your code DRY. Now no matter within which data structure <code>Person</code> and <code>Address</code> are, you can reuse that lens to get and set those fields. It’s just a matter of creating another lens or few lenses to access the <code>Person</code> from a deep data structure.  </p>
+<p>Similarly there’s also <code>compose</code> which has a symbolic alias <code>&lt;=&lt;</code> and works in the other direction. I personally find it easier to use <code>andThen</code> / <code>&gt;=&gt;</code>.  </p>
+<h2 id="Lens-Laws"><a href="#Lens-Laws" class="headerlink" title="Lens Laws"></a>Lens Laws</h2><p><strong>Get-Put:</strong> If you get a value from a data structure and put it back in, the data structure stays unchanged.<br><strong>Put-Get:</strong> If you put a value into a data structure and get it back out, you get the most updated value back.<br><strong>Put-Put:</strong> If you put a value into a data structure and then you put another value in the data structure, it’s as if you only put the second value in.  </p>
+<p>Lenses that obey all the three laws are called “very well-behaved lenses”. You should always ensure that your lenses obey these rules.  </p>
+<p>Here’s how Scalaz represents these lens laws:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">LensLaw</span> </span>{</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">identity</span></span>[<span class="type">A</span> &gt;: <span class="type">A2</span> &lt;: <span class="type">A1</span>, <span class="type">B</span> &gt;: <span class="type">B1</span> &lt;: <span class="type">B2</span>](a: <span class="type">A</span>)(<span class="keyword">implicit</span> <span class="type">A</span>: <span class="type">Equal</span>[<span class="type">A</span>]): <span class="type">Boolean</span> = {</span><br><span class="line">    <span class="keyword">val</span> c = run(a)</span><br><span class="line">    <span class="type">A</span>.equal(c.put(c.pos: <span class="type">B</span>), a)</span><br><span class="line">  }</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">retention</span></span>[<span class="type">A</span> &gt;: <span class="type">A2</span> &lt;: <span class="type">A1</span>, <span class="type">B</span> &gt;: <span class="type">B1</span> &lt;: <span class="type">B2</span>](a: <span class="type">A</span>, b: <span class="type">B</span>)(<span class="keyword">implicit</span> <span class="type">B</span>: <span class="type">Equal</span>[<span class="type">B</span>]): <span class="type">Boolean</span> =</span><br><span class="line">    <span class="type">B</span>.equal(run(run(a).put(b): <span class="type">A</span>).pos, b)</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">doubleSet</span></span>[<span class="type">A</span> &gt;: <span class="type">A2</span> &lt;: <span class="type">A1</span>, <span class="type">B</span> &gt;: <span class="type">B1</span> &lt;: <span class="type">B2</span>](a: <span class="type">A</span>, b1: <span class="type">B</span>, b2: <span class="type">B</span>)(<span class="keyword">implicit</span> <span class="type">A</span>: <span class="type">Equal</span>[<span class="type">A</span>]): <span class="type">Boolean</span> = {</span><br><span class="line">    <span class="keyword">val</span> r = run(a)</span><br><span class="line">    <span class="type">A</span>.equal(run(r.put(b1): <span class="type">A</span>) put b2, r put b2)</span><br><span class="line">  }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p><code>identity</code> is get-put law, <code>retention</code> is put-get law, and <code>doubleSet</code> is put-put law.</p>
+<h2 id="Lenses-and-State-Monads"><a href="#Lenses-and-State-Monads" class="headerlink" title="Lenses and State Monads"></a>Lenses and State Monads</h2><p>Formally, a state monad looks like the following: </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">S =&gt; (S, A)</span><br></pre></td></tr></table></figure>  
+<p>Given a state S, it computes the resulting state S by making mutations to the existing state S and produces a resulting A. This is a bit abstract so let’s look at a scenario. Say we have a list of people whose addresses we’d like to update to Fancytown with zip code 3. Let’s do that using lenses.</p>
+<h3 id="Creating-a-State"><a href="#Creating-a-State" class="headerlink" title="Creating a State"></a>Creating a State</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> state = <span class="keyword">for</span> {</span><br><span class="line">    p &lt;- addressInPerson %= { add =&gt; <span class="type">Address</span>(<span class="string">"Fancytown"</span>, <span class="number">3</span>) }</span><br><span class="line">  } <span class="keyword">yield</span> p</span><br><span class="line">state: <span class="type">IndexedStateT</span>[<span class="type">Id</span>, <span class="type">Person</span>, <span class="type">Person</span>, <span class="type">Address</span>] = scalaz.<span class="type">IndexedStateT</span>$$anon$<span class="number">11</span>@<span class="number">25</span>b51460</span><br></pre></td></tr></table></figure>
+<p>Here we are creating a state using a <code>for</code> comprehension. The <code>%=</code> operator accepts a function which maps an <code>Address</code> to an <code>Address</code>. What we get back is a state monad. Now that we have a state monad, let’s use it to update the address.</p>
+<h3 id="Updating-the-State"><a href="#Updating-the-State" class="headerlink" title="Updating the State"></a>Updating the State</h3><p>Next, let’s make person <code>p1</code> move to Fancytown. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ state(p1)</span><br><span class="line">res33: (<span class="type">Person</span>, <span class="type">Address</span>) = (<span class="type">Person</span>(<span class="string">"John Doe"</span>, <span class="type">Address</span>(<span class="string">"Fancytown"</span>, <span class="number">3</span>)), <span class="type">Address</span>(<span class="string">"Fancytown"</span>, <span class="number">3</span>))</span><br></pre></td></tr></table></figure>
+<p>Here we are updating person <code>p1</code>‘s address. What we get back is a new state <code>S</code>, <code>p1</code> but with Fancytown address, and the result <code>A</code>, the new <code>Address</code>. <code>state(p1)</code> is the same as <code>state.apply(p1)</code>. In short, we’re applying that state to a <code>Person</code> object.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end the post on lenses. Lenses are a powerful way to get, set, and modify fields in your data structures. The best part about them is that they are reusable and can be composed to form lenses that focus deeper into the data structure.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cm4y4t9450044vjru1n22hnqm" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1114,11 +1112,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       <ul>
         
           <li>
-            <a href="/2024/12/19/Creating-a-data-warehouse-with-Apache-Pinot-and-Debezium-2/">Creating a data warehouse with Apache Pinot and Debezium 2</a>
-          </li>
-        
-          <li>
-            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a data warehouse with Apache Pinot and Debezium</a>
+            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform with Pinot, Trino, Airflow, and Debezium - the design</a>
           </li>
         
           <li>
@@ -1151,6 +1145,10 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
         
           <li>
             <a href="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/">Setting up a data catalog with DataHub</a>
+          </li>
+        
+          <li>
+            <a href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
           </li>
         
       </ul>
