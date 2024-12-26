@@ -188,6 +188,84 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Setting-up-Sphinx-Documentation" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/17/Setting-up-Sphinx-Documentation/" class="article-date">
+  <time datetime="2024-03-17T04:29:09.000Z" itemprop="datePublished">2024-03-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/17/Setting-up-Sphinx-Documentation/">Setting up Sphinx Documentation</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of my <a href="/2023/12/11/Software-Architecture-as-Code/">previous blog posts</a> I had written about creating software architecture as code. The primary motivation behind it was to commit the architecture to version control, and keep it close to the source code. The added benefit, that perhaps remained implicit, is that architecture reviews can now happen as a part of the PR review. In the same spirit, I’d also like to keep the documentation close to the source code, and make documentation review a part of the PR review process. This post is about setting up Sphinx documentaion for a Flask microservice. Although everything mentioned in this post is Python-specific, the ideas can hopefully be applied to any language and framework of your choice.  </p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>We’ll build a simple Flask microservice. It receives an HTTP request, conducts some processing, and then invokes another microservice. For the purpose of this post, the processing is simply <code>time.sleep</code>, while the other microservice is HTTPBin. We’ll then document our code and render it with Sphinx. This example, while contrived, is analogous to many real-world software projects in which numerous packages within the codebase are used in conjunction to express business logic. The goal of documentation, therefore, is to provide context to anyone working with the source. We will include documentation that gives a broad overview of the project, and covers each package in detail.  </p>
+<h3 id="HttpBin"><a href="#HttpBin" class="headerlink" title="HttpBin"></a>HttpBin</h3><p>We’ll begin by adding classes which will let us make requests to HTTPBin.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">_HttpBinRequest</span>(abc.ABC):</span><br><span class="line"></span><br><span class="line">    base_url: <span class="built_in">str</span> = <span class="string">"https://httpbin.org"</span></span><br><span class="line"></span><br><span class="line"><span class="meta">    @abc.abstractmethod</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">self</span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">        <span class="keyword">raise</span> <span class="literal">NotImplemented</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dc.dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpBinPost</span>(<span class="title class_ inherited__">_HttpBinRequest</span>):</span><br><span class="line">    params: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = dc.field(default=<span class="built_in">dict</span>)</span><br><span class="line">    json: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = dc.field(default=<span class="built_in">dict</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">execute</span>(<span class="params">self</span>) -&gt; <span class="type">Any</span>:</span><br><span class="line">        url = <span class="string">f"<span class="subst">{self.base_url}</span>/post"</span></span><br><span class="line">        headers = {<span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>} <span class="keyword">if</span> self.json <span class="keyword">else</span> {}</span><br><span class="line">        response = requests.post(</span><br><span class="line">            url=url, </span><br><span class="line">            json=self.json, </span><br><span class="line">            params=self.params, </span><br><span class="line">            headers=headers,</span><br><span class="line">        )</span><br><span class="line">        response.raise_for_status()</span><br><span class="line">        <span class="keyword">return</span> response.json()</span><br></pre></td></tr></table></figure>  
+<p>An object of <code>HttpBinPost</code> class is a representation of a POST request to HTTPBin, and can include query params, and a JSON body as a part of the request. As you’d have noticed, there is no documentation in the code.  </p>
+<p>We’ll now add a blueprint which will accept incoming requests, and then make calls to HttpBin. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@httpbin.post(<span class="params"><span class="string">"/post"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post</span>():</span><br><span class="line">    params = {<span class="string">"foo"</span>: <span class="string">"bar"</span>}</span><br><span class="line">    json = {<span class="string">"foo"</span>: <span class="string">"bar"</span>}</span><br><span class="line">    request = HttpBinPost(params=params, json=json)</span><br><span class="line">    time.sleep(<span class="number">0.5</span>)</span><br><span class="line">    <span class="keyword">return</span> request.execute()</span><br></pre></td></tr></table></figure>  
+<p>The <code>httpbin</code> blueprint configures a <code>/post</code> endpoint. We send some query parameters and a json body along with the POST request, and the response is returned directly to the caller. Finally, we make a curl call to the endpoint. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s -XPOST localhost:5000/post | jq .</span><br></pre></td></tr></table></figure>  
+<p>To summarize, we have a codebase that includes a package for making requests to HttpBin, as well as an API endpoint that makes the request using this package. We will now look at Sphinx and how to document the codebase.  </p>
+<h3 id="Sphinx"><a href="#Sphinx" class="headerlink" title="Sphinx"></a>Sphinx</h3><p>Sphinx is a documentation generator that we’ll use to generate HTML files from a directory of <a target="_blank" rel="noopener" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html">reStructuredText</a> files. We’ll also use the autodoc extension to generate documentaion from docstrings of Python classes and functions. The first step, however, is to install Sphinx. We’ll do so by using pip.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install sphinx</span><br></pre></td></tr></table></figure>  
+<p>We’ll now begin configuring Sphinx. We’ll navigate to the <code>docs</code> directory, and run the <code>sphinx-quickstart</code> script that will run the interactive setup. While following along the setup, we’ll make sure to separate the <code>build</code> and <code>source</code> directories. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> docs/</span><br><span class="line">sphinx-quickstart</span><br></pre></td></tr></table></figure>  
+<p>The <code>source</code> directory will contain the configuration file along with the rst files. The <code>build</code> directory will contain the HTML files that are generated when we build the documentation from the <code>source</code> directory. Let’s take a quick look at the generated files and directories with <code>tree</code>.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── build</span><br><span class="line">├── make.bat</span><br><span class="line">├── Makefile</span><br><span class="line">└── source</span><br><span class="line">    ├── conf.py</span><br><span class="line">    ├── index.rst</span><br><span class="line">    ├── _static</span><br><span class="line">    └── _templates</span><br></pre></td></tr></table></figure>  
+<p>We will update <code>conf.py</code> and add our repository to <code>sys.path</code>. This is required by the autodoc extension as it imports modules to be documented. We’ll add the following lines to the bottom of the file. You will have to update the path appropriately.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -- Add our repository to sys.path</span></span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line">path = Path.home() / <span class="string">"Personal"</span> / <span class="string">"sphinx"</span></span><br><span class="line">sys.path.insert(<span class="number">0</span>, <span class="built_in">str</span>(path))</span><br></pre></td></tr></table></figure>  
+<p>We’ll now generate documentation by running the <code>sphinx-build</code> command manually. Later we’ll write a small bash script to automate the process of regenerating the documentation.   </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sphinx-build <span class="built_in">source</span>/ build/html/</span><br><span class="line">open build/html/index.html</span><br></pre></td></tr></table></figure>  
+<p>We’ll get the following HTML page after rendering index.rst. It is extremely basic, and we will add to it to give an overview of the codebase. </p>
+<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-1.png" class="">  
+<p>We’ll update the <code>conf.py</code> file and enable a couple of <a target="_blank" rel="noopener" href="https://www.sphinx-doc.org/en/master/usage/extensions/index.html">extensions</a> by adding them to the <code>extensions</code> array.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extensions = [<span class="string">"sphinx.ext.autodoc"</span>, <span class="string">"sphinx.ext.napoleon"</span>]</span><br></pre></td></tr></table></figure> 
+<p>The two extensions we’ve added allow us to include docstrings as a part of the documentation. For the sake of this post, we’ll add lorem ipsum to the <code>HttpBinPost</code> class.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@dc.dataclass</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">HttpBinPost</span>(<span class="title class_ inherited__">_HttpBinRequest</span>):</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span></span><br><span class="line"><span class="string">    Fusce laoreet lectus neque, in congue purus dapibus et.</span></span><br><span class="line"><span class="string">    Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span></span><br><span class="line"><span class="string">    Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span></span><br><span class="line"><span class="string">    In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span></span><br><span class="line"><span class="string">    Etiam ullamcorper turpis at tempus semper.</span></span><br><span class="line"><span class="string">    Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span></span><br><span class="line"><span class="string">    Integer varius volutpat interdum.</span></span><br><span class="line"><span class="string">    """</span></span><br></pre></td></tr></table></figure>  
+<p>We’ll now create a new rst file called <code>httpbin.rst</code> in the <code>source</code> directory. This will contain the overview of the HTTPBin module, and a couple of directives to include the module, and the <code>HttpBinPost</code> class as a part of the documentation.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HttpBin Module</span><br><span class="line">==============</span><br><span class="line"></span><br><span class="line">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span><br><span class="line">Fusce laoreet lectus neque, in congue purus dapibus et.</span><br><span class="line">Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span><br><span class="line">Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span><br><span class="line">In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span><br><span class="line">Etiam ullamcorper turpis at tempus semper.</span><br><span class="line">Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span><br><span class="line">Integer varius volutpat interdum.</span><br><span class="line"></span><br><span class="line">.. automodule:: service.httpbin</span><br><span class="line">.. autoclass:: service.httpbin.HttpBinPost</span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll update the <code>index.rst</code> file. This is where we’ll provide the overview of the codebase, and link the <code>httpbin.rst</code> file.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Welcome to Sphinx's documentation!</span><br><span class="line">==================================</span><br><span class="line">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span><br><span class="line">Fusce laoreet lectus neque, in congue purus dapibus et.</span><br><span class="line">Sed eros elit, luctus ac ante eget, fermentum imperdiet urna.</span><br><span class="line">Integer rutrum leo sed quam faucibus rutrum. Suspendisse nulla diam, rhoncus id nisi et, aliquet auctor risus.</span><br><span class="line">In pellentesque, orci quis molestie dignissim, dui massa posuere lorem, ut suscipit orci libero quis sem.</span><br><span class="line">Etiam ullamcorper turpis at tempus semper.</span><br><span class="line">Nunc odio massa, feugiat quis sem nec, hendrerit pretium ex.</span><br><span class="line">Integer varius volutpat interdum.</span><br><span class="line"></span><br><span class="line">.. toctree::</span><br><span class="line">   :maxdepth: 2</span><br><span class="line">   :caption: Contents:</span><br><span class="line"></span><br><span class="line">   httpbin.rst</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>  
+<p>The generated documentation now has an overview on the index page, and a link to the HttpBin module. When we click the link to the module, we’ll see that the overview, as well as the docstring of the <code>HttpBinPost</code> class, are included in the documentation. Screenshots of both of these pages are provided below.</p>
+<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-2.png" class="" title="index">
+<img src="/2024/03/17/Setting-up-Sphinx-Documentation/Sphinx-3.png" class="" title="httpbin">  
+<p>We’ll now add a small bash script, called <code>docs.sh</code>, to regenerate the documentation for the codebase, and place it at the root of the codebase.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/bash</span></span><br><span class="line"></span><br><span class="line">sphinx-build docs/source/ docs/build/html/</span><br><span class="line">open docs/build/html/index.html</span><br></pre></td></tr></table></figure>  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This post is a basic introduction to using Sphinx to generate documentation. Keeping the documentation within the repository allows keeping the context close to the source. Combining this post with the previous post on architecture as code, we can keep most of the context of a repository within itself. I find this to be more helpful than using Confluence or Notion. Finally, all of the code for this post is available as a <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/sphinx">GitHub repository</a>.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm54veram002nykrufrb252rj" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Peace-Somewhat-Precisely" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/03/11/Peace-Somewhat-Precisely/" class="article-date">
@@ -220,7 +298,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm53wg50a001x5xru6coaa4b8" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm54verak001yykru8arjdvvg" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -270,7 +348,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm53wg50e003b5xruet0y3ikg" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm54verap003kykru0qy38vqu" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -328,7 +406,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm53wg509001q5xru2wk1aygg" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm54verak001tykru8tdr7k0r" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -398,7 +476,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm53wg509001n5xrufd8d8opz" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm54veraj001rykru6nni5w4j" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -454,7 +532,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm53wg50a001v5xru3l5l5tkw" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm54veraj001mykrudgo328ux" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -517,7 +595,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm53wg509001i5xru3v4y9tgi" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm54veraj001jykru1m88833k" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -582,7 +660,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="cm53wg50a001s5xrugzg27bdk" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="cm54verak001wykru50fja8ik" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -633,7 +711,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="cm53wg505000m5xru9r882ohe" data-title="Collective Consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="cm54verac0007ykru25ez4772" data-title="Collective Consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -680,7 +758,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="cm53wg508001b5xru8avx2qip" data-title="Lens of Life" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/16/Lens-of-Life/" data-id="cm54verai001eykru42dle5vp" data-title="Lens of Life" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/16/Lens-of-Life/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -750,7 +828,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="cm53wg506000r5xrufe720i02" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/" data-id="cm54verah0010ykrugmfr6ija" data-title="Ingesting third-party data into Apache Doris with Meltano" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/12/Ingesting-third-party-data-into-Apache-Doris-with-Meltano/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -807,82 +885,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/" data-id="cm53wg50c002k5xrugfu41va5" data-title="Setting up a SQL IDE with Apache Superset" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/" data-id="cm54veran002sykruh911an3n" data-title="Setting up a SQL IDE with Apache Superset" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Creating-facades-in-Python" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/02/03/Creating-facades-in-Python/" class="article-date">
-  <time datetime="2024-02-03T11:20:52.000Z" itemprop="datePublished">2024-02-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/02/03/Creating-facades-in-Python/">Creating facades in Python</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>One of the GoF design patterns is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Facade_pattern">facade</a>. It lets us create a simple interface that hides the underlying complexity. For example, we can have a facade which lets the client book meetings on various calendars like Google, Outlook, Calendly, etc. The client specifies details about the meeting such as the title, description, etc. along with which calendar to use. The facade then executes appropriate logic to book the meeting, without the client having to deal with the low-level details. </p>
-<p>This post talks about how we can create a facade in Python. We’ll first take a look at <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/functools.html#functools.singledispatch">singledispatch</a> to see how we can call different functions depending on the type of the argument. We’ll then build upon this to create a function which dispatches based on the value instead of the type. We’ll use the example given above to create a function which dispatches to the right function based on what calendar the client would like to use.  </p>
-<h2 id="Single-Dispatch"><a href="#Single-Dispatch" class="headerlink" title="Single Dispatch"></a>Single Dispatch</h2><p>The official documentation defines single dispatch to be a function where the implementation is chosen based on the type of a single argument. This means we can have one function which handles integers, another which handles strings, and so on. Such functions are created using the <code>singledispatch</code> decorator from the <code>functools</code> package. Here’s a trivial example which prints the type of the argument handled by the function.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> functools</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@functools.singledispatch</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo</span>(<span class="params">x</span>):</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@echo.register</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo_int</span>(<span class="params">x: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"<span class="subst">{x}</span> is an int"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@echo.register</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo_str</span>(<span class="params">x: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"<span class="subst">{x}</span> is a str"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    echo(<span class="number">5</span>)</span><br><span class="line">    echo(<span class="string">"5"</span>)</span><br></pre></td></tr></table></figure>  
-<p>We start by decorating the <code>echo</code> function with <code>singledispatch</code>. This is the function we will pass our arguments to. We then create <code>echo_int</code>, and <code>echo_str</code> which are different implementation that will handle the various types of arguments. These are registered using the <code>echo.register</code> decorator.  </p>
-<p>When we run the example, we get the following output. As expected, the function to execute is chosen based on the type of the argument. Calling the function with a type which is not handled results in a noop as we’ve set the body of <code>echo</code> to ellipses.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5 is an int</span><br><span class="line">5 is a str</span><br></pre></td></tr></table></figure>  
-<p>When looking at the source code of <code>singledispatch</code>, we find that it maintains a dictionary which maps the type of the argument to its corresponding function. In the following sections, we’ll look at how we can dispatch based on the value of the argument.  </p>
-<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Let’s say we’re writing a library that lets the users book meetings on a calendar of their choosing. We expose a <code>book_meeting</code> function. The argument to this function is an instance of the <code>Meeting</code> data class which contains information about the meeting, and the calendar on which it should be booked.   </p>
-<h2 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h2><h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p>We’ll start by adding an enum which represents the calendars that we support.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> enum</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Calendar</span>(<span class="built_in">str</span>, enum.Enum):</span><br><span class="line">    GOOGLE = <span class="string">"google"</span></span><br><span class="line">    OUTLOOK = <span class="string">"outlook"</span></span><br></pre></td></tr></table></figure>  
-<p>Next we’ll add the data class which represents the meeting as a <code>dataclass</code>.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> dataclasses <span class="keyword">as</span> dc </span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dc.dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Meeting</span>:</span><br><span class="line">    title: <span class="built_in">str</span></span><br><span class="line">    description: <span class="built_in">str</span></span><br><span class="line">    time: datetime.datetime</span><br><span class="line">    calendar: Calendar</span><br></pre></td></tr></table></figure>  
-<p>Finally, we’ll start creating the facade by adding functions which will dispatch based on the value of <code>calendar</code> contained within the instance of <code>Meeting</code>.  </p>
-<h3 id="Dispatch"><a href="#Dispatch" class="headerlink" title="Dispatch"></a>Dispatch</h3><p>We’ll create a registry which maps the enum to its corresponding function. The function takes as input a <code>Meeting</code> object and returns a boolean indicating whether the meeting was successfully booked or not.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Callable</span>, TypeVar </span><br><span class="line">MeetingT = TypeVar(<span class="string">"MeetingT"</span>, bound=<span class="type">Callable</span>[[Meeting], <span class="built_in">bool</span>])</span><br><span class="line">registry: <span class="built_in">dict</span>[Calendar, MeetingT] = {}</span><br></pre></td></tr></table></figure>  
-<p>Next we’ll add the <code>book_meeting</code> function. This is where we dispatch to the appropriate function depending on the meeting object that is received as the argument.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">book_meeting</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    func = registry.get(meeting.calendar)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> func:</span><br><span class="line">        <span class="keyword">raise</span> Exception(<span class="string">f"No function registered for calendar <span class="subst">{meeting.calendar}</span>"</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> func(meeting)</span><br></pre></td></tr></table></figure>  
-<p>To be able to register functions which contains the logic for a particular calendar, we’ll create a decorator called <code>register</code>.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">register</span>(<span class="params">calendar: Calendar</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_</span>(<span class="params">func: MeetingT</span>):</span><br><span class="line">        <span class="keyword">if</span> registry.get(calendar):</span><br><span class="line">            <span class="keyword">raise</span> Exception(<span class="string">f"A function has already been registered for <span class="subst">{calendar}</span>"</span>)</span><br><span class="line">        registry[calendar] = func</span><br><span class="line">        <span class="keyword">return</span> func</span><br><span class="line">    <span class="keyword">return</span> _</span><br></pre></td></tr></table></figure>  
-<p><code>register</code> accepts as argument the calendar for which we’re registering a function. It returns another higher-order function which puts the actual function in the registry. Since the actual logic of the execution is in the decorated function, we simply return the original function <code>func</code>.  </p>
-<p>Finally, we register functions for different calendars.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@register(<span class="params">Calendar.GOOGLE</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">book_google</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"Booked Google meeting"</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@register(<span class="params">Calendar.OUTLOOK</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">book_outlook</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"Booked Outlook meeting"</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
-<p>We’ll put all of this code in action by trying to book a meeting on Google calendar.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    meeting = Meeting(</span><br><span class="line">        title=<span class="string">"Hello"</span>,</span><br><span class="line">        description=<span class="string">"World"</span>,</span><br><span class="line">        time=datetime.datetime.now(),</span><br><span class="line">        calendar=Calendar.GOOGLE</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    book_meeting(meeting=meeting)</span><br></pre></td></tr></table></figure>  
-<p>This prints “Booked Google meeting”, like we’d expect. We can now continue to add more functions which contain logic for specific calendars. Our library can evolve without any change to the exposed interface. It’s also possible to organise functions into their own modules, import the <code>register</code> decorator, and decorate them to add them to the registry. This has two main benefits. One, we keep the code well structured. Two, the code for different versions of the same calendar can stay separated; we avoid having to write <code>if</code> checks to see the calendar version since that can be made part of the enum itself, like <code>GOOGLE_V1</code>.  </p>
-<p>That’s it. That’s how you can create a facade in Python.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/" data-id="cm53wg50700145xrua13fdf9s" data-title="Creating facades in Python" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
 
     </footer>
   </div>
@@ -919,6 +928,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
             <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
           </li>
         
@@ -952,10 +965,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
-          </li>
-        
-          <li>
-            <a href="/2024/07/23/A-question-on-algebraic-manipulations/">A question on algebraic manipulations</a>
           </li>
         
       </ul>

@@ -188,6 +188,75 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Creating-facades-in-Python" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/02/03/Creating-facades-in-Python/" class="article-date">
+  <time datetime="2024-02-03T11:20:52.000Z" itemprop="datePublished">2024-02-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/02/03/Creating-facades-in-Python/">Creating facades in Python</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>One of the GoF design patterns is the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Facade_pattern">facade</a>. It lets us create a simple interface that hides the underlying complexity. For example, we can have a facade which lets the client book meetings on various calendars like Google, Outlook, Calendly, etc. The client specifies details about the meeting such as the title, description, etc. along with which calendar to use. The facade then executes appropriate logic to book the meeting, without the client having to deal with the low-level details. </p>
+<p>This post talks about how we can create a facade in Python. We’ll first take a look at <a target="_blank" rel="noopener" href="https://docs.python.org/3/library/functools.html#functools.singledispatch">singledispatch</a> to see how we can call different functions depending on the type of the argument. We’ll then build upon this to create a function which dispatches based on the value instead of the type. We’ll use the example given above to create a function which dispatches to the right function based on what calendar the client would like to use.  </p>
+<h2 id="Single-Dispatch"><a href="#Single-Dispatch" class="headerlink" title="Single Dispatch"></a>Single Dispatch</h2><p>The official documentation defines single dispatch to be a function where the implementation is chosen based on the type of a single argument. This means we can have one function which handles integers, another which handles strings, and so on. Such functions are created using the <code>singledispatch</code> decorator from the <code>functools</code> package. Here’s a trivial example which prints the type of the argument handled by the function.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> functools</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@functools.singledispatch</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo</span>(<span class="params">x</span>):</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@echo.register</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo_int</span>(<span class="params">x: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"<span class="subst">{x}</span> is an int"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@echo.register</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">echo_str</span>(<span class="params">x: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"<span class="subst">{x}</span> is a str"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    echo(<span class="number">5</span>)</span><br><span class="line">    echo(<span class="string">"5"</span>)</span><br></pre></td></tr></table></figure>  
+<p>We start by decorating the <code>echo</code> function with <code>singledispatch</code>. This is the function we will pass our arguments to. We then create <code>echo_int</code>, and <code>echo_str</code> which are different implementation that will handle the various types of arguments. These are registered using the <code>echo.register</code> decorator.  </p>
+<p>When we run the example, we get the following output. As expected, the function to execute is chosen based on the type of the argument. Calling the function with a type which is not handled results in a noop as we’ve set the body of <code>echo</code> to ellipses.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5 is an int</span><br><span class="line">5 is a str</span><br></pre></td></tr></table></figure>  
+<p>When looking at the source code of <code>singledispatch</code>, we find that it maintains a dictionary which maps the type of the argument to its corresponding function. In the following sections, we’ll look at how we can dispatch based on the value of the argument.  </p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>Let’s say we’re writing a library that lets the users book meetings on a calendar of their choosing. We expose a <code>book_meeting</code> function. The argument to this function is an instance of the <code>Meeting</code> data class which contains information about the meeting, and the calendar on which it should be booked.   </p>
+<h2 id="Code"><a href="#Code" class="headerlink" title="Code"></a>Code</h2><h3 id="Model"><a href="#Model" class="headerlink" title="Model"></a>Model</h3><p>We’ll start by adding an enum which represents the calendars that we support.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> enum</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Calendar</span>(<span class="built_in">str</span>, enum.Enum):</span><br><span class="line">    GOOGLE = <span class="string">"google"</span></span><br><span class="line">    OUTLOOK = <span class="string">"outlook"</span></span><br></pre></td></tr></table></figure>  
+<p>Next we’ll add the data class which represents the meeting as a <code>dataclass</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> dataclasses <span class="keyword">as</span> dc </span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@dc.dataclass(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Meeting</span>:</span><br><span class="line">    title: <span class="built_in">str</span></span><br><span class="line">    description: <span class="built_in">str</span></span><br><span class="line">    time: datetime.datetime</span><br><span class="line">    calendar: Calendar</span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll start creating the facade by adding functions which will dispatch based on the value of <code>calendar</code> contained within the instance of <code>Meeting</code>.  </p>
+<h3 id="Dispatch"><a href="#Dispatch" class="headerlink" title="Dispatch"></a>Dispatch</h3><p>We’ll create a registry which maps the enum to its corresponding function. The function takes as input a <code>Meeting</code> object and returns a boolean indicating whether the meeting was successfully booked or not.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> typing <span class="keyword">import</span> <span class="type">Callable</span>, TypeVar </span><br><span class="line">MeetingT = TypeVar(<span class="string">"MeetingT"</span>, bound=<span class="type">Callable</span>[[Meeting], <span class="built_in">bool</span>])</span><br><span class="line">registry: <span class="built_in">dict</span>[Calendar, MeetingT] = {}</span><br></pre></td></tr></table></figure>  
+<p>Next we’ll add the <code>book_meeting</code> function. This is where we dispatch to the appropriate function depending on the meeting object that is received as the argument.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">book_meeting</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    func = registry.get(meeting.calendar)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> func:</span><br><span class="line">        <span class="keyword">raise</span> Exception(<span class="string">f"No function registered for calendar <span class="subst">{meeting.calendar}</span>"</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> func(meeting)</span><br></pre></td></tr></table></figure>  
+<p>To be able to register functions which contains the logic for a particular calendar, we’ll create a decorator called <code>register</code>.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">register</span>(<span class="params">calendar: Calendar</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_</span>(<span class="params">func: MeetingT</span>):</span><br><span class="line">        <span class="keyword">if</span> registry.get(calendar):</span><br><span class="line">            <span class="keyword">raise</span> Exception(<span class="string">f"A function has already been registered for <span class="subst">{calendar}</span>"</span>)</span><br><span class="line">        registry[calendar] = func</span><br><span class="line">        <span class="keyword">return</span> func</span><br><span class="line">    <span class="keyword">return</span> _</span><br></pre></td></tr></table></figure>  
+<p><code>register</code> accepts as argument the calendar for which we’re registering a function. It returns another higher-order function which puts the actual function in the registry. Since the actual logic of the execution is in the decorated function, we simply return the original function <code>func</code>.  </p>
+<p>Finally, we register functions for different calendars.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@register(<span class="params">Calendar.GOOGLE</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">book_google</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"Booked Google meeting"</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@register(<span class="params">Calendar.OUTLOOK</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">book_outlook</span>(<span class="params">meeting: Meeting</span>) -&gt; <span class="built_in">bool</span>:</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">f"Booked Outlook meeting"</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<p>We’ll put all of this code in action by trying to book a meeting on Google calendar.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    meeting = Meeting(</span><br><span class="line">        title=<span class="string">"Hello"</span>,</span><br><span class="line">        description=<span class="string">"World"</span>,</span><br><span class="line">        time=datetime.datetime.now(),</span><br><span class="line">        calendar=Calendar.GOOGLE</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    book_meeting(meeting=meeting)</span><br></pre></td></tr></table></figure>  
+<p>This prints “Booked Google meeting”, like we’d expect. We can now continue to add more functions which contain logic for specific calendars. Our library can evolve without any change to the exposed interface. It’s also possible to organise functions into their own modules, import the <code>register</code> decorator, and decorate them to add them to the registry. This has two main benefits. One, we keep the code well structured. Two, the code for different versions of the same calendar can stay separated; we avoid having to write <code>if</code> checks to see the calendar version since that can be made part of the enum itself, like <code>GOOGLE_V1</code>.  </p>
+<p>That’s it. That’s how you can create a facade in Python.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/" data-id="cm54veraf000mykruefz6eu9u" data-title="Creating facades in Python" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/02/03/Creating-facades-in-Python/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Software-Architecture-as-Code" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2023/12/11/Software-Architecture-as-Code/" class="article-date">
@@ -283,7 +352,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/" data-id="cm53wg50f003i5xru5ikp76gl" data-title="Software Architecture as Code" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/" data-id="cm54veran002xykrucca4aqwz" data-title="Software Architecture as Code" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2023/12/11/Software-Architecture-as-Code/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -356,7 +425,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2023/11/04/Creating-a-data-warehouse-with-Apache-Doris/" data-id="cm53wg50300085xru2f0n6lbn" data-title="Creating a data warehouse with Apache Doris, Kafka, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2023/11/04/Creating-a-data-warehouse-with-Apache-Doris/" data-id="cm54verad000bykru51ys5p49" data-title="Creating a data warehouse with Apache Doris, Kafka, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2023/11/04/Creating-a-data-warehouse-with-Apache-Doris/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -412,7 +481,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/" data-id="cm53wg50700165xru0nasf288" data-title="Learn you a SQL for Great Good" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/" data-id="cm54verai001dykru2qth02jy" data-title="Learn you a SQL for Great Good" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2021/11/07/Learn-you-a-SQL-for-Great-Good/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -532,7 +601,7 @@ P(\mathcal{H} ~ | ~ \mathcal{D}) = \frac{P(\mathcal{D} ~ | ~ \mathcal{H}) ~ P(\m
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/" data-id="cm53wg50d002v5xru5x1tblkd" data-title="Frequentism vs Bayesianism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/" data-id="cm54verao0032ykrufyxqesp4" data-title="Frequentism vs Bayesianism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/05/10/The-Machine-Learning-Notebook-Frequentism-vs-Bayesianism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -627,7 +696,7 @@ P(\mathcal{H} ~ | ~ \mathcal{D}) = \frac{P(\mathcal{D} ~ | ~ \mathcal{H}) ~ P(\m
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/" data-id="cm53wg50e00375xru5amza8wi" data-title="Max Likelihood" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/" data-id="cm54verap003cykrua4jvbj5x" data-title="Max Likelihood" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/04/23/The-Machine-Learning-Notebook-Max-Likelihood/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -707,7 +776,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" data-id="cm53wg50e00335xrub2djedp1" data-title="Classic Normal Linear Regression Model" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/" data-id="cm54verap003eykru8hudh56e" data-title="Classic Normal Linear Regression Model" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/04/17/The-Machine-Learning-Notebook-CNLRM/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -767,7 +836,7 @@ f(x ; \mu, \sigma^2) = \frac{1}{\sqrt{2 \pi \sigma^2}} e ^ {- \frac{(x-\mu)^2}{2
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="cm53wg50d002z5xrudjx3h8x1" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/" data-id="cm54verao0036ykrudfwshsaf" data-title="Gauss-Markov Theorem" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/03/28/The-Machine-Learning-Notebook-Gauss-Markov-Theorem/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -856,7 +925,7 @@ r^2 = \frac{\sum{(\hat{Y}_i - \bar{Y})^2}}{\sum{(Y_i - \bar{Y})^2}}</script><p><
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" data-id="cm53wg50e00395xruhdo4fldz" data-title="Precision of OLS Estimates" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/" data-id="cm54verap003gykru92x25acj" data-title="Precision of OLS Estimates" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2019/03/26/The-Machine-Learning-Notebook-Precision-of-OLS-Estimates/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -932,7 +1001,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" data-id="cm53wg50d002t5xru9exlg7er" data-title="Assumptions Underlying Ordinary Least Squares" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/" data-id="cm54veran002zykrubh56e3v6" data-title="Assumptions Underlying Ordinary Least Squares" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/11/12/The-Machine-Learning-Notebook-Assumptions-Underlying-Ordinary-Least-Squares/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1005,7 +1074,7 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" data-id="cm53wg50d002x5xru161q74m5" data-title="Bivariate Linear Regression" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/" data-id="cm54verao0034ykru03wf1fcr" data-title="Bivariate Linear Regression" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/11/01/The-Machine-Learning-Notebook-Bivariate-Linear-Regression/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1065,66 +1134,9 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" data-id="cm53wg50d00315xruaaq53qce" data-title="Introduction to Linear Regression" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/" data-id="cm54verao0038ykruftgdcwue" data-title="Introduction to Linear Regression" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/10/28/The-Machine-Learning-Notebook-Introduction-to-Linear-Regression/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/machine-learning/" rel="tag">machine learning</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-The-Machine-Learning-Notebook-Introduction" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/" class="article-date">
-  <time datetime="2018-10-24T16:05:58.000Z" itemprop="datePublished">2018-10-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/10/24/The-Machine-Learning-Notebook-Introduction/">The Machine Learning Notebook: Introduction</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>A while ago I’d started writing a series on machine learning titled <a target="_blank" rel="noopener" href="https://web.archive.org/web/20181022160209/https://medium.com/ml-for-newbies">ML for Newbies</a> which I never got around to finishing. This series of posts is a redoing of the older series with greater mathematical, and theoretical rigor. Some of the content will be ported over from that series but most of it will be new content.  </p>
-<p>The aim of the series is to summarize everything that I know about machine learning in an approachable, intuituve manner, and also be notes for myself.  </p>
-<h2 id="What-is-Machine-Learning"><a href="#What-is-Machine-Learning" class="headerlink" title="What is Machine Learning?"></a>What is Machine Learning?</h2><p>ML is all about automated learning. It is about creating algorithms that can “learn” from the input given to them. These algorithms can then do a number of tasks such as filter out spam emails, predict the weather, etc. More formally, it’s about converting experience into expertise. The input to the algorithm become its “experience” and the task that it performs becomes its “expertise”.  </p>
-<p>Although ML is a sub-field of AI (Artificial Intelligence), they’re different. AI focuses on replicating human intelligence whereas ML focuses on complementing human intelligence by doing tasks that fall beyond human capabilities like looking for patterns in massive data sets.  </p>
-<h2 id="How-does-a-Machine-Learn"><a href="#How-does-a-Machine-Learn" class="headerlink" title="How does a Machine Learn?"></a>How does a Machine Learn?</h2><p>Like I mentioned earlier, a machine learns from the input data given to it. The way the machine learns can also be classified as supervised, unsupervised, active, or passive.  </p>
-<h3 id="Supervised-Learning"><a href="#Supervised-Learning" class="headerlink" title="Supervised Learning"></a>Supervised Learning</h3><p>Let’s say your task is to build a spam filter. You have a large data set of emails, each of which is marked as either “spam” or “not spam”. You’ll feed this data set to your algorithm and it’ll learn from it. Later, you’ll input an email and it’ll tell you if it is spam or not. This type of learning is called supervised learning. It is called “supervised” because the algorithm was first taught what is spam and what isn’t by a data set generated manually. You had to supervise its learning process.  </p>
-<h3 id="Unsupervised-Learning"><a href="#Unsupervised-Learning" class="headerlink" title="Unsupervised Learning"></a>Unsupervised Learning</h3><p>Let’s stay with the spam filter example. Let’s now suppose that the emails in the data set are not marked as “spam” or “not spam”. It’s the task of the algorithm to figure it out somehow. Such learning is called unsupervised learning.  </p>
-<h3 id="Passive-Learning"><a href="#Passive-Learning" class="headerlink" title="Passive Learning"></a>Passive Learning</h3><p>In passive learning, the algorithm only observes the data provided to it and learns from it, without influencing it in anyway. Suppose now that the spam filter starts out blank with no notion of what is and what isn’t spam. It’s up to the user to mark the incoming emails so that the algorithm can learn from it. This is passive learning.  </p>
-<h3 id="Active-Learning"><a href="#Active-Learning" class="headerlink" title="Active Learning"></a>Active Learning</h3><p>In contrast, let’s say that the spam filter now looked at the email first, and if it found something suspicious, asked the user to mark it as spam or not. This is active learning.  </p>
-<h2 id="What-can-ML-do"><a href="#What-can-ML-do" class="headerlink" title="What can ML do?"></a>What can ML do?</h2><p>There are a number of ML algorithms, each focusing on a different task. These algorithms can do a number of things like:</p>
-<h3 id="Clustering"><a href="#Clustering" class="headerlink" title="Clustering"></a>Clustering</h3><p>In simple terms, clustering is grouping. It’s an unsupervised form of learning in which the algorithm looks at the data and groups the similar pieces of together based on some similarity measure. In the spam filter examples above, when the algorithm, on its own, figured out which of the emails are spam, it clustered them together.  </p>
-<h3 id="Classification"><a href="#Classification" class="headerlink" title="Classification"></a>Classification</h3><p>Classification is about finding out which group a piece of data belongs to. It’s a form of supervised learning because the algorithm needs to know beforehand what each of the group looks like before it can be asked to classify a piece of data. When the spam filter was given a data set with marked emails, all it had to do was to answer the question “is this email spam?”. Basically, it was asked to classify that email into a group.  </p>
-<h3 id="Regression"><a href="#Regression" class="headerlink" title="Regression"></a>Regression</h3><p>Regression is about understanding relationships between variables. If one variable changes, how would it affect the other? For example, if the amount of power needed for a phone to stay on increased, how would it affect battery life?  </p>
-<h3 id="Association-Rules"><a href="#Association-Rules" class="headerlink" title="Association Rules"></a>Association Rules</h3><p>Finding out association rules in data sets is also about finding out relationships between variables. Suppose you have a large data set from an online store, association rules is about finding out what items you are likely to buy based on what you’ve previously bought. For example, if you buy milk and sugar, you’re likely to buy eggs. Your rule then becomes {milk, sugar} =&gt; eggs.  </p>
-<p>For now, don’t worry about the theoretical rigor of these. We’ll get to that in subsequent posts. That’s all for now. I hope this post was motivation enough for you to start learning ML. :)</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/" data-id="cm53wg50e00355xruhobxcl4s" data-title="The Machine Learning Notebook: Introduction" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2018/10/24/The-Machine-Learning-Notebook-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1165,6 +1177,10 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
       <ul>
         
           <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
             <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
           </li>
         
@@ -1198,10 +1214,6 @@ var(u_i) & = E[u_i - E(u_i|x_i)]^2 \\
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
-          </li>
-        
-          <li>
-            <a href="/2024/07/23/A-question-on-algebraic-manipulations/">A question on algebraic manipulations</a>
           </li>
         
       </ul>

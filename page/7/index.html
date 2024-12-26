@@ -188,6 +188,84 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-scalaz-enum" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/03/scalaz-enum/" class="article-date">
+  <time datetime="2017-07-03T14:20:05.000Z" itemprop="datePublished">2017-07-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/03/scalaz-enum/">Scalaz Enum</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In this post we’ll look at how to create enum using Scalaz. However, we’ll first look at how to create enum using standard Scala library.  </p>
+<h2 id="Enum-Scala-Way"><a href="#Enum-Scala-Way" class="headerlink" title="Enum - Scala Way"></a>Enum - Scala Way</h2><p><em>An enum type is a special data type that enables for a variable to be a set of predefined constants. The variable must be equal to one of the values that have been predefined for it. Common examples include compass directions (values of NORTH, SOUTH, EAST, and WEST) and the days of the week.</em><sup><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html">[1]</a></sup>   </p>
+<p>There are a couple of ways in which you can create enum in Scala.  </p>
+<h3 id="Using-scala-Enumeration"><a href="#Using-scala-Enumeration" class="headerlink" title="Using scala.Enumeration"></a>Using <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/current/scala/Enumeration.html"><code>scala.Enumeration</code></a></h3><p><em>Defines a finite set of values specific to the enumeration. Typically these values enumerate all possible forms something can take and provide a lightweight alternative to case classes.</em>  </p>
+<p>Let’s see an example:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="class"><span class="keyword">object</span> <span class="title">Direction</span> <span class="keyword">extends</span> <span class="title">Enumeration</span> </span>{</span><br><span class="line">    <span class="class"><span class="keyword">type</span> <span class="title">Direction</span> </span>= <span class="type">Value</span></span><br><span class="line">    <span class="keyword">val</span> <span class="type">NORTH</span>, <span class="type">EAST</span>, <span class="type">WEST</span>, <span class="type">SOUTH</span> = <span class="type">Value</span></span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Direction</span></span></span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Direction</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Direction</span>._</span><br><span class="line">@ <span class="type">Direction</span> withName <span class="string">"NORTH"</span></span><br><span class="line">res2: <span class="type">Value</span> = <span class="type">NORTH</span></span><br><span class="line">@ <span class="type">Direction</span>.values foreach println</span><br><span class="line"><span class="type">NORTH</span></span><br><span class="line"><span class="type">EAST</span></span><br><span class="line"><span class="type">WEST</span></span><br><span class="line"><span class="type">SOUTH</span></span><br></pre></td></tr></table></figure>    
+<p>Advantages:  </p>
+<li> Lightweight. </li>
+<li> Easy to use. </li>
+<li> Iterable. </li>  
+
+
+<p>Disadvantages:</p>
+<li> They only exist as unique values. You cannot add behavior to them. </li>
+
+<h3 id="Using-Case-Objects"><a href="#Using-Case-Objects" class="headerlink" title="Using Case Objects"></a>Using Case Objects</h3><p>Enum can also be created using <code>sealed trait</code>. A sealed trait requires all the classes or traits extending it be in the same file in which it is defined.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="class"><span class="keyword">object</span> <span class="title">Direction</span> </span>{</span><br><span class="line">    <span class="keyword">sealed</span> <span class="class"><span class="keyword">trait</span> <span class="title">Direction</span></span></span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">NORTH</span> <span class="keyword">extends</span> <span class="title">Direction</span></span></span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">EAST</span> <span class="keyword">extends</span> <span class="title">Direction</span></span></span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">WEST</span> <span class="keyword">extends</span> <span class="title">Direction</span></span></span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">SOUTH</span> <span class="keyword">extends</span> <span class="title">Direction</span></span></span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Direction</span></span></span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Direction</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Direction</span>._</span><br></pre></td></tr></table></figure>  
+<p>Advantages:  </p>
+<li> Each value is an instance of its own type and it's possible to add behavior to them. </li>  
+
+<p>Disadvantages:  </p>
+<li> A case object generates a lot more code than `Enumeration`. </li>  
+<li> Not iterable. </li>  
+
+<h2 id="Enum-Scalaz-Way"><a href="#Enum-Scalaz-Way" class="headerlink" title="Enum - Scalaz Way"></a>Enum - Scalaz Way</h2><p>Scalaz allows creating enum using <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/fabab8f699d56279d6f2cc28d02cc2b768e314d7/core/src/main/scala/scalaz/Enum.scala"><code>Enum</code></a> trait. Scalaz enums are more powerful than the standard Scala enums. Let’s see some examples of creating Scalaz enum<sup><a target="_blank" rel="noopener" href="http://eed3si9n.com/learning-scalaz/Enum.html">[2]</a></sup>:  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="comment">// as a List</span></span><br><span class="line">@ 'a' |-&gt; 'z'</span><br><span class="line">res3: <span class="type">List</span>[<span class="type">Char</span>] = <span class="type">List</span>(</span><br><span class="line">  'a',</span><br><span class="line">  'b',</span><br><span class="line">  'c',</span><br><span class="line">  'd',</span><br><span class="line">  'e',</span><br><span class="line">  'f',</span><br><span class="line">  ...</span><br><span class="line"><span class="comment">// as a Scalaz stream</span></span><br><span class="line">@ 'a' |=&gt; 'z'</span><br><span class="line">res4: <span class="type">EphemeralStream</span>[<span class="type">Char</span>] = scalaz.<span class="type">EphemeralStream</span>$$anon$<span class="number">5</span>@<span class="number">2</span>fb4925c</span><br></pre></td></tr></table></figure>
+<p>Scalaz also provides us with <code>succ</code> and <code>pred</code> to get the successor and predecessor.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ '<span class="type">B</span>'.succ</span><br><span class="line">res6: <span class="type">Char</span> = '<span class="type">C</span>'</span><br><span class="line">@ '<span class="type">B</span>'.pred</span><br><span class="line">res7: <span class="type">Char</span> = '<span class="type">A</span>'</span><br></pre></td></tr></table></figure>  
+<p>It’s also possible to easily step through the enumeration.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 3 steps forwards</span></span><br><span class="line">@ '<span class="type">B</span>' -+- <span class="number">3</span></span><br><span class="line">res8: <span class="type">Char</span> = '<span class="type">E</span>'</span><br><span class="line"><span class="comment">// 3 steps backwards</span></span><br><span class="line">@ '<span class="type">B</span>' --- <span class="number">3</span></span><br><span class="line">res9: <span class="type">Char</span> = '?'</span><br></pre></td></tr></table></figure>  
+<p>You can also get min and max values for an enumeration.  </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Int</span>]].min</span><br><span class="line">res10: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">-2147483648</span>)</span><br><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Int</span>]].max</span><br><span class="line">res11: <span class="type">Option</span>[<span class="type">Int</span>] = <span class="type">Some</span>(<span class="number">2147483647</span>)</span><br></pre></td></tr></table></figure>
+<p>Let’s create our own enumeration using Scalaz <code>Enum</code>.</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="class"><span class="keyword">object</span> <span class="title">Size</span> </span>{</span><br><span class="line">    <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">Size</span>(<span class="params">val size: <span class="type">Int</span>, val name: <span class="type">String</span></span>)</span></span><br><span class="line">    <span class="keyword">val</span> <span class="type">SMALL</span> = <span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>)</span><br><span class="line">    <span class="keyword">val</span> <span class="type">MEDIUM</span> = <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>)</span><br><span class="line">    <span class="keyword">val</span> <span class="type">LARGE</span> = <span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">implicit</span> <span class="class"><span class="keyword">object</span> <span class="title">SizeEnum</span> <span class="keyword">extends</span> <span class="title">Enum</span>[<span class="type">Size</span>] <span class="keyword">with</span> <span class="title">Show</span>[<span class="type">Size</span>] </span>{</span><br><span class="line">      <span class="function"><span class="keyword">def</span> <span class="title">order</span></span>(s1: <span class="type">Size</span>, s2: <span class="type">Size</span>): <span class="type">Ordering</span> = (s1.size compare s2.size) <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="number">-1</span> =&gt; <span class="type">Ordering</span>.<span class="type">LT</span></span><br><span class="line">          <span class="keyword">case</span> <span class="number">0</span> =&gt; <span class="type">Ordering</span>.<span class="type">EQ</span></span><br><span class="line">          <span class="keyword">case</span> <span class="number">1</span> =&gt; <span class="type">Ordering</span>.<span class="type">GT</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">succ</span></span>(s: <span class="type">Size</span>): <span class="type">Size</span> = s <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="type">SMALL</span> =&gt; <span class="type">MEDIUM</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">MEDIUM</span> =&gt; <span class="type">LARGE</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">LARGE</span> =&gt; <span class="type">SMALL</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">pred</span></span>(s: <span class="type">Size</span>): <span class="type">Size</span> = s <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="type">SMALL</span> =&gt; <span class="type">LARGE</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">MEDIUM</span> =&gt; <span class="type">SMALL</span></span><br><span class="line">          <span class="keyword">case</span> <span class="type">LARGE</span> =&gt; <span class="type">MEDIUM</span></span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">zero</span></span>: <span class="type">Size</span> = <span class="type">SMALL</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">shows</span></span>(s: <span class="type">Size</span>) = s.name</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">max</span> </span>= <span class="type">Some</span>(<span class="type">LARGE</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">min</span> </span>= <span class="type">Some</span>(<span class="type">SMALL</span>)</span><br><span class="line">    }</span><br><span class="line">  }</span><br><span class="line">defined <span class="class"><span class="keyword">object</span> <span class="title">Size</span></span></span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Size</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Size</span>._</span><br><span class="line"><span class="comment">// step through</span></span><br><span class="line">@ <span class="type">SMALL</span> -+- <span class="number">1</span></span><br><span class="line">res4: <span class="type">Size</span> = <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>)</span><br><span class="line"><span class="comment">// as a list</span></span><br><span class="line">@ <span class="type">SMALL</span> |-&gt; <span class="type">LARGE</span></span><br><span class="line">res5: <span class="type">List</span>[<span class="type">Size</span>] = <span class="type">List</span>(<span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>), <span class="type">Size</span>(<span class="number">1</span>, <span class="string">"MEDIUM"</span>), <span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>))</span><br><span class="line"><span class="comment">// show</span></span><br><span class="line">@ <span class="type">SMALL</span>.println</span><br><span class="line"><span class="type">SMALL</span></span><br><span class="line"><span class="comment">// max</span></span><br><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Size</span>]].max</span><br><span class="line">res6: <span class="type">Option</span>[<span class="type">Size</span>] = <span class="type">Some</span>(<span class="type">Size</span>(<span class="number">2</span>, <span class="string">"LARGE"</span>))</span><br><span class="line"><span class="comment">// min</span></span><br><span class="line">@ implicitly[<span class="type">Enum</span>[<span class="type">Size</span>]].min</span><br><span class="line">res7: <span class="type">Option</span>[<span class="type">Size</span>] = <span class="type">Some</span>(<span class="type">Size</span>(<span class="number">0</span>, <span class="string">"SMALL"</span>))</span><br></pre></td></tr></table></figure>  
+<p>Notice that since we’re using <code>implicitly[]</code>, we don’t have to provide the exact name of the typeclass extending <code>Enum[Size]</code>, the compiler will figure it out from the implicits within scope.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Although Scalaz <code>Enum</code> may seem like a long-winded way to do something trivial, they offer you a lot more flexibility and brevity over vanilla Scala enum. However, I believe that the full force of Scalaz <code>Enum</code> is needed only when you have ordered elements like size. For cases like compass directions, Scala enum are better-suited.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cm54verat0056ykru0gve76uv" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-scalaz-show" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/01/scalaz-show/" class="article-date">
@@ -224,7 +302,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cm53wg50h004e5xru6n3968u6" data-title="Scalaz Show" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cm54veras004jykrud0wn696h" data-title="Scalaz Show" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -296,7 +374,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cm53wg50l006a5xru1ehu1dq8" data-title="Scalaz Order" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cm54veras004gykru9e52g7ob" data-title="Scalaz Order" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -363,7 +441,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm53wg50i004j5xrugll11m6u" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm54veraq0041ykru20nw3117" data-title="Scalaz Equal" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -435,7 +513,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm53wg50l00665xru2diibvtz" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm54veras004qykruhop15yef" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -492,7 +570,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm53wg50l00635xrufm0fbbme" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm54verat0051ykru30jh347p" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -549,7 +627,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm53wg50h00465xru5fc677ml" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm54verar0044ykrugnh75nhq" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -592,6 +670,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
             <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
           </li>
         
@@ -625,10 +707,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
-          </li>
-        
-          <li>
-            <a href="/2024/07/23/A-question-on-algebraic-manipulations/">A question on algebraic manipulations</a>
           </li>
         
       </ul>

@@ -188,6 +188,73 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Creating-a-realtime-data-platform-evolving-the-schema" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" class="article-date">
+  <time datetime="2024-12-26T05:15:10.000Z" itemprop="datePublished">2024-12-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">previous post</a> we saw how to ingest the data into Pinot using Debezium. In this post we’re going to see how to evolve the schema of the tables stored in Pinot. We’ll begin with a simple query which computes an aggregate on the user agent column stored within the <code>source</code> payload. Then, we’ll extract the value of user agent column out of the <code>source</code> payload into a column of its own.  </p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>Let’s start with a simple query. Let’s count the number of times each user agent appears in the table and sort it in descending order. We can do this using the following SQL query.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> JSON_EXTRACT_SCALAR(source, <span class="string">'$.user_agent'</span>, <span class="string">'STRING'</span>, <span class="string">'...'</span>) <span class="keyword">AS</span> user_agent, </span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count </span><br><span class="line"><span class="keyword">FROM</span> orders </span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span> </span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="number">2</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>  
+<p>The result of running this query is shown below.  </p>
+<img src="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/query_1.png" class="">  
+<p>Let’s take a closer look at the query. To extract values out of the <code>source</code> column, we use the <code>JSON_EXTRACT_SCALAR()</code> function. It takes the name of the column containing the JSON payload, the path of the value within the payload, the datatype of the value returned, and the value to be used as a replacement for null.  </p>
+<p>For a simple query like this, using <code>JSON_EXTRACT_SCALAR()</code> works. However, it becomes unwieldy when there are more than one column to extract or when writing ad-hoc business analytics queries that join multiple tables on values present within a JSON column. Writing SQL would be easier if we could extract the value out of the JSON payload into a column of its own.  </p>
+<p>To extract the values out of the <code>source</code> payload into its own column, we’ll have to update the schema and table definitions. We’ll update the schema definition to add new columns, and we’ll update the table definition to extract fields out of the <code>source</code> column using field-level transformations.  </p>
+<p>Let’s begin by updating the schema.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">  <span class="attr">"schemaName"</span><span class="punctuation">:</span> <span class="string">"orders"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"enableColumnBasedNullHandling"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"dimensionFieldSpecs"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">      <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"id"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"STRING"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"notNull"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">      <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"source"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"JSON"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"notNull"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">      <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"user_agent"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"STRING"</span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"dateTimeFieldSpecs"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">{</span></span><br><span class="line">      <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"created_at"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"LONG"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"format"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS:EPOCH"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"granularity"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS"</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">"notNull"</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">    <span class="punctuation">}</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"primaryKeyColumns"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="string">"id"</span></span><br><span class="line">  <span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"metricFieldSpecs"</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
+<p>We’ve added <code>user_agent</code> as a new column under <code>dimensionFieldSpecs</code>. Notice that we’ve set <code>enableColumnBasedNullHandling</code> to true. This allows columns to store null values in them. In Pinot, allowing or disallowing null values is configured per-table. The recommended way is to use column-based null handling where each column is configured to allow or disallow null values. This is what we’ve used in our schema above. The <code>id</code>, <code>source</code>, and <code>created_at</code> columns do not allow null values in them since they have <code>notNull</code> set to true. The <code>user_agent</code> column allows null values in it since it is implicitly nullable.  </p>
+<p>We’ll PUT the updated schema using curl.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -F schemaName=@tables/002-orders/orders_schema.json localhost:9000/schemas/orders | jq .</span><br></pre></td></tr></table></figure>  
+<p>Upon opening the query console we find that there’s an error message. This message indicates that the segments are invalid because they were created using an older version of the schema. We can reload all the segments to fix this error but we’ll get to that in a minute. We’ll first update the table definition.  </p>
+<img src="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/invalid.png" class="">
+<p>To update the table definition, we’ll add the following field-level transformation to the <code>transformConfigs</code>.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">  <span class="attr">"columnName"</span><span class="punctuation">:</span> <span class="string">"user_agent"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"transformFunction"</span><span class="punctuation">:</span> <span class="string">"jsonPath(source, '$.user_agent')"</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
+<p>In this transformation we’re extracting the <code>user_agent</code> field into a column with the same name. Notice how we’re referencing the <code>source</code> column instead of the <code>payload</code> emitted by Debezium to get the value. Once we’ve made this change we’ll PUT the new table definition using curl.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -H 'Content-Type: application/json' -d @tables/002-orders/orders_table.json localhost:9000/tables/orders | jq .</span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll reload all the segments for this table using the following curl command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST localhost:9000/segments/orders/reload | jq .</span><br></pre></td></tr></table></figure>  
+<p>Upon opening the query console, we find that the a new <code>user_agent</code> column has been added to the table.  </p>
+<img src="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/segment.png" class="">  
+<p>It’s common for the table to change with time as new columns are added. Consequently, the schema and table definitions will evolve in Pinot. As we update the schema in Pinot, we have to keep in mind that columns can only be added and not removed. In other words, the schema needs to remain backwards compatible. If you’d like to drop a column or rename it, you’ll have to recreate the table.  </p>
+<p>That’s it for how to evolve schema in Pinot.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm54verae000iykru891cgvf9" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Creating-a-realtime-data-platform-bringing-data-in" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" class="article-date">
@@ -246,7 +313,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm53wg504000e5xru1m0lcfv1" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm54verad000cykruas9rck2v" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -299,7 +366,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm53wg505000k5xru15nm2zfj" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm54verae000gykru60eh2xz8" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -355,7 +422,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm53wg504000c5xru7n4ae54h" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm54verae000eykru74hd30uc" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -454,7 +521,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm53wg50c002i5xru1o1zgoru" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm54veral002bykru1qf40kad" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -559,7 +626,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm53wg50b00275xruee8u5no9" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm54veral0026ykruhck7h6v3" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -615,7 +682,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm53wg50a00205xrudrczdac9" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm54veral0028ykruhpo16sjm" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -735,7 +802,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm53wg508001g5xru26mcfwxi" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm54verai001hykru1byn4bt1" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -781,7 +848,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm53wg507000z5xruhj7ibje3" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm54verag000tykrubrwr5xb0" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -833,7 +900,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm53wg50300075xru5y5t3j8o" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm54verad0008ykruhf6me2zj" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -883,7 +950,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm53wg50100035xrug71nadtt" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm54veraj001oykru9slbfe75" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -949,66 +1016,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm53wg50c002n5xrueexeel4w" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm54veran002uykruabb59pee" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Programming-Puzzles-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/07/03/Programming-Puzzles-2/" class="article-date">
-  <time datetime="2024-07-03T11:56:27.000Z" itemprop="datePublished">2024-07-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>As I continue working my way through the book on programming puzzles, I came across those involving permutations. In this post I’ll collect puzzles with the same theme, both from the book and from the internet.  </p>
-<h2 id="All-permutations"><a href="#All-permutations" class="headerlink" title="All permutations"></a>All permutations</h2><p>The first puzzle is to compute all the permutations of a given array. By extension, it can be used to compute all the permutations of a string, too, if we view it as an array of characters. To do this we’ll implement <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Heap%27s_algorithm">Heap’s algorithm</a>. The following is its recursive version.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">heap</span>(<span class="params">permutations: <span class="built_in">list</span>[<span class="built_in">list</span>], A: <span class="built_in">list</span>, n: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="keyword">if</span> n == <span class="number">1</span>:</span><br><span class="line">        permutations.append(<span class="built_in">list</span>(A))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        heap(permutations, A, n - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n - <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> n % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">                A[i], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[i]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                A[<span class="number">0</span>], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">            heap(permutations, A, n - <span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>The array <code>permutations</code> is the accumulator which will store all the permutations of the array. The initial arguments to the function would be an empty acuumulator, the list to permute, and the length of the list.</p>
-<h2 id="Next-permutation"><a href="#Next-permutation" class="headerlink" title="Next permutation"></a>Next permutation</h2><p>The next puzzle we’ll look at is computing the next permutation of the array in lexicographical order. The following implementation has been taken from the book.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">next_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &gt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &gt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<h2 id="Previous-permutation"><a href="#Previous-permutation" class="headerlink" title="Previous permutation"></a>Previous permutation</h2><p>A variation of the puzzle is to compute the previous permutation of the array in lexicographical order. The idea is to “reverse” the logic for computing the next permutation. If we look closely, we’ll find that all we’re changing are the comparison operators.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">previous_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &lt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &lt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<h2 id="kth-smallest-permutation"><a href="#kth-smallest-permutation" class="headerlink" title="kth smallest permutation"></a>kth smallest permutation</h2><p>The final puzzle we’ll look at is the one where we need to compute the k’th smallest permutation. The solution to this uses the <code>previous_permutation</code> function that we saw above. The idea is to call this function k times on the lexicographically-largest array. Sorting the array in decreasing order results is the largest. This becomes the input to the <code>previous_permutation</code> function.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kth_smallest_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>], k: <span class="built_in">int</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    <span class="comment"># -- Arrange the numbers in decreasing order</span></span><br><span class="line">    <span class="comment"># -- thereby creating the lexicographically largest permutation</span></span><br><span class="line">    perm = <span class="built_in">sorted</span>(perm, reverse=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(k):</span><br><span class="line">        perm = previous_permutation(perm)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<p>That’s it. These are puzzles involving permutations.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm53wg50b00225xruav431vig" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/epi/" rel="tag">epi</a></li></ul>
 
     </footer>
   </div>
@@ -1045,6 +1059,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
             <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
           </li>
         
@@ -1078,10 +1096,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
-          </li>
-        
-          <li>
-            <a href="/2024/07/23/A-question-on-algebraic-manipulations/">A question on algebraic manipulations</a>
           </li>
         
       </ul>
