@@ -188,6 +188,72 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Creating-a-realtime-data-platform-nullability" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/" class="article-date">
+  <time datetime="2024-12-27T13:46:15.000Z" itemprop="datePublished">2024-12-27</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">previous post</a> we looked at evolving the schema. We briefly discussed handling null values in columns when we added the <code>user_agent</code> column. It allows null values since <code>enableColumnBasedNullHandling</code> is set to true. However, we weren’t able to see nullability in action since that column always had values in it. In this post we’ll evolve the schema one more time and add columns that have null values in them. We’ll see how to handle null values in Pinot queries, and how they differ from nulls in other databases. Let’s dive right in.</p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>We’ll begin by looking at the <code>source</code> payload that we’ve stored in Pinot.</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"user_id"</span><span class="punctuation">:</span> <span class="number">4</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"cafe_id"</span><span class="punctuation">:</span> <span class="number">27</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"address_id"</span><span class="punctuation">:</span> <span class="number">4</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"created_at"</span><span class="punctuation">:</span> <span class="number">1735211553094</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"id"</span><span class="punctuation">:</span> <span class="number">1</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"user_agent"</span><span class="punctuation">:</span> <span class="string">"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36 Edg/121.0.0.0"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"status"</span><span class="punctuation">:</span> <span class="number">0</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
+<p>In the payload above, we notice that there’s <code>created_at</code> but no <code>updated_at</code> or <code>deleted_at</code>. That’s because these have null values in the source table in Postgres. Let’s update the schema and table definitions to store these fields.   </p>
+<p>To update the schema, we’ll add the following to <code>dateTimeFieldSpecs</code>.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">  <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"updated_at"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"LONG"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"format"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS:EPOCH"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"granularity"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"defaultNullValue"</span><span class="punctuation">:</span> <span class="string">"-1"</span></span><br><span class="line"><span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line"><span class="punctuation">{</span></span><br><span class="line">  <span class="attr">"name"</span><span class="punctuation">:</span> <span class="string">"deleted_at"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"dataType"</span><span class="punctuation">:</span> <span class="string">"LONG"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"format"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS:EPOCH"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"granularity"</span><span class="punctuation">:</span> <span class="string">"1:MILLISECONDS"</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">"defaultNullValue"</span><span class="punctuation">:</span> <span class="string">"-1"</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>   
+<p>In the JSON above, we specify the usual fields just as we did for <code>created_at</code>. We also set <code>defaultNullValue</code>. This value will be used instead of null when these fields are extracted from the <code>source</code> payload. This is different from what you’d usually observe in a database that supports null values. The reason for this is that Pinot uses a <a target="_blank" rel="noopener" href="https://docs.pinot.apache.org/basics/indexing/forward-index">forward index</a> to store the values of each column. This index does not support storing null values and instead requires that a value be provided which will be stored in place of null. In our case, we’ve specified <code>-1</code>. The value that we specify as a default must be of the same data type as the the column. Since the two fields are of type <code>LONG</code>, specifying <code>-1</code> suffices.  </p>
+<p>We’ll PUT this schema using the following curl command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -F schemaName=@tables/002-orders/orders_schema.json localhost:9000/schemas/orders | jq .</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll update the table definition by adding a couple of field-level transformations.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"columnName"</span><span class="punctuation">:</span> <span class="string">"updated_at"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"transformFunction"</span><span class="punctuation">:</span> <span class="string">"jsonPath(source, '$.updated_at')"</span></span><br><span class="line"><span class="punctuation">}</span><span class="punctuation">,</span></span><br><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"columnName"</span><span class="punctuation">:</span> <span class="string">"deleted_at"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"transformFunction"</span><span class="punctuation">:</span> <span class="string">"jsonPath(source, '$.deleted_at')"</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>  
+<p>And POST it using the following curl command.   </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPUT -H 'Content-Type: application/json' -d @tables/002-orders/orders_table.json localhost:9000/tables/orders | jq .</span><br></pre></td></tr></table></figure>  
+<p>Like we did last time, we’ll reload all the segments using the following curl command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -XPOST localhost:9000/segments/orders/reload | jq .</span><br></pre></td></tr></table></figure>  
+<p>Now when we open the query console, we’ll see the table with <code>updated_at</code> and <code>deleted_at</code> fields with their values set to <code>-1</code>.  </p>
+<img src="/2024/12/27/Creating-a-realtime-data-platform-nullability/fields.png" class="">  
+<p>We know that we have a total of 5000 rows where the <code>deleted_at</code> field is set to null. This can be verified by running a count query in Pinot. This shows that although the values in the column are set to <code>-1</code>, Pinot identifies them as null and returns the correct result.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>)</span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">WHERE</span> deleted_at <span class="keyword">IS</span> <span class="keyword">NULL</span>;</span><br></pre></td></tr></table></figure>
+<img src="/2024/12/27/Creating-a-realtime-data-platform-nullability/count.png" class="">   
+<p><a target="_blank" rel="noopener" href="https://docs.pinot.apache.org/developers/advanced/null-value-support#appendix-workarounds-to-handle-null-values-without-storing-nulls">A workaround suggested in the documentation</a> is to use comparison operators to compare against the value used in place of null. For example, the following query will produce the same result as the one shown above.   </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>)</span><br><span class="line"><span class="keyword">FROM</span> orders</span><br><span class="line"><span class="keyword">WHERE</span> deleted_at <span class="operator">=</span> <span class="number">-1</span>;</span><br></pre></td></tr></table></figure>  
+<img src="/2024/12/27/Creating-a-realtime-data-platform-nullability/alt.png" class="">  
+<p>That’s it on how to handle null values in Pinot.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm56t3oc9000m4iruc8wl32l5" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Creating-a-realtime-data-platform-evolving-the-schema" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" class="article-date">
@@ -239,7 +305,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm54verae000iykru891cgvf9" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm56t3oc8000k4irugn3w29sa" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -313,7 +379,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm54verad000cykruas9rck2v" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm56t3oc8000i4iru7gpdaj4c" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -366,7 +432,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm54verae000gykru60eh2xz8" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm56t3oc8000g4iru9ncse9al" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -422,7 +488,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm54verae000eykru74hd30uc" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm56t3oc8000e4irubb4ncq5w" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -521,7 +587,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm54veral002bykru1qf40kad" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm56t3ocg002p4iru3yczb1gr" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -626,7 +692,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm54veral0026ykruhck7h6v3" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm56t3ocf002a4iru41nu43z3" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -682,7 +748,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm54veral0028ykruhpo16sjm" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm56t3oce00254irudm1m5wxr" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -802,7 +868,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm54verai001hykru1byn4bt1" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm56t3ocd001s4iruf0hu6mpi" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -848,7 +914,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm54verag000tykrubrwr5xb0" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm56t3ocb00124iruefb07xhz" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -900,7 +966,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm54verad0008ykruhf6me2zj" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm56t3oc600084iru42tf6ki1" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -950,79 +1016,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm54veraj001oykru9slbfe75" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm56t3oc600074irugrzmdcx1" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Setting-up-a-data-catalog-with-DataHub" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" class="article-date">
-  <time datetime="2024-07-06T16:55:11.000Z" itemprop="datePublished">2024-07-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/">Setting up a data catalog with DataHub</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In a previous post we’d seen how to <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">create a realtime data platform with Pinot, Trino, Airflow, and Debezium.</a> In this post we’ll see how to setup a data catalog using <a target="_blank" rel="noopener" href="https://datahubproject.io/">DataHub</a>. A data catalog, as the name suggests, is an inventory of the data within the organization. Data catalogs make it easy to find the data within the organisation like tables, data sets, reports, etc.</p>
-<h2 id="Before-we-begin"><a href="#Before-we-begin" class="headerlink" title="Before we begin"></a>Before we begin</h2><p>My setup consists of Docker containers required to run DataHub. While DataHub provides features like data lineage, column assertions, and much more, we will look at three of the simpler featuers. One, we’ll look at creating a glossary of the terms that will be used frequently in the organization. Two, we’ll catalog the datasets and views that we saw in the previous post. Three, we’ll create an inventory of dashboards and reports created for various departments within the organisation.    </p>
-<p>The rationale for this as follows. Imagine a day in the life of a business analyst. Their responsibilities include creating reports and dashboards for various departments. For example, the marketing team may want to see an “orders by day” dashboard so that they can correlate the effects of advertising campaigns with an uptick in the volume of orders. Similarly, the product team may want a report of which features are being used by the users. The requests of both of these teams will be served by the business analyts using the data that’s been brought into the data platform. While they create these reports and dashboards, it’s common for them to receive queries asking where a team member can find a certain report or how to interpret a data point within a report. They may also have to search for tables and data sets to create new reports, acquaint themselves with the vocabulary of the various departments, and so on.  </p>
-<p>A data catalog makes all of this a more efficient process. In the following sections we’ll see how we can use DataHub to do it. For example, we’ll create the definition of the term “order”, create a list of reports created for the marketing department, and bring in the views and data sets so that they become searchable.  </p>
-<p>The work of data scientists is similar, too, because they create data sets that can be reused across various models. For example, data sets representing features for various customers can be stored in the platform, made searchable, and used with various models. They, too, benefit from having a data catalog.  </p>
-<p>Finally, it helps bring people up to speed with the data that is consumed by their department or team. For example, when someone joins the marketing team, pointing them to the data catalog helps them get productive quickly by finding the relevant reports, terminology, etc.</p>
-<h2 id="Ingesting-data-sets-and-views"><a href="#Ingesting-data-sets-and-views" class="headerlink" title="Ingesting data sets and views"></a>Ingesting data sets and views</h2><p>To ingest the tables and views, we’ll create a data pipeline which ingets metadata from AWS Glue and writes it to the metadata service. This is done by creating a YAML configuration in DataHub that specifies where to ingest the metadata from, and where to write it. Once this is created, we can schedule it to run periodically so that it stays updated with Glue.  </p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/DataSource.png" class="">  
-<p>The image above shows how we define a “source” and how we ingest it into a “sink”. Here we’ve specified that we’d like to read from Glue and write it to DataHub’s metadata service.</p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/DataSource2.png" class="">  
-<p>Once the source and destination are defined, we can set a schedule to run the ingestion. This will bring in the metadata about the data sets and views we’ve created in Glue.  </p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/DataSource3.png" class="">  
-<p>The image above shows that a successful run of the ingestion pipeline brings in the views and data sets. These are then browsable in the UI. Similarly, they are also searchable as shown in the following image.</p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/DataSource4.png" class="">  
-<p>This makes it possible for the analysts and the data scientists to quickly locate data sets.  </p>
-<h2 id="Defining-the-vocabulary"><a href="#Defining-the-vocabulary" class="headerlink" title="Defining the vocabulary"></a>Defining the vocabulary</h2><p>Next, we’ll create the definition of the word “order”. This can be done from the UI as shown below. The definition can be added by editing the documentation.</p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/Glossary1.png" class="">  
-<p>Once created, this is available under “Glossary” and in search results.  </p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/Glossary2.png" class="">  
-<h2 id="Data-products"><a href="#Data-products" class="headerlink" title="Data products"></a>Data products</h2><p>Finally, we’ll create a data product. This is the catalog of reports and dashboards created for various departments.  For example, the image below shows a dashboard created for the marketing team.  </p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/Product1.png" class="">  
-<p>Expanding the dashboard allows us to look at the documentation for the report. This could contain the definition of the terms used in the report, as shown on the bottom right, a link to the dashboard in Superset, definitions of data points, report owners, and so on.  </p>
-<img src="/2024/07/06/Setting-up-a-data-catalog-with-DataHub/Product2.png" class="">  
-<p>That’s it. That’s how a data catalog helps streamline working with data.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm54veran002uykruabb59pee" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
 
     </footer>
   </div>
@@ -1047,7 +1047,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 16.67px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 13.33px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.78px;">scalaz</a> <a href="/tags/testing/" style="font-size: 11.11px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 11.25px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 17.5px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.75px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.25px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.75px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.75px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 15px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.5px;">math</a> <a href="/tags/misc/" style="font-size: 16.25px;">misc</a> <a href="/tags/python/" style="font-size: 13.75px;">python</a> <a href="/tags/scala/" style="font-size: 18.75px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.5px;">scalaz</a> <a href="/tags/testing/" style="font-size: 11.25px;">testing</a>
     </div>
   </div>
 
@@ -1057,6 +1057,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
+          </li>
         
           <li>
             <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
@@ -1092,10 +1096,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
-          </li>
-        
-          <li>
-            <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">An experiemental library to detect PII</a>
           </li>
         
       </ul>
