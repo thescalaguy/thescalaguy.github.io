@@ -188,6 +188,73 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-monad" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/13/monad/" class="article-date">
+  <time datetime="2017-10-13T00:50:09.000Z" itemprop="datePublished">2017-10-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/10/13/monad/">Monad</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>So far we’ve looked at monoids and functors. The next algebraic data structure we’ll cover is a monad. If you’ve wondered what a monad is but never really understood it, this is the post for you. I am sure that you’ve used it without realizing it. So let’s get to it.</p>
+<h2 id="Definition"><a href="#Definition" class="headerlink" title="Definition"></a>Definition</h2><p>A monad has more structure than a functor. This means that you can call <code>map</code> on it and that it obeys all the functor laws. In addition, a monad has a <code>flatMap</code> function which you can use to chain monads together. In essence, monads represent units of computation that you can chain together and the result of this chaining is also a monad.</p>
+<p>Let’s look at a few examples.</p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">val</span> first = <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br><span class="line"><span class="keyword">val</span> next = <span class="type">List</span>(<span class="number">8</span>, <span class="number">9</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> {</span><br><span class="line">  i &lt;- first</span><br><span class="line">  j &lt;- next</span><br><span class="line">}</span><br><span class="line"><span class="keyword">yield</span>(i * j)</span><br></pre></td></tr></table></figure>
+<p>The above code<sup><a target="_blank" rel="noopener" href="http://debasishg.blogspot.in/2008/03/monads-another-way-to-abstract.html">[1]</a></sup> uses a <code>for</code> comprehension to muliply elements of the list together. Under the hood, this gets translated to:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">first flatMap {</span><br><span class="line">  f =&gt; next map {</span><br><span class="line">    n =&gt; f * n</span><br><span class="line">  }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>The compiler is making use of the <code>List</code> monad to chain operations together. Let’s break this down. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">next map {</span><br><span class="line">  n =&gt; f * n</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>This part of the code will return a <code>List</code> since that is what calling <code>map</code> on a <code>List</code> does. Since we have two elements in <code>first</code> list, the result of mapping will generate two lists of two elements each. This isn’t what we want. We want a single list that combines the results together. </p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">first flatMap {</span><br><span class="line">  ...</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>The flattening of results is what <code>flatMap</code> does - it takes the two lists and squishes them into one.</p>
+<h2 id="Monad-Laws"><a href="#Monad-Laws" class="headerlink" title="Monad Laws"></a>Monad Laws</h2><p>For something to be a monad, it has to obey the monadic laws. There’s three monad laws:  </p>
+<ol>
+<li>Left identity</li>
+<li>Right identity</li>
+<li>Associativity</li>
+</ol>
+<h3 id="Left-Identity"><a href="#Left-Identity" class="headerlink" title="Left Identity"></a>Left Identity</h3><p>This law means that if we take a value, put it into a monad, and then <code>flatMap</code> it with a function <code>f</code>, that’s the same as simply applying the function <code>f</code> to the original value. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = { <span class="type">List</span>(x * <span class="number">2</span>) }</span><br><span class="line">f: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// left identity</span></span><br><span class="line"><span class="type">List</span>(<span class="number">2</span>).flatMap(f) == f(<span class="number">2</span>)</span><br><span class="line">res5: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h3 id="Right-Identity"><a href="#Right-Identity" class="headerlink" title="Right Identity"></a>Right Identity</h3><p>This law means that if we take a monad, <code>flatMap</code> it, and within that <code>flatMap</code> we try to create a monad out of it, then that’s the same as original monad. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// right identity</span></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap({ x =&gt; <span class="type">List</span>(x) }) == <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>)</span><br><span class="line">res6: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<p>Let’s walkthrough this. The function to <code>flatMap</code> gets the elements of the original list, <code>List(1, 2, 3)</code>, one-by-one. The result is <code>List(List(1), List(2), List(3))</code>. This is then flattened to create <code>List(1, 2, 3)</code>, which is the original list.</p>
+<h3 id="Associativity"><a href="#Associativity" class="headerlink" title="Associativity"></a>Associativity</h3><p>This law states that if we apply a chain of functions to our monad, that’s the same as the composition of all the functions. Let’s see this in code:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">f</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = { <span class="type">List</span>(x + <span class="number">1</span>) }</span><br><span class="line">f: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="function"><span class="keyword">def</span> <span class="title">g</span></span>(x: <span class="type">Int</span>): <span class="type">List</span>[<span class="type">Int</span>] = { <span class="type">List</span>(x + <span class="number">1</span>) }</span><br><span class="line">g: (x: <span class="type">Int</span>)<span class="type">List</span>[<span class="type">Int</span>]</span><br><span class="line"></span><br><span class="line">scala&gt; <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap(f).flatMap(g) == <span class="type">List</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>).flatMap(x =&gt; f(x).flatMap(g))</span><br><span class="line">res8: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on monads and their laws. <code>List</code> isn’t the only monad in your arsenal. <code>Option</code>s and <code>Future</code>s are monads, too. I suggest going ahead and constructing examples for monadic laws for them. </p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cm5i9f02p003sw3ru3khx1u4z" data-title="Monad" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/category-theory/" rel="tag">category theory</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-functors" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/09/05/functors/" class="article-date">
@@ -251,7 +318,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cm5hlcr4c003srbru2uqe5nbr" data-title="Functor" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cm5i9f02p003nw3ru19ag6evz" data-title="Functor" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -322,7 +389,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cm5hlcr4c003wrbrue6f2bvi8" data-title="Monoid" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cm5i9f02q0041w3ruhyil799p" data-title="Monoid" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/10/monoid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -401,7 +468,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cm5hlcr4c003nrbrucgipdudg" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cm5i9f02p003pw3ru5c7f1lrp" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -450,7 +517,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cm5hlcr4e004jrbru22sn09zj" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cm5i9f02v005uw3ru2x3k0h64" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -533,7 +600,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cm5hlcr4e004erbruco0v9ywd" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cm5i9f02q0044w3rub3cg3xw3" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -607,7 +674,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cm5hlcr4e004krbru8q4d9o71" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cm5i9f02u005gw3ru3p3da3ji" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -680,7 +747,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cm5hlcr4d0044rbru645n3koq" data-title="Scalaz Either" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cm5i9f02t005dw3rublsmb4lg" data-title="Scalaz Either" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -756,7 +823,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="cm5hlcr4g0054rbru1yloe71s" data-title="Scalaz Validation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-validation/" data-id="cm5i9f02w0065w3ru0kkt17nh" data-title="Scalaz Validation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-validation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -812,7 +879,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="cm5hlcr4e004grbruevi10fd0" data-title="Scalaz MapOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/11/scalaz-mapops/" data-id="cm5i9f02q0047w3rub5b3bu2h" data-title="Scalaz MapOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/11/scalaz-mapops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -874,7 +941,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cm5hlcr4d0041rbruf8bv1spl" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/" data-id="cm5i9f02t005ew3rufbplc9qr" data-title="Scalaz BooleanOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/10/scalaz-booleanops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -925,62 +992,9 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cm5hlcr4f004vrbrud2sjfe6e" data-title="Scalaz TryOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cm5i9f02u005ow3ru1x3q337i" data-title="Scalaz TryOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-tupleops" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/05/scalaz-tupleops/" class="article-date">
-  <time datetime="2017-07-05T11:45:10.000Z" itemprop="datePublished">2017-07-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/05/scalaz-tupleops/">Scalaz TupleOps</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <code>TupleOps</code> and the goodies it provides to work with <code>Tuple</code>s. There’s no <code>TupleOps.scala</code> file in the GitHub repo because the file is generated by <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/project/GenerateTupleW.scala"><code>GenerateTupleW</code></a>. You can see the code for <code>TupleOps</code> if you’re using an IDE like IntelliJ. There’s a number of <code>TupleNOps</code> classes like <code>Tuple2Ops[A, B]</code>, etc. all the way to <code>Tuple12Ops[A, B]</code>.   </p>
-<p>With that said, let’s jump into examples. We’ll look at what <code>Tuple2Ops</code> provides us. Everything is analogous to <code>Tuple3Ops</code>, etc. It’s just the number of arguments to the methods that will change. </p>
-<h3 id="Folding-a-Tuple"><a href="#Folding-a-Tuple" class="headerlink" title="Folding a Tuple"></a>Folding a Tuple</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) fold( (_1, _2) =&gt; _1 + _2 )</span><br><span class="line">res2: <span class="type">Int</span> = <span class="number">3</span></span><br></pre></td></tr></table></figure>  
-<p><code>fold</code> in <code>Tuple2Ops</code> takes a function which accepts 2 arguments i.e. equal to the arity of the tuple. Here, we’re folding the tuple and adding together its two <code>Int</code> elements but you can do whatever you want.  </p>
-<h3 id="Converting-to-IndexedSeq"><a href="#Converting-to-IndexedSeq" class="headerlink" title="Converting to IndexedSeq"></a>Converting to IndexedSeq</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) toIndexedSeq</span><br><span class="line">res3: collection.immutable.<span class="type">IndexedSeq</span>[<span class="type">Int</span>] = <span class="type">Vector</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>  
-<p>This one is self-explanatory. The tuple is converted to an <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/current/scala/collection/IndexedSeq.html"><code>IndexedSeq</code></a>.  </p>
-<h3 id="Mapping-Elements-in-a-Tuple"><a href="#Mapping-Elements-in-a-Tuple" class="headerlink" title="Mapping Elements in a Tuple"></a>Mapping Elements in a Tuple</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) mapElements(_1 =&gt; _1 * <span class="number">2</span>, _2 =&gt; _2 * <span class="number">2</span>)</span><br><span class="line">res4: (<span class="type">Int</span>, <span class="type">Int</span>) = (<span class="number">2</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>  
-<p><code>mapElements</code> in <code>Tuple2Ops</code> takes 2 functions as arguments, 1 for each element of the tuple. The functions are then applied to their corresponding elements and the result is returned as a <code>Tuple</code>. In the example above, we’re just multiplying both the elements by 2.   </p>
-<p>This is different from the <code>map</code> from the standard library. The <code>map</code> from the standard library only operates on the last element of the tuple.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) map (_ * <span class="number">2</span>)</span><br><span class="line">res5: (<span class="type">Int</span>, <span class="type">Int</span>) = (<span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s the end of the post on <code>TupleOps</code>. <code>TupleOps</code>‘s convenience methods can be used to manipulate tuples easily.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="cm5hlcr4f004xrbru5fpw1tz5" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1021,6 +1035,10 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       <ul>
         
           <li>
+            <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
+          </li>
+        
+          <li>
             <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/">Creating a realtime data platform - SQL</a>
           </li>
         
@@ -1054,10 +1072,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
         
           <li>
             <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
-          </li>
-        
-          <li>
-            <a href="/2024/10/15/Low-Level-Design-1-Todo-List/">Low Level Design 1 - Todo List</a>
           </li>
         
       </ul>

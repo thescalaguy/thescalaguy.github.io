@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Creating a realtime data platform - orchestration | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In the previous post we looked at how to query Pinot. We queried it using its REST API, the console, and Trino. In this post we’re going to look at how to use Apache Airflow to periodically create dat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Creating a realtime data platform - orchestration">
+<meta property="og:url" content="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In the previous post we looked at how to query Pinot. We queried it using its REST API, the console, and Trino. In this post we’re going to look at how to use Apache Airflow to periodically create dat">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/query_1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/conn_1.png">
+<meta property="article:published_time" content="2025-01-04T14:06:02.000Z">
+<meta property="article:modified_time" content="2025-01-04T14:06:02.343Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/query_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About Me</a>
+        
+          <a class="main-nav-link" href="/principles">Guiding Principles</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Creating-a-realtime-data-platform-orchestration" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/" class="article-date">
+  <time datetime="2025-01-04T14:06:02.000Z" itemprop="datePublished">2025-01-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Creating a realtime data platform - orchestration
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/">previous post</a> we looked at how to query Pinot. We queried it using its REST API, the console, and Trino. In this post we’re going to look at how to use Apache Airflow to periodically create datasets on top of the data that’s been stored in Pinot. Creating datasets allows us to reference them in data visualization tools for quicker rendering. We’ll leverage Trino’s query federation to store the resultant dataset in S3 so that it can be queried using the Hive connector.</p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>Let’s say that the marketing team wants to run email campaigns where the users who actively place orders are given a promotional discount. The dataset they need contains the details of the user like their name and email so that the communication sent out can be personalised. We can write the following query in the source Postgres database to see what the dataset would look like.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">    u.id,</span><br><span class="line">    u.first_name,</span><br><span class="line">    u.email,</span><br><span class="line">    <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> COUNT</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">    public.user <span class="keyword">AS</span> u</span><br><span class="line">    <span class="keyword">INNER</span> <span class="keyword">JOIN</span> orders <span class="keyword">AS</span> o <span class="keyword">ON</span> u.id <span class="operator">=</span> o.user_id</span><br><span class="line"><span class="keyword">WHERE</span></span><br><span class="line">    o.created_at <span class="operator">&gt;=</span> NOW() <span class="operator">-</span> <span class="type">INTERVAL</span> <span class="string">'30'</span> <span class="keyword">DAY</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="number">4</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p>This gives us the following result. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">| id | first_name | email                       | count |</span><br><span class="line">|----|------------|-----------------------------|-------|</span><br><span class="line">|  5 | Michelle   | gilljasmine@example.com     |  4906 |</span><br><span class="line">|  1 | Alejandra  | wilcoxstephanie@example.org |  4904 |</span><br><span class="line">|  3 | Hailey     | james97@example.com         |  4877 |</span><br><span class="line">|  4 | Michelle   | ivillanueva@example.com     |  4872 |</span><br><span class="line">|  2 | Brandon    | julie33@example.com         |  4846 |</span><br></pre></td></tr></table></figure>
+<p>For us to create this dataset using Trino, we’ll have to ingest the <code>user</code> table into Pinot. Like we did in the earlier posts, we’ll use Debezium to stream the rows. We’ll skip repeating the steps here since we’ve already seen them. Instead, we’ll move to writing the query in Trino. Once we’ve written the query, we’ll look at how to use Airflow to run it periodically. I’ve also updated the <code>orders</code> table to extract the <code>user_id</code> column out of the <code>source</code> payload. Let’s translate the query written for Postgres to Trino.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> u.id,</span><br><span class="line">       u.first_name,</span><br><span class="line">       u.email,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.user <span class="keyword">AS</span> u</span><br><span class="line">     <span class="keyword">INNER</span> <span class="keyword">JOIN</span> pinot.default.orders <span class="keyword">AS</span> o</span><br><span class="line">     <span class="keyword">ON</span> o.user_id <span class="operator">=</span> u.id</span><br><span class="line"><span class="keyword">WHERE</span> FROM_UNIXTIME(<span class="built_in">CAST</span>(o.created_at <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>) <span class="operator">/</span> <span class="number">1e3</span>) <span class="operator">&gt;=</span> NOW() <span class="operator">-</span> <span class="type">INTERVAL</span> <span class="string">'30'</span> <span class="keyword">DAY</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="number">4</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p>We saw earlier that we’d like to save the result of this query so that the marketing team could use it. We can do that by storing the results in a table created using the above <code>SELECT</code> statement. Let’s create a schema in Hive called <code>datasets</code> where we’ll store the results. The following query creates the schema.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> SCHEMA hive.datasets</span><br><span class="line"><span class="keyword">WITH</span> (</span><br><span class="line">    "location" <span class="operator">=</span> <span class="string">'s3://apache-pinot-hive/datasets'</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>We can now create the table using the above <code>SELECT</code> statement.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> hive.datasets.top_users <span class="keyword">AS</span> </span><br><span class="line"><span class="keyword">SELECT</span> u.id,</span><br><span class="line">       u.first_name,</span><br><span class="line">       u.email,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.user <span class="keyword">AS</span> u</span><br><span class="line">     <span class="keyword">INNER</span> <span class="keyword">JOIN</span> pinot.default.orders <span class="keyword">AS</span> o</span><br><span class="line">     <span class="keyword">ON</span> o.user_id <span class="operator">=</span> u.id</span><br><span class="line"><span class="keyword">WHERE</span> FROM_UNIXTIME(<span class="built_in">CAST</span>(o.created_at <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>) <span class="operator">/</span> <span class="number">1e3</span>) <span class="operator">&gt;=</span> NOW() <span class="operator">-</span> <span class="type">INTERVAL</span> <span class="string">'30'</span> <span class="keyword">DAY</span></span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>;</span><br></pre></td></tr></table></figure>
+<p>We can now query the table using the query that follows.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="operator">*</span></span><br><span class="line"><span class="keyword">FROM</span> hive.datasets.top_users;</span><br></pre></td></tr></table></figure>
+<p>Having seen how to create datasets as tables using Trino CLI, let’s see how we can do the same using Airflow. Let’s say that the marketing team requires the data to be regenerated everyday. We can schedule an Airflow DAG to run daily to recreate this dataset.  Briefly, Airflow is a task orchestrator. An orchestrator allows creating and executing workflows expressed as directed acyclic graphs (DAGs). Each workflow consists of multiple tasks, which form the nodes in the graph, and edges between the tasks indicate the directionality.  </p>
+<p>We’ll create a workflow which recreates the dataset daily. In a nutshell, the workflow first drops the older table and then recreates a newer one. This is because the Trino connector does not allow creating or replacing table as an atomic operation. We’ll leverage Airflow’s SQL operator and templating mechanism to create and execute queries. The following shows the files and folders we’ll be working with as we create the DAG.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ tree airflow/dags</span><br><span class="line">airflow/dags</span><br><span class="line">├── __init__.py</span><br><span class="line">├── create_top_users_dataset.py</span><br><span class="line">└── sql</span><br><span class="line">    ├── common</span><br><span class="line">    │   ├── drop_table.sql</span><br><span class="line">    └── datasets</span><br><span class="line">        └── top_users.sql</span><br></pre></td></tr></table></figure>
+<p>Let’s begin with the <code>drop_table.sql</code> query. This is a templated query which allows dropping a table. Writing queries as templates allows us to leverage the Jinja2 templating engine that comes with Airflow. We can create queries depending on the parameters passed to the operator. This allows reusing the same template across multiple tasks. The variables are enclosed in two pairs of braces and the name of the variable is written between them. The content of the file is shown below.  </p>
+<img src="/2025/01/04/Creating-a-realtime-data-platform-orchestration/query_1.png" class="">  
+<p>As we’ll see shortly, we’ll pass parameters to the Airflow task executing this query which are available in the <code>params</code> dictionary in the template. In the query above, we’d have to pass the <code>name</code> variable which contains the name of the table we’d like to drop. The <code>top_users.sql</code> file contains the same query we’ve seen above so we’ll move on to setting up the DAG.  </p>
+<p>The DAG is written in the file <code>create_top_users_dataset.py</code> and contains two tasks. First, to drop the table, which uses the templated query above. Second, to create the dataset. Both of these tasks use the <code>SQLExecuteQueryOperator</code>. Its parameters include a connection ID, which is used to connect to the database, the path to the SQL file containing the templated query to execute, and the values for the parameters. The contents of the file are shown below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pendulum</span><br><span class="line"><span class="keyword">from</span> airflow.providers.common.sql.operators.sql <span class="keyword">import</span> SQLExecuteQueryOperator</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG</span><br><span class="line"></span><br><span class="line">dag = DAG(</span><br><span class="line">    dag_id=<span class="string">"create_daily_datasets"</span>,</span><br><span class="line">    catchup=<span class="literal">False</span>,</span><br><span class="line">    schedule=<span class="string">"@daily"</span>,</span><br><span class="line">    start_date=pendulum.now(<span class="string">"GMT"</span>),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">drop_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"drop_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    params={<span class="string">"name"</span>: <span class="string">"hive.datasets.top_users"</span>},</span><br><span class="line">    sql=<span class="string">"sql/common/drop_table.sql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">create_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"create_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    sql=<span class="string">"sql/datasets/top_users.ysql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Dependencies between tasks</span></span><br><span class="line">drop_table &gt;&gt; create_table</span><br></pre></td></tr></table></figure>
+<p>We define the DAG in line 6 and specify that it will execute daily. Line 13 and 21 define the tasks within the DAG. The first task drops the table, if it exists. The second task creates the table again. On line 29 we define the relationship between the tasks. Both of the tasks are of type <code>SQLExecuteQueryOperator</code>. This task allows executing arbitrary SQL queries by connecting to a database. The connection to the database is specified as the <code>conn_id</code>; we’ve specified it as <code>trino</code>. As we’ll see next, we need to create the connection using the Airflow console. Once we create the connection, we can execute the DAG.</p>
+<p>Airflow UI is available on <a target="_blank" rel="noopener" href="http://localhost:8080">http://localhost:8080</a>. From there we’ll click on ‘Admin’ up top, and then ‘Connections’. From there we’ll click on the ‘+’ icon to create a connection. The screenshot below shows what we need to fill in to make the connection. In my setup, Trino runs with the hostname <code>trino</code> and you’ll have to replace this to match what you have. Once the details are entered, we’ll click the ‘Save’ button at the bottom to create the connection.</p>
+<img src="/2025/01/04/Creating-a-realtime-data-platform-orchestration/conn_1.png" class="">
+<p>Finally, we can trigger the DAG. We’ll click on the ‘DAGs’ option on top left side of the screen. This will show us the list of DAGs available. From there, we’ll click the play button for the <code>create_daily_datsets</code> DAG. This will trigger and run the DAG. We’ll wait for the DAG to finish running. Assuming everything works correctly, we will have created a table in S3. Leaving the DAG in the enabled state causes it to run on the specified schedule; in this case it is daily. As the DAG continues to run, it’ll create and recreate the table daily.  </p>
+<p>That’s it on orchestrating tasks to create datasets on top of Pinot.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cm5i9f02f000rw3ru1hjjfncm" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Creating a realtime data platform - SQL</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 17.78px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 13.33px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 11.11px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/">Creating a realtime data platform - SQL</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2025 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About Me</a>
+  
+    <a href="/principles" class="mobile-nav-link">Guiding Principles</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
