@@ -248,7 +248,7 @@ mjx-container[display="true"] + br {
 <p>In the query above, we’re creating the Hive catalog which we’ll use to create and store datasets. Since we’re storing files in S3, we need to specify the region and its S3 endpoint. You’d have to replace the keys with those of your own if you’re running the example locally.  </p>
 <p>Once we create the catalog, we’ll have to create the schema where datasets will be stored. Schemas are created with <code>CREATE SCHEMA</code> command and require that we provide a path in an S3 bucket where the files will be stored. The query below shows how to create a schema named <code>views</code>.  </p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">CREATE SCHEMA hive.views</span><br><span class="line">WITH (</span><br><span class="line">    "location" = 's3://apache-pinot-hive/views'</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p>Once the schema is created, we can persist results of the query for quicker access. Let’s store the result of the previous query as a view. The following query shows how to do it.  </p>
+<p>Once the schema is created, we can persist the query or its results for quicker access. In the query that follows, we create a view on top of Pinot.</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> hive.views.daily_orders <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">WITH</span> ua <span class="keyword">AS</span> (</span><br><span class="line">  <span class="keyword">SELECT</span> <span class="built_in">CAST</span>(FROM_UNIXTIME(created_at <span class="operator">/</span> <span class="built_in">CAST</span>(<span class="number">1e3</span> <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>)) <span class="keyword">AS</span> <span class="type">DATE</span>) <span class="keyword">AS</span> dt,</span><br><span class="line">         <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count</span><br><span class="line">  <span class="keyword">FROM</span> pinot.default.orders</span><br><span class="line">  <span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>     </span><br><span class="line">)</span><br><span class="line"><span class="keyword">SELECT</span> dt,</span><br><span class="line">       count,</span><br><span class="line">       <span class="built_in">LAG</span>(count, <span class="number">1</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER</span> <span class="keyword">BY</span> dt <span class="keyword">ASC</span>) <span class="keyword">AS</span> prev_count,</span><br><span class="line">       ROUND(<span class="built_in">CAST</span>(count <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>) <span class="operator">/</span> <span class="built_in">LAG</span>(count, <span class="number">1</span>) <span class="keyword">OVER</span> (<span class="keyword">ORDER</span> <span class="keyword">BY</span> dt <span class="keyword">ASC</span>), <span class="number">2</span>) <span class="keyword">AS</span> pct</span><br><span class="line"><span class="keyword">FROM</span> ua;</span><br></pre></td></tr></table></figure>
 <p>We can query the view once it is created. This allows us to save the queries so that they can be referenced in data visualization tools. In the view above, we’ll get the realtime difference between orders placed since Pinot will be queried every time we select from the view. A small caveat to note is that views cannot store inline functions so we had to cast one of the operands in the division operation to double manually.  </p>
 <p>To see this in action, we’ll run the data generation script one more time and then query the view. We can see that the counts for orders placed today, yesterday, and day before yesterday increase after the script runs.  </p>
@@ -259,7 +259,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5ezki6w000gsaruhukn3t16" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5hlcr42000krbrub2o9eu62" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -325,7 +325,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5ezki6x000osaru6ls4hac2" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5hlcr43000srbru0f2hc13f" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -392,7 +392,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5ezki6w000msaru15rm8gz3" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5hlcr42000prbru4f8q46v0" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -466,7 +466,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5ezki6w000isaru5brjerjw" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5hlcr42000nrbrudbwi60by" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -519,7 +519,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5ezki6w000ksarugtj9gswu" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5hlcr43000urbru5p7t5xt3" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -575,7 +575,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5ezki6v000csaru8rmq1euf" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5hlcr41000irbruga6xdoit" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -674,7 +674,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5ezki72002bsarucqkmbhav" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5hlcr49002krbru1ut62532" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -779,7 +779,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5ezki72002gsaru7t1s9p5q" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5hlcr48002hrbrubcvf5x38" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -835,7 +835,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5ezki73002isaru2nj30r37" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5hlcr48002frbru752n6e1s" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -955,7 +955,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5ezki70001osarudhroeh6h" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5hlcr46001trbru1jrgg2oy" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1001,7 +1001,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5ezki6x000tsaru8pjrcbs0" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5hlcr430011rbrue4u15bkj" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1053,7 +1053,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5ezki6v000esaru40ewde17" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5hlcr40000crbru6ap9hgva" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
