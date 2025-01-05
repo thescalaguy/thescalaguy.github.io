@@ -44,13 +44,6 @@
     </url>
 
     <url>
-        <loc>http://fasihkhatib.com/tags/math/</loc>
-        <lastmod>2024-07-23T06:49:29.705Z</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.2</priority>
-    </url>
-
-    <url>
         <loc>http://fasihkhatib.com/tags/scala/</loc>
         <lastmod>2024-11-05T11:50:23.211Z</lastmod>
         <changefreq>weekly</changefreq>
@@ -101,7 +94,14 @@
 
     <url>
         <loc>http://fasihkhatib.com/tags/architecture/</loc>
-        <lastmod>2025-01-04T14:06:02.343Z</lastmod>
+        <lastmod>2025-01-05T04:18:44.454Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.2</priority>
+    </url>
+
+    <url>
+        <loc>http://fasihkhatib.com/tags/math/</loc>
+        <lastmod>2025-01-05T04:20:00.291Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.2</priority>
     </url>

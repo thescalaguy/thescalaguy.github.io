@@ -230,7 +230,7 @@ mjx-container[display="true"] + br {
 <img src="/2025/01/04/Creating-a-realtime-data-platform-orchestration/query_1.png" class="">  
 <p>As we’ll see shortly, we’ll pass parameters to the Airflow task executing this query which are available in the <code>params</code> dictionary in the template. In the query above, we’d have to pass the <code>name</code> variable which contains the name of the table we’d like to drop. The <code>top_users.sql</code> file contains the same query we’ve seen above so we’ll move on to setting up the DAG.  </p>
 <p>The DAG is written in the file <code>create_top_users_dataset.py</code> and contains two tasks. First, to drop the table, which uses the templated query above. Second, to create the dataset. Both of these tasks use the <code>SQLExecuteQueryOperator</code>. Its parameters include a connection ID, which is used to connect to the database, the path to the SQL file containing the templated query to execute, and the values for the parameters. The contents of the file are shown below.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pendulum</span><br><span class="line"><span class="keyword">from</span> airflow.providers.common.sql.operators.sql <span class="keyword">import</span> SQLExecuteQueryOperator</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG</span><br><span class="line"></span><br><span class="line">dag = DAG(</span><br><span class="line">    dag_id=<span class="string">"create_daily_datasets"</span>,</span><br><span class="line">    catchup=<span class="literal">False</span>,</span><br><span class="line">    schedule=<span class="string">"@daily"</span>,</span><br><span class="line">    start_date=pendulum.now(<span class="string">"GMT"</span>),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">drop_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"drop_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    params={<span class="string">"name"</span>: <span class="string">"hive.datasets.top_users"</span>},</span><br><span class="line">    sql=<span class="string">"sql/common/drop_table.sql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">create_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"create_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    sql=<span class="string">"sql/datasets/top_users.ysql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Dependencies between tasks</span></span><br><span class="line">drop_table &gt;&gt; create_table</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> pendulum</span><br><span class="line"><span class="keyword">from</span> airflow.providers.common.sql.operators.sql <span class="keyword">import</span> SQLExecuteQueryOperator</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> airflow <span class="keyword">import</span> DAG</span><br><span class="line"></span><br><span class="line">dag = DAG(</span><br><span class="line">    dag_id=<span class="string">"create_daily_datasets"</span>,</span><br><span class="line">    catchup=<span class="literal">False</span>,</span><br><span class="line">    schedule=<span class="string">"@daily"</span>,</span><br><span class="line">    start_date=pendulum.now(<span class="string">"GMT"</span>),</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">drop_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"drop_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    params={<span class="string">"name"</span>: <span class="string">"hive.datasets.top_users"</span>},</span><br><span class="line">    sql=<span class="string">"sql/common/drop_table.sql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">create_table = SQLExecuteQueryOperator(</span><br><span class="line">    task_id=<span class="string">"create_top_users"</span>,</span><br><span class="line">    conn_id=<span class="string">"trino"</span>,</span><br><span class="line">    sql=<span class="string">"sql/datasets/top_users.sql"</span>,</span><br><span class="line">    dag=dag,</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Dependencies between tasks</span></span><br><span class="line">drop_table &gt;&gt; create_table</span><br></pre></td></tr></table></figure>
 <p>We define the DAG in line 6 and specify that it will execute daily. Line 13 and 21 define the tasks within the DAG. The first task drops the table, if it exists. The second task creates the table again. On line 29 we define the relationship between the tasks. Both of the tasks are of type <code>SQLExecuteQueryOperator</code>. This task allows executing arbitrary SQL queries by connecting to a database. The connection to the database is specified as the <code>conn_id</code>; we’ve specified it as <code>trino</code>. As we’ll see next, we need to create the connection using the Airflow console. Once we create the connection, we can execute the DAG.</p>
 <p>Airflow UI is available on <a target="_blank" rel="noopener" href="http://localhost:8080">http://localhost:8080</a>. From there we’ll click on ‘Admin’ up top, and then ‘Connections’. From there we’ll click on the ‘+’ icon to create a connection. The screenshot below shows what we need to fill in to make the connection. In my setup, Trino runs with the hostname <code>trino</code> and you’ll have to replace this to match what you have. Once the details are entered, we’ll click the ‘Save’ button at the bottom to create the connection.</p>
 <img src="/2025/01/04/Creating-a-realtime-data-platform-orchestration/conn_1.png" class="">
@@ -240,7 +240,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cm5i9f02f000rw3ru1hjjfncm" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cm5j3und6000ux0ru5t76d5dv" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -327,7 +327,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5i9f02g0015w3ruem2901r4" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5j3und5000kx0rue9d79rpl" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -393,7 +393,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5i9f02e000kw3ru5boqho5q" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5j3und5000px0rud4m13dh6" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -460,7 +460,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5i9f02e000hw3rueuap2se5" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5j3und6000sx0rudrm49dmc" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -534,7 +534,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5i9f02d000fw3ru61tb0neh" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5j3und6000xx0ru4pnd63mw" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -587,7 +587,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5i9f02f000tw3ru8rjlgruw" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5j3und5000nx0ru3kboe0l9" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -643,7 +643,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5i9f02e000mw3ru2sxxe433" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5j3und4000gx0ru3qch2g1q" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -742,7 +742,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5i9f02l002ew3rugb9o0mqi" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5j3unda002kx0rugt0ialex" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -847,7 +847,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5i9f02l002aw3ru1n7f6ke1" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5j3unda002ix0ruaaw576ln" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -903,7 +903,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5i9f02l002cw3ruh5rq9f9e" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5j3unda002gx0ru0s6feagz" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1023,7 +1023,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5i9f02j001qw3ru71l30o9q" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5j3und8001ux0ru081wd44q" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1069,7 +1069,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5i9f02g000zw3ru7ivih2ki" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5j3und60013x0ru9d691zzm" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
