@@ -188,6 +188,79 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Creating-a-realtime-data-platform-visualization" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/" class="article-date">
+  <time datetime="2025-01-06T07:15:17.000Z" itemprop="datePublished">2025-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">previous post</a> we saw how we can use Airflow to create datasets on top of the data that’s stored in Pinot. Once a dataset is created, we may need to present it as a report or a dashboard. In this post we’ll look at how to use Superset to create visualizations on top of the datasets that we’ve created. We’ll create a dashboard to display the daily change in the number of orders placed each day.</p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>In an <a href="/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/">earlier post</a> I’d written about how to run Superset locally. In a nutshell, running Superset using Docker compose requires cloning the repository and checking out the version of the project you’d like to run. In that post I’d also shown how to install additional packages so that we can add the ability to connect to another database. For the sake of brevity, I’ll simply repeat the steps here and refer you to the earlier post for more details. </p>
+<p>Let’s start by cloning the repo and navigating to it.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/apache/superset.git --depth 1</span><br><span class="line">cd superset</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll checkout the git repository to a specific tag so that we can build from it.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout 4.1.1</span><br></pre></td></tr></table></figure> 
+<p>Next, we’ll add the Python package which will let us connect to Pinot.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "pinotdb" &gt;&gt; ./docker/requirements-local.txt</span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll bring up the containers for this specific tag.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TAG=4.1.1 docker-compose -f docker-compose-non-dev.yml up -d</span><br></pre></td></tr></table></figure> 
+<p>This will build the Docker images for Superset and run them as containers. Once the containers are running, Superset will be available on <a target="_blank" rel="noopener" href="http://localhost:8088">http://localhost:8088</a>. You can use <code>admin</code> as both the username and password to log in. Now that we’re logged in, we can begin creating charts and dashboards. Let’s start by connecting to Trino.  </p>
+<p>Click on “Settings” on the top-right corner. Click on “Database Connections”. Finally, click on “+ Database”. You should see the following screen pop up.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_1.png" class="">
+<p>From the supported databases, select “Trino”. Once selected, you’ll be asked to enter the connection string to connect to it. Since the Superset Docker containers are running seperately from the ones where Trino is running, we’ll have to use the IP address of the local machine to make the connection between Superset and Trino. Depending on your operating system, the steps may vary. Go ahead and find the IP address of your machine. Let’s continue with my machine. We’ll have to enter the connection string that SQLAlchemy expects. It looks as follows. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trino://admin:@192.168.0.103:9080</span><br></pre></td></tr></table></figure>
+<p>Notice how we’ve specified <code>admin</code> as the user and a blank password. I’m also specifying the port since I’ve mapped Trino’s port 8080 to 9080 locally. Once we’ve entered the details, we can click on “Test Connection” to make sure we’re able to connect. Finally, if the connection succeeds, we’ll click on “Connect” to save the connection. We can now proceed to creating charts and dashboards.  </p>
+<p>Click on “Dashboards” on the top-left and then click on “+ Dashboard”. This will create a new draft dashboard in which we’ll visualize datasets. Change its name to “Orders and click “Save”. You should see a screen similar to the one shown below.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_2.png" class=""> 
+<p>Click on “Create a new chart” button in the middle of the screen. From there, click on “Add a dataset”. Every chart needs to be associated with a dataset. We’ll create them based on the ones we’ve stored in Trino. You should see the following screen.   </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_3.png" class="">  
+<p>From the drop down on the left, select “Trino” as the database. Select the “views” schema. Finally, select “daily_orders” as the table. Once done, click on “Create Dataset and Create Chart” option on the bottom-right. In the screen that shows, select “Area Chart” and click on “Create New Chart”. This screen is shown below.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_4.png" class="">  
+<p>Once on the screen to create the chart, we’ll add the <code>dt</code> column to the X-axis and <code>SUM(pct)</code> to the Y-axis. Since there’s only one value for each day, <code>SUM</code> will return the same value. Clicking on “Update Chart” on the bottom causes a query to be fired to Trino and the result to be rendered as a line chart. It looks as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_5.png" class="">  
+<p>Click on “Save” on the top-right. Give the chart a name and associate it with the dashboard we just created. It’ll take you to the dashboard with the chart rendered in it. Clicking on “Edit Dashboard” will allow you to change the size of the chart. Go ahead and increase its width. Saving the chart will make your dashboard look as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_6.png" class="">  
+<p>At this point, we can create more datasets and charts. I’ve created two more - one for displaying the data for the line chart as a table, and another for displaying the top customers. My final dashboard looks as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_7.png" class="">
+<p>The table and the line-chart are created from a view we’d created on top of Trino. Superset caches the results of the query for faster rendering. We can refresh the charts to see the latest data. Clicking on the three dots on the top-right of any chart will show the “Force refresh” option. Clicking on it will cause Superset to query Trino again to fetch the latest data. Since Pinot is getting updated in realtime and we have a view backing the chart, we’ll get the realtime numbers in the dashboard. We can make this happen automatically. Let’s go ahead and do that.  </p>
+<p>Click on “Edit dashboard”. Click on the three dots on the top-right and click on “Set auto-refresh interval”. In the pop-up that shows, select a frequency. Click “Save” to save this setting. Click “Save” one more time to save the dashboard. This will make the chart update in realtime without requiring the user to manually refersh it.  </p>
+<p>That’s it. That’s how you can create realtime dashbord on top of Pinot using Superset and Trino.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cm5kpk8lt000txnrubpskenpc" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Creating-a-realtime-data-platform-orchestration" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/" class="article-date">
@@ -240,7 +313,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cm5j3und6000ux0ru5t76d5dv" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cm5kpk8lu000vxnru3e9u28l8" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -327,7 +400,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5j3und5000kx0rue9d79rpl" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cm5kpk8ls000jxnrubpme50yt" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -393,7 +466,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5j3und5000px0rud4m13dh6" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cm5kpk8lu000xxnru0srb0yuj" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -460,7 +533,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5j3und6000sx0rudrm49dmc" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cm5kpk8lt000qxnruc0pv5zhr" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -534,7 +607,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5j3und6000xx0ru4pnd63mw" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cm5kpk8ls000lxnru2cfd7ui6" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -587,7 +660,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5j3und5000nx0ru3kboe0l9" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cm5kpk8lt000oxnru41gv8hrs" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -643,7 +716,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5j3und4000gx0ru3qch2g1q" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cm5kpk8lr000cxnru2gkv0w99" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -742,7 +815,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5j3unda002kx0rugt0ialex" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cm5kpk8lz002lxnruepwg1bwk" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -847,7 +920,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5j3unda002ix0ruaaw576ln" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5kpk8lz002jxnruawmi5tyi" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -903,7 +976,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5j3unda002gx0ru0s6feagz" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5kpk8lz002hxnru20bdfmxf" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1023,59 +1096,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5j3und8001ux0ru081wd44q" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/" data-id="cm5kpk8lx001sxnru3jlk1lsy" data-title="Low Level Design 1 - Todo List" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/10/15/Low-Level-Design-1-Todo-List/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/design-patterns/" rel="tag">design patterns</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Detecting-disguised-email-addresses-in-a-corpus-of-text" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" class="article-date">
-  <time datetime="2024-08-03T06:08:36.000Z" itemprop="datePublished">2024-08-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I’d recently written about <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">an experimental library to detect PII.</a> When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a review or a comment can contain email address in the form “johndoeatgmaildotcom”. This led me to update the library so that emails like these can also be flagged. In a nutshell, I had to update the regex which was used to find the email.  </p>
-<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>This is best explained with a few examples. In all of the examples, we begin with a proper email and disguise it one step at a time.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">column = Column(name=<span class="string">"comment"</span>)</span><br><span class="line">detector = ColumnValueRegexDetector()</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcom"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.co.uk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcodotuk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"myemailis:john.doeatproviderdotcom"</span>) == Email()</span><br></pre></td></tr></table></figure>  
-<p>All of these assertions pass and the regex detector is able to flag all of these examples as email.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5j3und60013x0ru9d691zzm" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
 
     </footer>
   </div>
@@ -1112,6 +1139,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+          </li>
+        
+          <li>
             <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
           </li>
         
@@ -1145,10 +1176,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
           </li>
         
       </ul>
@@ -1212,21 +1239,6 @@ mjx-container[display="true"] + br {
 
 
 
-  </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

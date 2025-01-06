@@ -188,6 +188,52 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Detecting-disguised-email-addresses-in-a-corpus-of-text" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" class="article-date">
+  <time datetime="2024-08-03T06:08:36.000Z" itemprop="datePublished">2024-08-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’d recently written about <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">an experimental library to detect PII.</a> When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a review or a comment can contain email address in the form “johndoeatgmaildotcom”. This led me to update the library so that emails like these can also be flagged. In a nutshell, I had to update the regex which was used to find the email.  </p>
+<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>This is best explained with a few examples. In all of the examples, we begin with a proper email and disguise it one step at a time.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">column = Column(name=<span class="string">"comment"</span>)</span><br><span class="line">detector = ColumnValueRegexDetector()</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcom"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.co.uk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcodotuk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"myemailis:john.doeatproviderdotcom"</span>) == Email()</span><br></pre></td></tr></table></figure>  
+<p>All of these assertions pass and the regex detector is able to flag all of these examples as email.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5kpk8lu000zxnruep193dfs" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-An-experiemental-library-to-detect-PII" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/08/02/An-experiemental-library-to-detect-PII/" class="article-date">
@@ -224,7 +270,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5j3und4000cx0ru71rz7b9o" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5kpk8lr000bxnru1pkb4pl5" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -274,7 +320,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm5j3und4000bx0ruajx4dv5v" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm5kpk8lq0008xnrudky2bw65" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -340,7 +386,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm5j3undc003bx0ru1tyc3gqa" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm5kpk8m10034xnru0hl12syr" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -393,7 +439,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm5j3unda002dx0ru4cllh9mz" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm5kpk8lz002cxnrua0em0k26" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -473,7 +519,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm5j3unda002bx0rue1t42gua" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm5kpk8lz002exnru0x735woe" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -553,7 +599,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm5j3und6000zx0ru8ylgha33" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm5kpk8lu0011xnru1y4m3bw5" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -599,7 +645,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm5j3und30008x0rublyxf8q0" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm5kpk8lq0007xnrucpkd474v" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -721,7 +767,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm5j3und70015x0ru0gnac2rz" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm5kpk8lv0015xnruce3ja8yv" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -792,7 +838,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm5j3unda002px0ruadivdcpn" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm5kpk8m0002qxnrugnek1zsd" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -856,7 +902,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm5j3undb002sx0rua7n91me8" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm5kpk8lz002oxnru8e1s24c2" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -915,66 +961,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm5j3und7001dx0ruhm4l6edj" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm5kpk8lv0019xnru66wncdw5" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithms/" rel="tag">algorithms</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Running-Database-Migrations" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/03/31/Running-Database-Migrations/" class="article-date">
-  <time datetime="2024-03-31T05:40:44.000Z" itemprop="datePublished">2024-03-31</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Let’s start with a question: how do you run database migrations? Depending on the technology you are using, you may choose something like <a target="_blank" rel="noopener" href="https://documentation.red-gate.com/home">Flyway</a>, <a target="_blank" rel="noopener" href="https://alembic.sqlalchemy.org/en/latest/">Alembic</a>, or some other tool that fits well with your process. My preference is to write and run the migrations as SQL files. I recently released a small library, <a target="_blank" rel="noopener" href="https://pypi.org/project/yoyo-cloud/">yoyo-cloud</a>, that allows storing the migrations as files in S3 and then applying them to the database. In this post we will look at the rationale behind the library, and the kind of workflow it enables.  </p>
-<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll start with an example that shows how to run migrations on a Postgres instance. There are a couple of SQL files that I have stored in an S3 bucket — one to create a table, and another to insert a row after the table is created. The bucket is public so you should be able to run the snippet below.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> yoyo <span class="keyword">import</span> get_backend</span><br><span class="line"><span class="keyword">from</span> yoyo_cloud <span class="keyword">import</span> read_s3_migrations</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    migrations = read_s3_migrations(paths=[<span class="string">"s3://yoyo-migrations/"</span>])</span><br><span class="line">    backend = get_backend(<span class="string">f"postgresql://postgres:my-secret-pw@localhost:5432/postgres"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> backend.lock():</span><br><span class="line">        <span class="comment"># -- Apply any outstanding migrations</span></span><br><span class="line">        backend.apply_migrations(backend.to_apply(migrations))</span><br></pre></td></tr></table></figure>
-<p>As you can see from the imports, we use a combination of the original library, <code>yoyo</code>, which provides a helper function to connect to the database, and the new library, <code>yoyo_cloud</code>, which provides a helper function to read the migrations that are stored in S3. </p>
-<p>The <code>read_s3_migrations</code> function reads the files that are stored in S3. It takes as input a list of S3 paths that point to directories where the files are stored. This function is similar in interface to the <code>read_migrations</code> function in <code>yoyo</code> which reads migrations from a directory on the file system except that it reads from S3; the value returned is the same — a list of migrations.</p>
-<p>Finally, we apply the migrations to the Postgres instance. The purpose of this example was to demonstrate the simplicity with which migrations stored in S3 can be applied to a database using <code>yoyo_cloud</code>. We will now look at the rationale behind the library in the next section.</p>
-<h2 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h2><p>The rationale behind the library, as mentioned at the start of this post, is to store SQL migrations as files and apply them one-by-one. Additionally, it allows migrating multiple similar databases easily. In the <a href="2024/03/25/Scaling-Python-Microservices/">previous post on scaling Python microservices</a> we’d seen how a Flask microservice can dynamically connect to multiple databases. If we want to apply a migration, say adding a new column to a table, we’d want it to be applied to all the databases that the service connects to. Using <code>yoyo_cloud</code> we can read the migration from S3, and apply to every table. Since the migrations are idempotent, we can safely reapply the previous migrations. </p>
-<h2 id="Workflow"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow</h2><p>Let’s assume we’d like to create an automation which applies database migrations. We’ll assume we have two environments — stage, and prod. Whenever a migration is to be released to production, it is first tested in the dev environment, and then committed to version control to be applied to the staging environment. These could be stored as a part of the same repository or in a separate repository that contains only migrations. Let’s assume it is the latter. We could have a directory structure as follows.  </p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">migrations</span><br><span class="line">  - order_service</span><br><span class="line">    - prod</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">    - stage</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">      - 002-add-column.sql</span><br></pre></td></tr></table></figure>
-<p>The automation could then apply these migrations to the relevant environment of the service. An additional benefit of this approach is that it makes setting up new environments easier because the migrations can applied to a new database. Additionally, committing migrations to version control, as opposed to running them in an adhoc manner, allows keeping track of when the migration was introduced, why, and by whom.</p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can apply migrations stored in S3 using <code>yoyo_cloud</code>. If you’re using it, or considering using it, please leave a comment.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm5j3unda002nx0ru7oxtcx0g" data-title="Running Database Migrations" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
 
     </footer>
   </div>
@@ -1011,6 +1004,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+          </li>
+        
+          <li>
             <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
           </li>
         
@@ -1044,10 +1041,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
           </li>
         
       </ul>
@@ -1111,21 +1104,6 @@ mjx-container[display="true"] + br {
 
 
 
-  </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

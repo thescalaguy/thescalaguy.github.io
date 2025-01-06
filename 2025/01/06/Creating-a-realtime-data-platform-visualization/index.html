@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Creating a realtime data platform - visualization | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In the previous post we saw how we can use Airflow to create datasets on top of the data that’s stored in Pinot. Once a dataset is created, we may need to present it as a report or a dashboard. In thi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Creating a realtime data platform - visualization">
+<meta property="og:url" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In the previous post we saw how we can use Airflow to create datasets on top of the data that’s stored in Pinot. Once a dataset is created, we may need to present it as a report or a dashboard. In thi">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_2.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_3.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_4.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_5.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_6.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_7.png">
+<meta property="article:published_time" content="2025-01-06T07:15:17.000Z">
+<meta property="article:modified_time" content="2025-01-06T07:15:17.606Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About Me</a>
+        
+          <a class="main-nav-link" href="/principles">Guiding Principles</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Creating-a-realtime-data-platform-visualization" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/" class="article-date">
+  <time datetime="2025-01-06T07:15:17.000Z" itemprop="datePublished">2025-01-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Creating a realtime data platform - visualization
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">previous post</a> we saw how we can use Airflow to create datasets on top of the data that’s stored in Pinot. Once a dataset is created, we may need to present it as a report or a dashboard. In this post we’ll look at how to use Superset to create visualizations on top of the datasets that we’ve created. We’ll create a dashboard to display the daily change in the number of orders placed each day.</p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>In an <a href="/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/">earlier post</a> I’d written about how to run Superset locally. In a nutshell, running Superset using Docker compose requires cloning the repository and checking out the version of the project you’d like to run. In that post I’d also shown how to install additional packages so that we can add the ability to connect to another database. For the sake of brevity, I’ll simply repeat the steps here and refer you to the earlier post for more details. </p>
+<p>Let’s start by cloning the repo and navigating to it.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/apache/superset.git --depth 1</span><br><span class="line">cd superset</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll checkout the git repository to a specific tag so that we can build from it.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout 4.1.1</span><br></pre></td></tr></table></figure> 
+<p>Next, we’ll add the Python package which will let us connect to Pinot.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "pinotdb" &gt;&gt; ./docker/requirements-local.txt</span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll bring up the containers for this specific tag.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TAG=4.1.1 docker-compose -f docker-compose-non-dev.yml up -d</span><br></pre></td></tr></table></figure> 
+<p>This will build the Docker images for Superset and run them as containers. Once the containers are running, Superset will be available on <a target="_blank" rel="noopener" href="http://localhost:8088">http://localhost:8088</a>. You can use <code>admin</code> as both the username and password to log in. Now that we’re logged in, we can begin creating charts and dashboards. Let’s start by connecting to Trino.  </p>
+<p>Click on “Settings” on the top-right corner. Click on “Database Connections”. Finally, click on “+ Database”. You should see the following screen pop up.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_1.png" class="">
+<p>From the supported databases, select “Trino”. Once selected, you’ll be asked to enter the connection string to connect to it. Since the Superset Docker containers are running seperately from the ones where Trino is running, we’ll have to use the IP address of the local machine to make the connection between Superset and Trino. Depending on your operating system, the steps may vary. Go ahead and find the IP address of your machine. Let’s continue with my machine. We’ll have to enter the connection string that SQLAlchemy expects. It looks as follows. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trino://admin:@192.168.0.103:9080</span><br></pre></td></tr></table></figure>
+<p>Notice how we’ve specified <code>admin</code> as the user and a blank password. I’m also specifying the port since I’ve mapped Trino’s port 8080 to 9080 locally. Once we’ve entered the details, we can click on “Test Connection” to make sure we’re able to connect. Finally, if the connection succeeds, we’ll click on “Connect” to save the connection. We can now proceed to creating charts and dashboards.  </p>
+<p>Click on “Dashboards” on the top-left and then click on “+ Dashboard”. This will create a new draft dashboard in which we’ll visualize datasets. Change its name to “Orders and click “Save”. You should see a screen similar to the one shown below.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_2.png" class=""> 
+<p>Click on “Create a new chart” button in the middle of the screen. From there, click on “Add a dataset”. Every chart needs to be associated with a dataset. We’ll create them based on the ones we’ve stored in Trino. You should see the following screen.   </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_3.png" class="">  
+<p>From the drop down on the left, select “Trino” as the database. Select the “views” schema. Finally, select “daily_orders” as the table. Once done, click on “Create Dataset and Create Chart” option on the bottom-right. In the screen that shows, select “Area Chart” and click on “Create New Chart”. This screen is shown below.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_4.png" class="">  
+<p>Once on the screen to create the chart, we’ll add the <code>dt</code> column to the X-axis and <code>SUM(pct)</code> to the Y-axis. Since there’s only one value for each day, <code>SUM</code> will return the same value. Clicking on “Update Chart” on the bottom causes a query to be fired to Trino and the result to be rendered as a line chart. It looks as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_5.png" class="">  
+<p>Click on “Save” on the top-right. Give the chart a name and associate it with the dashboard we just created. It’ll take you to the dashboard with the chart rendered in it. Clicking on “Edit Dashboard” will allow you to change the size of the chart. Go ahead and increase its width. Saving the chart will make your dashboard look as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_6.png" class="">  
+<p>At this point, we can create more datasets and charts. I’ve created two more - one for displaying the data for the line chart as a table, and another for displaying the top customers. My final dashboard looks as follows.  </p>
+<img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_7.png" class="">
+<p>The table and the line-chart are created from a view we’d created on top of Trino. Superset caches the results of the query for faster rendering. We can refresh the charts to see the latest data. Clicking on the three dots on the top-right of any chart will show the “Force refresh” option. Clicking on it will cause Superset to query Trino again to fetch the latest data. Since Pinot is getting updated in realtime and we have a view backing the chart, we’ll get the realtime numbers in the dashboard. We can make this happen automatically. Let’s go ahead and do that.  </p>
+<p>Click on “Edit dashboard”. Click on the three dots on the top-right and click on “Set auto-refresh interval”. In the pop-up that shows, select a frequency. Click “Save” to save this setting. Click “Save” one more time to save the dashboard. This will make the chart update in realtime without requiring the user to manually refersh it.  </p>
+<p>That’s it. That’s how you can create realtime dashbord on top of Pinot using Superset and Trino.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cm5kpk8lt000txnrubpskenpc" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Creating a realtime data platform - orchestration</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 17.78px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/design-patterns/" style="font-size: 10px;">design patterns</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 13.33px;">python</a> <a href="/tags/scala/" style="font-size: 18.89px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 11.11px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/">Creating a realtime data platform - SQL</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2025 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About Me</a>
+  
+    <a href="/principles" class="mobile-nav-link">Guiding Principles</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>

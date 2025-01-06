@@ -188,6 +188,59 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Running-Database-Migrations" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/31/Running-Database-Migrations/" class="article-date">
+  <time datetime="2024-03-31T05:40:44.000Z" itemprop="datePublished">2024-03-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Let’s start with a question: how do you run database migrations? Depending on the technology you are using, you may choose something like <a target="_blank" rel="noopener" href="https://documentation.red-gate.com/home">Flyway</a>, <a target="_blank" rel="noopener" href="https://alembic.sqlalchemy.org/en/latest/">Alembic</a>, or some other tool that fits well with your process. My preference is to write and run the migrations as SQL files. I recently released a small library, <a target="_blank" rel="noopener" href="https://pypi.org/project/yoyo-cloud/">yoyo-cloud</a>, that allows storing the migrations as files in S3 and then applying them to the database. In this post we will look at the rationale behind the library, and the kind of workflow it enables.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll start with an example that shows how to run migrations on a Postgres instance. There are a couple of SQL files that I have stored in an S3 bucket — one to create a table, and another to insert a row after the table is created. The bucket is public so you should be able to run the snippet below.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> yoyo <span class="keyword">import</span> get_backend</span><br><span class="line"><span class="keyword">from</span> yoyo_cloud <span class="keyword">import</span> read_s3_migrations</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    migrations = read_s3_migrations(paths=[<span class="string">"s3://yoyo-migrations/"</span>])</span><br><span class="line">    backend = get_backend(<span class="string">f"postgresql://postgres:my-secret-pw@localhost:5432/postgres"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> backend.lock():</span><br><span class="line">        <span class="comment"># -- Apply any outstanding migrations</span></span><br><span class="line">        backend.apply_migrations(backend.to_apply(migrations))</span><br></pre></td></tr></table></figure>
+<p>As you can see from the imports, we use a combination of the original library, <code>yoyo</code>, which provides a helper function to connect to the database, and the new library, <code>yoyo_cloud</code>, which provides a helper function to read the migrations that are stored in S3. </p>
+<p>The <code>read_s3_migrations</code> function reads the files that are stored in S3. It takes as input a list of S3 paths that point to directories where the files are stored. This function is similar in interface to the <code>read_migrations</code> function in <code>yoyo</code> which reads migrations from a directory on the file system except that it reads from S3; the value returned is the same — a list of migrations.</p>
+<p>Finally, we apply the migrations to the Postgres instance. The purpose of this example was to demonstrate the simplicity with which migrations stored in S3 can be applied to a database using <code>yoyo_cloud</code>. We will now look at the rationale behind the library in the next section.</p>
+<h2 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h2><p>The rationale behind the library, as mentioned at the start of this post, is to store SQL migrations as files and apply them one-by-one. Additionally, it allows migrating multiple similar databases easily. In the <a href="2024/03/25/Scaling-Python-Microservices/">previous post on scaling Python microservices</a> we’d seen how a Flask microservice can dynamically connect to multiple databases. If we want to apply a migration, say adding a new column to a table, we’d want it to be applied to all the databases that the service connects to. Using <code>yoyo_cloud</code> we can read the migration from S3, and apply to every table. Since the migrations are idempotent, we can safely reapply the previous migrations. </p>
+<h2 id="Workflow"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow</h2><p>Let’s assume we’d like to create an automation which applies database migrations. We’ll assume we have two environments — stage, and prod. Whenever a migration is to be released to production, it is first tested in the dev environment, and then committed to version control to be applied to the staging environment. These could be stored as a part of the same repository or in a separate repository that contains only migrations. Let’s assume it is the latter. We could have a directory structure as follows.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">migrations</span><br><span class="line">  - order_service</span><br><span class="line">    - prod</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">    - stage</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">      - 002-add-column.sql</span><br></pre></td></tr></table></figure>
+<p>The automation could then apply these migrations to the relevant environment of the service. An additional benefit of this approach is that it makes setting up new environments easier because the migrations can applied to a new database. Additionally, committing migrations to version control, as opposed to running them in an adhoc manner, allows keeping track of when the migration was introduced, why, and by whom.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can apply migrations stored in S3 using <code>yoyo_cloud</code>. If you’re using it, or considering using it, please leave a comment.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm5kpk8m0002txnru55qnf0oq" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Scaling-Python-Microservices" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/03/25/Scaling-Python-Microservices/" class="article-date">
@@ -252,7 +305,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm5j3undb002ux0rufhc66mon" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm5kpk8m0002yxnru42yg83bx" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -322,7 +375,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm5j3und70017x0rufoimhwrt" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm5kpk8lv0017xnru6rjo2hxr" data-title="Hosting Python Packages" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -442,7 +495,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cm5j3undb002zx0ruft1fe2s4" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/" data-id="cm5kpk8m00030xnrudp1m2bqn" data-title="Setting up a Python microservice" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/21/Setting-up-a-Python-microservice/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -520,7 +573,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm5j3undb002xx0rubpc77s89" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/" data-id="cm5kpk8m0002vxnru1guaeyum" data-title="Setting up Sphinx Documentation" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/17/Setting-up-Sphinx-Documentation/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -568,7 +621,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm5j3und90029x0ru25xp9kbe" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/" data-id="cm5kpk8ly002axnruc4gqbjlx" data-title="Peace, Somewhat Precisely" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/11/Peace-Somewhat-Precisely/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -618,7 +671,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm5j3undc003px0ru8h3y5tab" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/" data-id="cm5kpk8m2003qxnru2h50ghm1" data-title="War, Peace, and Everything in Between" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/08/War-Peace-and-Everything-in-Between/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -676,7 +729,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm5j3und90022x0ru1cos5qbs" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/" data-id="cm5kpk8ly0025xnru4mzd6okn" data-title="Palestine and Israel from the perspective of collective consciousness, 5th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/07/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-5/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -746,7 +799,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm5j3und90024x0rufvb88hle" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/" data-id="cm5kpk8ly0022xnruabztfaan" data-title="Palestine and Israel from the perspective of collective consciousness, 4th essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/06/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -802,7 +855,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm5j3und9001zx0ru5ls12s1u" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/" data-id="cm5kpk8ly0020xnru53rwa9aq" data-title="Palestine and Israel from the perspective of collective consciousness, 3rd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/04/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -865,7 +918,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm5j3und9001xx0ru3cvgcxjn" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/" data-id="cm5kpk8lx001xxnru19of9boz" data-title="Palestine and Israel from the perspective of collective consciousness, 2nd essay" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/02/Palestine-and-Israel-from-the-perspective-of-collective-consciousness-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -930,60 +983,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="cm5j3und90027x0ru2ft65c6c" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/" data-id="cm5kpk8ly0027xnrufrlp7af3" data-title="Palestine and Israel from the perspective of collective consciousness" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/03/01/Palestine-and-Israel-from-the-perspective-of-collective-consciousness/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/misc/" rel="tag">misc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Collective-Consciousness" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/02/26/Collective-Consciousness/" class="article-date">
-  <time datetime="2024-02-26T13:26:35.000Z" itemprop="datePublished">2024-02-26</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/02/26/Collective-Consciousness/">Collective Consciousness</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Let’s begin with some reflection. I’d like you to recall the last time you were in a public place, such as a café, a restaurant, or a crowded train station. What did you observe? Pause for a moment and consider it. In this essay, we’ll look at a perspective on the world that I believe will help you understand the intricacy of the interconnected world in which we live.  </p>
-<p>Imagine yourself as a dot on a piece of paper; this is who you are in the big picture. Your views, life experiences, and perceptions all shape who you are. They come together to build your consciousness. Let us now place a few additional dots around you to represent your family. Individuals in your family have separate consciousnesses, but because they share experiences, they now have a shared consciousness. Birthdays, graduations, births and deaths, and so on are all regular life events that everyone in the family will remember. This is the collective conscience of a family, or more broadly, a group of people. We shall continue to generalize until we have a collective consciousness of humanity.  </p>
-<p>Let us now draw a box around your family, followed by a few nearby boxes with dots. This represents the neighborhood. People in the neighborhood have similar experiences, which are determined by a variety of characteristics such as socioeconomic status, ethnicity, shared or conflicting values, and so on. Each neighborhood possesses its own consciousness. A village, town, or city is formed when many of these neighborhoods are combined together. When several such villages, towns, and cities are combined, they form a province, and when numerous provinces are combined, we have the modern nation with well-defined borders.  </p>
-<p>The nation’s collective consciousness is molded by past and present events, as well as its vision for the future. These events might be positive, such as major achievements, or negative, such as wars, famines, epidemics, acts of terror, and so on. The consciousness of many such nations together constitutes humanity’s collective consciousness, which extends back throughout time.  </p>
-<p>The framework we’ve looked at offers a highly humanistic perspective on individuals and humankind as a whole. We’ve looked at a pretty static picture of collective consciousness in which individuals are represented as dots, but in the next sections, we’ll look at a more dynamic view in which the dots move around to interact with other dots. Like in previous sections, we’ll begin with one dot, the individual, and work our way up to a collection of dots, the nation. </p>
-<p>Assume that each dot is now colored according to its national flag and moves freely, interacting with other dots. The very first dots to come into contact are those within the family. As a dot moves further away, it may come in contact with dots from its own neighborhood, from another province, or from a different nation altogether. When a dot interacts with another dot, an exchange of ideas occurs. As a result, there will be dots with similar ideas and those with differing ideas; one will come across others who have similar beliefs. These ideas can be political, religious, economic, moral, or any other topic on which one has an opinion. In other words, dots with similar consciousness prefer to attract each other. Finally, a nation is a collection of many consciousnesses that function as one. However, spontaneous interaction among groups of dots with no organization produces friction and chaos. As a result, guiding principles must exist to determine how consciousnesses interact. These compose the nation’s constitution. We can now begin to conceive of a nation’s laws as principles influencing migrating consciousness, and are themselves created from the collective consciousness the nation. The interaction among nations, either for war or for trade, can be viewed as interactions among consciousnesses of that nation and just as laws govern interaction among individuals, they govern interaction among nations.</p>
-<p>As a result, you, the reader, have your individual consciousness as well as a connection to the wider human consciousness. Your deeds and the life you build will be indelibly inscribed in the memory of time.   </p>
-<p>In critique of my own train of thought, I’d want to point out that the framework I provided is overly simplistic and fails to account for the endless variety of existence. For example, it does not discuss the life of an orphaned child. However, in its defense, the model may be expanded to explain it as well. </p>
-<p>Thank you for reading my pseudo-philosophical post. I’d like to reiterate the question: what do you see when you stand in a crowded area?</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/" data-id="cm5j3und4000fx0ruhucggys0" data-title="Collective Consciousness" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/02/26/Collective-Consciousness/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1024,6 +1026,10 @@ mjx-container[display="true"] + br {
       <ul>
         
           <li>
+            <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+          </li>
+        
+          <li>
             <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
           </li>
         
@@ -1057,10 +1063,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/11/06/Programming-Puzzles-4/">Programming Puzzles 4</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/04/Programming-Puzzles-3/">Programming Puzzles 3</a>
           </li>
         
       </ul>
@@ -1124,21 +1126,6 @@ mjx-container[display="true"] + br {
 
 
 
-  </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

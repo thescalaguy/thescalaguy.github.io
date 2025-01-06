@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://fasihkhatib.com/"/>
-  <updated>2025-01-05T04:18:44.454Z</updated>
+  <updated>2025-01-06T07:15:17.606Z</updated>
   <id>http://fasihkhatib.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Creating a realtime data platform - visualization</title>
+    <link href="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/"/>
+    <id>http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/</id>
+    <published>2025-01-06T07:15:17.000Z</published>
+    <updated>2025-01-06T07:15:17.606Z</updated>
+    
+    <content type="html"><![CDATA[<p>In the <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">previous post</a> we saw how we can use Airflow to create datasets on top of the data that’s stored in Pinot. Once a dataset is created, we may need to present it as a report or a dashboard. In this post we’ll look at how to use Superset to create visualizations on top of the datasets that we’ve created. We’ll create a dashboard to display the daily change in the number of orders placed each day.</p><h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>In an <a href="/2024/02/08/Setting-up-a-SQL-IDE-with-Apache-Superset/">earlier post</a> I’d written about how to run Superset locally. In a nutshell, running Superset using Docker compose requires cloning the repository and checking out the version of the project you’d like to run. In that post I’d also shown how to install additional packages so that we can add the ability to connect to another database. For the sake of brevity, I’ll simply repeat the steps here and refer you to the earlier post for more details. </p><p>Let’s start by cloning the repo and navigating to it.  </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/apache/superset.git --depth 1</span><br><span class="line">cd superset</span><br></pre></td></tr></table></figure><p>Next, we’ll checkout the git repository to a specific tag so that we can build from it.  </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git checkout 4.1.1</span><br></pre></td></tr></table></figure> <p>Next, we’ll add the Python package which will let us connect to Pinot.  </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo "pinotdb" &gt;&gt; ./docker/requirements-local.txt</span><br></pre></td></tr></table></figure><p>Finally, we’ll bring up the containers for this specific tag.  </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TAG=4.1.1 docker-compose -f docker-compose-non-dev.yml up -d</span><br></pre></td></tr></table></figure> <p>This will build the Docker images for Superset and run them as containers. Once the containers are running, Superset will be available on <a href="http://localhost:8088">http://localhost:8088</a>. You can use <code>admin</code> as both the username and password to log in. Now that we’re logged in, we can begin creating charts and dashboards. Let’s start by connecting to Trino.  </p><p>Click on “Settings” on the top-right corner. Click on “Database Connections”. Finally, click on “+ Database”. You should see the following screen pop up.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_1.png" class=""><p>From the supported databases, select “Trino”. Once selected, you’ll be asked to enter the connection string to connect to it. Since the Superset Docker containers are running seperately from the ones where Trino is running, we’ll have to use the IP address of the local machine to make the connection between Superset and Trino. Depending on your operating system, the steps may vary. Go ahead and find the IP address of your machine. Let’s continue with my machine. We’ll have to enter the connection string that SQLAlchemy expects. It looks as follows. </p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">trino://admin:@192.168.0.103:9080</span><br></pre></td></tr></table></figure><p>Notice how we’ve specified <code>admin</code> as the user and a blank password. I’m also specifying the port since I’ve mapped Trino’s port 8080 to 9080 locally. Once we’ve entered the details, we can click on “Test Connection” to make sure we’re able to connect. Finally, if the connection succeeds, we’ll click on “Connect” to save the connection. We can now proceed to creating charts and dashboards.  </p><p>Click on “Dashboards” on the top-left and then click on “+ Dashboard”. This will create a new draft dashboard in which we’ll visualize datasets. Change its name to “Orders and click “Save”. You should see a screen similar to the one shown below.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_2.png" class=""> <p>Click on “Create a new chart” button in the middle of the screen. From there, click on “Add a dataset”. Every chart needs to be associated with a dataset. We’ll create them based on the ones we’ve stored in Trino. You should see the following screen.   </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_3.png" class="">  <p>From the drop down on the left, select “Trino” as the database. Select the “views” schema. Finally, select “daily_orders” as the table. Once done, click on “Create Dataset and Create Chart” option on the bottom-right. In the screen that shows, select “Area Chart” and click on “Create New Chart”. This screen is shown below.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_4.png" class="">  <p>Once on the screen to create the chart, we’ll add the <code>dt</code> column to the X-axis and <code>SUM(pct)</code> to the Y-axis. Since there’s only one value for each day, <code>SUM</code> will return the same value. Clicking on “Update Chart” on the bottom causes a query to be fired to Trino and the result to be rendered as a line chart. It looks as follows.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_5.png" class="">  <p>Click on “Save” on the top-right. Give the chart a name and associate it with the dashboard we just created. It’ll take you to the dashboard with the chart rendered in it. Clicking on “Edit Dashboard” will allow you to change the size of the chart. Go ahead and increase its width. Saving the chart will make your dashboard look as follows.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_6.png" class="">  <p>At this point, we can create more datasets and charts. I’ve created two more - one for displaying the data for the line chart as a table, and another for displaying the top customers. My final dashboard looks as follows.  </p><img src="/2025/01/06/Creating-a-realtime-data-platform-visualization/screen_7.png" class=""><p>The table and the line-chart are created from a view we’d created on top of Trino. Superset caches the results of the query for faster rendering. We can refresh the charts to see the latest data. Clicking on the three dots on the top-right of any chart will show the “Force refresh” option. Clicking on it will cause Superset to query Trino again to fetch the latest data. Since Pinot is getting updated in realtime and we have a view backing the chart, we’ll get the realtime numbers in the dashboard. We can make this happen automatically. Let’s go ahead and do that.  </p><p>Click on “Edit dashboard”. Click on the three dots on the top-right and click on “Set auto-refresh interval”. In the pop-up that shows, select a frequency. Click “Save” to save this setting. Click “Save” one more time to save the dashboard. This will make the chart update in realtime without requiring the user to manually refersh it.  </p><p>That’s it. That’s how you can create realtime dashbord on top of Pinot using Superset and Trino.</p><link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;In the &lt;a href=&quot;/2025/01/04/Creating-a-realtime-data-platform-orchestration/&quot;&gt;previous post&lt;/a&gt; we saw how we can use Airflow to create d
+      
+    
+    </summary>
+    
+    
+      <category term="architecture" scheme="http://fasihkhatib.com/tags/architecture/"/>
+    
+  </entry>
   
   <entry>
     <title>Creating a realtime data platform - orchestration</title>
@@ -268,29 +291,6 @@
     
     
       <category term="design patterns" scheme="http://fasihkhatib.com/tags/design-patterns/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Detecting disguised email addresses in a corpus of text</title>
-    <link href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/"/>
-    <id>http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/</id>
-    <published>2024-08-03T06:08:36.000Z</published>
-    <updated>2024-08-03T06:08:36.644Z</updated>
-    
-    <content type="html"><![CDATA[<p>I’d recently written about <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">an experimental library to detect PII.</a> When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a review or a comment can contain email address in the form “johndoeatgmaildotcom”. This led me to update the library so that emails like these can also be flagged. In a nutshell, I had to update the regex which was used to find the email.  </p><h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>This is best explained with a few examples. In all of the examples, we begin with a proper email and disguise it one step at a time.</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">column = Column(name=<span class="string">"comment"</span>)</span><br><span class="line">detector = ColumnValueRegexDetector()</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcom"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.co.uk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcodotuk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"myemailis:john.doeatproviderdotcom"</span>) == Email()</span><br></pre></td></tr></table></figure>  <p>All of these assertions pass and the regex detector is able to flag all of these examples as email.</p><link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;p&gt;I’d recently written about &lt;a href=&quot;/2024/08/02/An-experiemental-library-to-detect-PII/&quot;&gt;an experimental library to detect PII.&lt;/a&gt; When 
-      
-    
-    </summary>
-    
-    
-      <category term="python" scheme="http://fasihkhatib.com/tags/python/"/>
     
   </entry>
   
