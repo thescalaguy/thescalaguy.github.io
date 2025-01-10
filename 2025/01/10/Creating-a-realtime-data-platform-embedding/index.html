@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="utf-8">
+  
+  
+  <title>Creating a realtime data platform - embedding | Fasih Khatib</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="In the previous post we looked at how to visualize our data using Superset. In this post we’ll look at embedding our dashboards. Embedding allows us to display a dashboard outside of Superset and with">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Creating a realtime data platform - embedding">
+<meta property="og:url" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/index.html">
+<meta property="og:site_name" content="Fasih Khatib">
+<meta property="og:description" content="In the previous post we looked at how to visualize our data using Superset. In this post we’ll look at embedding our dashboards. Embedding allows us to display a dashboard outside of Superset and with">
+<meta property="og:locale">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_1.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_2.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_3.png">
+<meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_5.png">
+<meta property="article:published_time" content="2025-01-10T12:21:10.000Z">
+<meta property="article:modified_time" content="2025-01-10T12:21:10.669Z">
+<meta property="article:author" content="Fasih Khatib">
+<meta property="article:tag" content="architecture">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Fasih Khatib" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"><style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style><!-- hexo-inject:begin --><!-- hexo-inject:end --></head>
+
+<body>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Fasih Khatib</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About Me</a>
+        
+          <a class="main-nav-link" href="/principles">Guiding Principles</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://fasihkhatib.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Creating-a-realtime-data-platform-embedding" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2025/01/10/Creating-a-realtime-data-platform-embedding/" class="article-date">
+  <time datetime="2025-01-10T12:21:10.000Z" itemprop="datePublished">2025-01-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Creating a realtime data platform - embedding
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">previous post</a> we looked at how to visualize our data using Superset. In this post we’ll look at embedding our dashboards. Embedding allows us to display a dashboard outside of Superset and within a webpage. This lets us blend analytics seamlessly into the user’s workflow. We’ll tweak a few Superset settings to allow us to embed a dashboard, and then build a Flask application which will render it in a webpage. We’ll also look at row-level security which lets us limit a user’s access to only those rows that they are allowed access to.  </p>
+<h2 id="Getting-started"><a href="#Getting-started" class="headerlink" title="Getting started"></a>Getting started</h2><p>Let’s say we’d like to create a dashboard that consists of a line chart and a table. The line chart plots the number of orders the user has placed daily. The table shows the cafes where the user frequently orders from. We’ll start by writing a query which will enable us to create the line chart. This will be stored as a view so that rendering the data produces realtime results. The query is as follows.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> hive.views.daily_orders_by_users <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> user_id,</span><br><span class="line">       <span class="built_in">CAST</span>(FROM_UNIXTIME(<span class="built_in">CAST</span>(created_at <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>) <span class="operator">/</span> <span class="number">1e3</span>) <span class="keyword">AS</span> <span class="type">DATE</span>) <span class="keyword">AS</span> dt,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.orders</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll create the view which will tell us the cafes the user orders from. It is as follows.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> hive.views.frequent_cafes <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> o.user_id,</span><br><span class="line">       c.name <span class="keyword">AS</span> cafe,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count,</span><br><span class="line">       <span class="built_in">RANK</span>() <span class="keyword">OVER</span>(<span class="keyword">PARTITION</span> <span class="keyword">BY</span> o.user_id <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">DESC</span>) <span class="keyword">AS</span> rank</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.orders <span class="keyword">AS</span> o</span><br><span class="line">  <span class="keyword">INNER</span> <span class="keyword">JOIN</span> pinot.default.cafe <span class="keyword">AS</span> c</span><br><span class="line">  <span class="keyword">ON</span> <span class="built_in">CAST</span>(o.cafe_id <span class="keyword">AS</span> <span class="type">VARCHAR</span>) <span class="operator">=</span> c.id</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="number">1</span> <span class="keyword">ASC</span>, <span class="number">3</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
+<p>Once the views are created, we can use them in Superset to create our dashboard. However, we first need to change some settings in Superset to allow embedding dashboards. If you have your Superset containers running from the previous post, start by bringing them down. Then, execute the following command to delete all the Docker images related to Superset; we’ll rebuild it with the new settings. </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images | grep superset | awk '{print $3}' | xargs docker rmi</span><br></pre></td></tr></table></figure>
+<p>Let’s begin editing the settings. Navigate to the <code>superset</code> directory within the <code>superset</code> repository and open the <code>config.py</code> file. This contains the configuration that will be used by the Superset application when it runs. We’ll edit this line-by-line and see why these changes are required. First, we’ll disable the Talisman library used by Superset. Find the variable <code>TALISMAN_ENABLED</code> and update it to the following.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TALISMAN_ENABLED = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+<p>Talisman is a Python library that protects Flask against some of the common web application security issues. Since we’ll be running this locally over HTTP, we can disable this to allow the embedded dashboard to render within the webpage. Next, we’ll disable CSRF protection. Again, all of these settings are to make things run locally over an HTTP connection. You should let these be for production deployment. Find the variable <code>WTF_CSRF_ENABLED</code> and set it to <code>False</code>. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">WTF_CSRF_ENABLED = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
+<p>Next, enable dashboard embedding. This is disabled by default. Find the <code>EMBEDDED_SUPERSET</code> variable and set it to <code>True</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"EMBEDDED_SUPERSET"</span>: <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll elevate the permissions of the Guest user to enable us to render dashboards in an iframe. Set <code>GUEST_ROLE_NAME</code> to <code>Gamma</code>.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GUEST_ROLE_NAME = <span class="string">"Gamma"</span></span><br></pre></td></tr></table></figure>  
+<p>Superset has some predefined roles with permissions attached to them. The Gamma role is the one for data consumers and has limited access. Assigning the Gamma role to the guest user lets us embed the dashboard within a web application. As we’ll see shortly, we’ll generate a guest token which we’ll use when embeding a dashboard.  </p>
+<p>With these changes made, we can rebuild the Superset images. Run the following command to build them. </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TAG=4.1.1 docker compose -f docker-compose-non-dev.yml build</span><br></pre></td></tr></table></figure>
+<p>This will take a while to build. In the meantime, we’ll start writing our Flask application. It’ll be a simple application that renders a Jinja template. In that template we’ll add the code to display the embedded dashboard. Let’s see what the template looks like.  </p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>Dashboard<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="language-css"></span></span><br><span class="line"><span class="language-css">  <span class="selector-tag">body</span>, <span class="selector-tag">div</span> {</span></span><br><span class="line"><span class="language-css">      <span class="attribute">width</span>: <span class="number">100vw</span>;</span></span><br><span class="line"><span class="language-css">      <span class="attribute">height</span>: <span class="number">100vh</span>;</span></span><br><span class="line"><span class="language-css">  }</span></span><br><span class="line"><span class="language-css"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"chart"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://unpkg.com/@superset-ui/embedded-sdk"</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  supersetEmbeddedSdk.<span class="title function_">embedDashboard</span>({</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">id</span>: <span class="string">'{{ chart_id }}'</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">supersetDomain</span>: <span class="string">'http://192.168.0.103:8088'</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">mountPoint</span>: <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">"chart"</span>),</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">fetchGuestToken</span>: <span class="function">() =&gt;</span> <span class="string">"{{ guest_token  }}"</span>,</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">dashboardUiConfig</span>: {</span></span><br><span class="line"><span class="language-javascript">        <span class="attr">hideTitle</span>: <span class="literal">true</span></span></span><br><span class="line"><span class="language-javascript">      },</span></span><br><span class="line"><span class="language-javascript">      <span class="attr">iframeSandboxExtras</span>: []</span></span><br><span class="line"><span class="language-javascript">  })</span></span><br><span class="line"><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript">  <span class="comment">// This is a hack to make the iframe bigger.</span></span></span><br><span class="line"><span class="language-javascript">  <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">"chart"</span>).<span class="property">children</span>[<span class="number">0</span>].<span class="property">width</span>=<span class="string">"100%"</span>;</span></span><br><span class="line"><span class="language-javascript">  <span class="variable language_">document</span>.<span class="title function_">getElementById</span>(<span class="string">"chart"</span>).<span class="property">children</span>[<span class="number">0</span>].<span class="property">height</span>=<span class="string">"100%"</span>;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>Let’s unpack what’s going on. The embedded dashboard is rendered within an iframe and we need a container element to hold it. This is what the <code>div</code> is for; it’ll hold the iframe. </p>
+<p>Next, we load the Superset embed SDK from the CDN. This make the <code>supersetEmbededSdk</code> variable globally available. We call the <code>embedDashboard</code> method on it to embed the dashboard. This method takes an object which contains the information needed for embedding. The first piece of informaton we pass is the <code>id</code> of the chart. As we’ll see shortly, we get this from the Superset UI. We’re using a template variable here and we’ll replace it with its actual value when we render the webpage.  </p>
+<p>Next, we specify the address of our Superset instance in the <code>supersetDomain</code> field. Here I’ve used the IP address of my local machine to point to the Docker containers running Superset.  </p>
+<p>Next, we specify the mount point. The <code>mountPoint</code> is the element within the page where the chart will be rendered. We’re retrieving the <code>div</code> using its ID.   </p>
+<p>Next, we specify the <code>fetchGuestToken</code> function. This function retrieves the guest token from the backend. Since we’re rendering the template from a Flask application, we’ll fetch the guest token on the servier side. Therefore, we simply return the guest token from the function. We’ve used a Jinja variable <code>guest_token</code> which we’ll replace with its actual value when we render the template.  </p>
+<p>Next, we specify some configuration information. In our example, we’ve hidden the title of the dashboard.  </p>
+<p>Finally, we increase the size of the iframe so that it fills the screen.  </p>
+<p>Having written the template, we’ll move on to writing the Flask web application. It’s a single file with one endpoint to render the chart. We’ll write functions to see how we can log into Superset using its API and then fetch a guest token. The complete code for the app is given below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">app = Flask(__name__)</span><br><span class="line">chart_id = <span class="string">"2e8635f3-349a-4c91-bb6e-ff4883a543cc"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_access_token</span>() -&gt; <span class="built_in">str</span>:</span><br><span class="line">    json = {<span class="string">"username"</span>: <span class="string">"admin"</span>, <span class="string">"password"</span>: <span class="string">"admin"</span>, <span class="string">"provider"</span>: <span class="string">"db"</span>, <span class="string">"refresh"</span>: <span class="literal">True</span>}</span><br><span class="line"></span><br><span class="line">    response = requests.post(</span><br><span class="line">        <span class="string">"http://192.168.0.103:8088/api/v1/security/login"</span>,</span><br><span class="line">        headers={</span><br><span class="line">            <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>,</span><br><span class="line">            <span class="string">"Accept"</span>: <span class="string">"application/json"</span>,</span><br><span class="line">        },</span><br><span class="line">        json=json,</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    response.raise_for_status()</span><br><span class="line">    <span class="keyword">return</span> response.json()[<span class="string">"access_token"</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_guest_token</span>(<span class="params">user_id: <span class="built_in">int</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    access_token = get_access_token()</span><br><span class="line"></span><br><span class="line">    response = requests.post(</span><br><span class="line">        <span class="string">"http://192.168.0.103:8088/api/v1/security/guest_token"</span>,</span><br><span class="line">        headers={</span><br><span class="line">            <span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>,</span><br><span class="line">            <span class="string">"Accept"</span>: <span class="string">"application/json"</span>,</span><br><span class="line">            <span class="string">"Authorization"</span>: <span class="string">f"Bearer <span class="subst">{access_token}</span>"</span>,</span><br><span class="line">        },</span><br><span class="line">        json={</span><br><span class="line">            <span class="string">"resources"</span>: [{<span class="string">"id"</span>: chart_id, <span class="string">"type"</span>: <span class="string">"dashboard"</span>}],</span><br><span class="line">            <span class="string">"rls"</span>: [{<span class="string">"clause"</span>: <span class="string">f"user_id=<span class="subst">{user_id}</span>"</span>}],</span><br><span class="line">            <span class="string">"user"</span>: {<span class="string">"first_name"</span>: <span class="string">"..."</span>, <span class="string">"last_name"</span>: <span class="string">"..."</span>, <span class="string">"username"</span>: <span class="string">"..."</span>},</span><br><span class="line">        },</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    response.raise_for_status()</span><br><span class="line">    <span class="keyword">return</span> response.json()[<span class="string">"token"</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.route(<span class="params"><span class="string">"/chart/&lt;int:user_id&gt;"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">chart</span>(<span class="params">user_id: <span class="built_in">int</span></span>):</span><br><span class="line">    guest_token = get_guest_token(user_id)</span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"chart.html"</span>, guest_token=guest_token, chart_id=chart_id)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    app.run(host=<span class="string">"0.0.0.0"</span>, port=<span class="number">5555</span>, debug=<span class="literal">True</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>Let’s step through the code. The <code>chart_id</code> is the unique identifier for the chart we’re trying to embed. As we’ll see shortly, this comes from the Superset UI.   </p>
+<p>Next, we define the <code>get_access_token</code> function which retrieves an access token. To get this, we need to log into Superset. We use the default username and password which we POST to the login endpoint and extract the token from the JSON that’s returned. This token lets us fetch a guest token which is required for embedding the dashboard.  </p>
+<p>Next, we define the <code>get_guest_token</code> function which retrieves the guest token. It takes the ID of the user as an argument so that it can apply row-level security to the dataset that powers the dashboard. Row-level security, often abbreviated as RLS, is a mechanism which restricts a user’s access to only those rows that they have the permission to access. If we look at the view we’ve created, it contains the data for all the users. Applying row-level security allows us to display only those rows which pertain to the given user. The <code>rls</code> field in the JSON body contains the clause which limits the access of the user. It is applied as a part of the <code>WHERE</code> clause and filters the rows in the dataset. The <code>resources</code> field contains the ID of the chart that we’d like to embed. The <code>user</code> field contains the details of the guest user.  </p>
+<p>Next, we define the <code>chart</code> function which actually renders the tempalte. The template is rendered by calling the <code>render_template</code> function which takes the guest token and chart ID as arguments. This generates the final HTML which is returned to the user. </p>
+<p>We’ll run this app in a separate terminal by executing the following command.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python run_app.py</span><br></pre></td></tr></table></figure>
+<p>After waiting for a while to let the Superset images build, we can go ahead and bring up its containers.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TAG=4.1.1 docker compose -f docker-compose-non-dev.yml up -d</span><br></pre></td></tr></table></figure>
+<p>After opening the Superset UI, we’ll begin by creating a dashboard. We’ll add a chart to the dasboard which is backed by the <code>daily_orders_by_users</code> view which we created earlier. We’ll add an area chart where we have date on the x-axis and the count on the y-axis with the ID of the user being the dimension. The screenshot below shows what it looks like.  </p>
+<img src="/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_1.png" class="">
+<p>The chart looks cluttered because it is displaying the data of every user. When we embed this chart, we’ll rely on row-level security to display the chart that only belongs to a particular user. Similarly, we’ll add a table backed by the <code>frequent_cafes</code> view and display it in the dashboard. Remember that the filtering is applied to the dataset backing the chart. This means that we can create the table and exclude the <code>user_id</code> column from display.  </p>
+<img src="/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_2.png" class="">
+<p>Having added all our charts to the dashboard, we can embed it in the webapp. Begin by saving the dashboard. Then, click on the three dots on the top-right hand and click “Embed dashboard”. You should see a dialog box pop up which allows you to list the domains from which the embedded dashboard can be accessed. We’ll leave this empty to allow embedding from all domains and click “Enable Embedding”. From the next dialog box, we’ll copy the ID of the dashboard and then click the X button on the top-right hand to close it.</p>
+<img src="/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_3.png" class="">
+<p>We’ll replace the <code>chart_id</code> variable in our web application and then run it. It will start a Flask application that listens on port 5555. We’ll navigate to <a target="_blank" rel="noopener" href="http://localhost:5555/1">http://localhost:5555/1</a> which will display the chart and the table for the user with ID 1. The embedded dashboard will apply the row-level security clause for this user ID and only display their data. The dashboard looks as follows.  </p>
+<img src="/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_5.png" class=""> 
+<p>That’s it. That’s how to embed a Superset dashboard.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cm5qq90hd000p6trufvvjdfl6" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Creating a realtime data platform - visualization</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<section id="comments">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 18.57px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.86px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2025/01/10/Creating-a-realtime-data-platform-embedding/">Creating a realtime data platform - embedding</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/">Creating a realtime data platform - visualization</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/04/Creating-a-realtime-data-platform-orchestration/">Creating a realtime data platform - orchestration</a>
+          </li>
+        
+          <li>
+            <a href="/2025/01/02/Creating-a-realtime-data-platform-SQL/">Creating a realtime data platform - SQL</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
+          </li>
+        
+          <li>
+            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
+          </li>
+        
+          <li>
+            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2025 Fasih Khatib<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About Me</a>
+  
+    <a href="/principles" class="mobile-nav-link">Guiding Principles</a>
+  
+</nav>
+    
+<script>
+  var disqus_shortname = 'https-thescalaguy-github-io';
+  
+  var disqus_url = 'http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/';
+  
+  (function(){
+    var dsq = document.createElement('script');
+    dsq.type = 'text/javascript';
+    dsq.async = true;
+    dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+</script>
+
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</body>
+</html>
