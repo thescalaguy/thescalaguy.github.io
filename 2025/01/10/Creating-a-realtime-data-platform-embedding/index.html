@@ -18,7 +18,7 @@
 <meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_3.png">
 <meta property="og:image" content="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/screen_5.png">
 <meta property="article:published_time" content="2025-01-10T12:21:10.000Z">
-<meta property="article:modified_time" content="2025-01-10T12:21:10.669Z">
+<meta property="article:modified_time" content="2025-01-11T11:41:42.021Z">
 <meta property="article:author" content="Fasih Khatib">
 <meta property="article:tag" content="architecture">
 <meta name="twitter:card" content="summary">
@@ -223,7 +223,7 @@ mjx-container[display="true"] + br {
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> hive.views.daily_orders_by_users <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> user_id,</span><br><span class="line">       <span class="built_in">CAST</span>(FROM_UNIXTIME(<span class="built_in">CAST</span>(created_at <span class="keyword">AS</span> <span class="keyword">DOUBLE</span>) <span class="operator">/</span> <span class="number">1e3</span>) <span class="keyword">AS</span> <span class="type">DATE</span>) <span class="keyword">AS</span> dt,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.orders</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
 <p>Next, we’ll create the view which will tell us the cafes the user orders from. It is as follows.  </p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">VIEW</span> hive.views.frequent_cafes <span class="keyword">AS</span></span><br><span class="line"><span class="keyword">SELECT</span> o.user_id,</span><br><span class="line">       c.name <span class="keyword">AS</span> cafe,</span><br><span class="line">       <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">AS</span> count,</span><br><span class="line">       <span class="built_in">RANK</span>() <span class="keyword">OVER</span>(<span class="keyword">PARTITION</span> <span class="keyword">BY</span> o.user_id <span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">DESC</span>) <span class="keyword">AS</span> rank</span><br><span class="line"><span class="keyword">FROM</span> pinot.default.orders <span class="keyword">AS</span> o</span><br><span class="line">  <span class="keyword">INNER</span> <span class="keyword">JOIN</span> pinot.default.cafe <span class="keyword">AS</span> c</span><br><span class="line">  <span class="keyword">ON</span> <span class="built_in">CAST</span>(o.cafe_id <span class="keyword">AS</span> <span class="type">VARCHAR</span>) <span class="operator">=</span> c.id</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span> <span class="number">1</span>, <span class="number">2</span></span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> <span class="number">1</span> <span class="keyword">ASC</span>, <span class="number">3</span> <span class="keyword">DESC</span>;</span><br></pre></td></tr></table></figure>
-<p>Once the views are created, we can use them in Superset to create our dashboard. However, we first need to change some settings in Superset to allow embedding dashboards. If you have your Superset containers running from the previous post, start by bringing them down. Then, execute the following command to delete all the Docker images related to Superset; we’ll rebuild it with the new settings. </p>
+<p>Once the views have been constructed, we can use them in Superset to build our dashboard. To enable dashboard embedding, we must first update some Superset settings. If you have any Superset containers running from the last post, start by shutting them down. Then, run the following command to remove any Docker images linked to Superset; we’ll rebuild it with the new settings.</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker images | grep superset | awk '{print $3}' | xargs docker rmi</span><br></pre></td></tr></table></figure>
 <p>Let’s begin editing the settings. Navigate to the <code>superset</code> directory within the <code>superset</code> repository and open the <code>config.py</code> file. This contains the configuration that will be used by the Superset application when it runs. We’ll edit this line-by-line and see why these changes are required. First, we’ll disable the Talisman library used by Superset. Find the variable <code>TALISMAN_ENABLED</code> and update it to the following.</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TALISMAN_ENABLED = <span class="literal">False</span></span><br></pre></td></tr></table></figure>
@@ -268,7 +268,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cm5qq90hd000p6trufvvjdfl6" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cm5tt0qft0015s6ru20gsc5l3" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -281,6 +281,15 @@ mjx-container[display="true"] + br {
   
     
 <nav id="article-nav">
+  
+    <a href="/2025/01/12/Creating-a-realtime-data-platform-indexing/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Creating a realtime data platform - indexing
+        
+      </div>
+    </a>
   
   
     <a href="/2025/01/06/Creating-a-realtime-data-platform-visualization/" id="article-nav-older" class="article-nav-link-wrap">
@@ -308,7 +317,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 18.57px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.86px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -318,6 +327,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/01/12/Creating-a-realtime-data-platform-indexing/">Creating a realtime data platform - indexing</a>
+          </li>
         
           <li>
             <a href="/2025/01/10/Creating-a-realtime-data-platform-embedding/">Creating a realtime data platform - embedding</a>
@@ -353,10 +366,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
           </li>
         
       </ul>

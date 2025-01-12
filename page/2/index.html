@@ -188,52 +188,6 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
-    <article id="post-Detecting-disguised-email-addresses-in-a-corpus-of-text" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" class="article-date">
-  <time datetime="2024-08-03T06:08:36.000Z" itemprop="datePublished">2024-08-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/">Detecting disguised email addresses in a corpus of text</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I’d recently written about <a href="/2024/08/02/An-experiemental-library-to-detect-PII/">an experimental library to detect PII.</a> When discussing it with an acquaintance of mine, I was told that PII can also be disguised. For example, a corpus of text like a review or a comment can contain email address in the form “johndoeatgmaildotcom”. This led me to update the library so that emails like these can also be flagged. In a nutshell, I had to update the regex which was used to find the email.  </p>
-<h2 id="Example"><a href="#Example" class="headerlink" title="Example"></a>Example</h2><p>This is best explained with a few examples. In all of the examples, we begin with a proper email and disguise it one step at a time.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">column = Column(name=<span class="string">"comment"</span>)</span><br><span class="line">detector = ColumnValueRegexDetector()</span><br><span class="line"></span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoe@provider.com"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcom"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"john.doe@provider.co.uk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"johndotdoeatproviderdotcodotuk"</span>) == Email()</span><br><span class="line"><span class="keyword">assert</span> detector.detect(column=column, sample=<span class="string">"myemailis:john.doeatproviderdotcom"</span>) == Email()</span><br></pre></td></tr></table></figure>  
-<p>All of these assertions pass and the regex detector is able to flag all of these examples as email.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5qq90hg00196trudqfka6xr" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-An-experiemental-library-to-detect-PII" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/08/02/An-experiemental-library-to-detect-PII/" class="article-date">
@@ -270,7 +224,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5qq90hc000c6trugn7i0w7c" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5tt0qfq000es6ru43v3h9w0" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -320,7 +274,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm5qq90hb000b6tru603uaejd" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm5tt0qfr000ns6ru1ppdcoy1" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -386,146 +340,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm5qq90hl00346truar3z1lnl" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm5tt0qg0003gs6rudgmo039o" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Programming-Puzzles-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/07/03/Programming-Puzzles-2/" class="article-date">
-  <time datetime="2024-07-03T11:56:27.000Z" itemprop="datePublished">2024-07-03</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/07/03/Programming-Puzzles-2/">Programming Puzzles 2</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>As I continue working my way through the book on programming puzzles, I came across those involving permutations. In this post I’ll collect puzzles with the same theme, both from the book and from the internet.  </p>
-<h2 id="All-permutations"><a href="#All-permutations" class="headerlink" title="All permutations"></a>All permutations</h2><p>The first puzzle is to compute all the permutations of a given array. By extension, it can be used to compute all the permutations of a string, too, if we view it as an array of characters. To do this we’ll implement <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Heap%27s_algorithm">Heap’s algorithm</a>. The following is its recursive version.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">heap</span>(<span class="params">permutations: <span class="built_in">list</span>[<span class="built_in">list</span>], A: <span class="built_in">list</span>, n: <span class="built_in">int</span></span>):</span><br><span class="line">    <span class="keyword">if</span> n == <span class="number">1</span>:</span><br><span class="line">        permutations.append(<span class="built_in">list</span>(A))</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        heap(permutations, A, n - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n - <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">if</span> n % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">                A[i], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[i]</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                A[<span class="number">0</span>], A[n - <span class="number">1</span>] = A[n - <span class="number">1</span>], A[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">            heap(permutations, A, n - <span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>The array <code>permutations</code> is the accumulator which will store all the permutations of the array. The initial arguments to the function would be an empty acuumulator, the list to permute, and the length of the list.</p>
-<h2 id="Next-permutation"><a href="#Next-permutation" class="headerlink" title="Next permutation"></a>Next permutation</h2><p>The next puzzle we’ll look at is computing the next permutation of the array in lexicographical order. The following implementation has been taken from the book.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">next_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &gt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &gt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<h2 id="Previous-permutation"><a href="#Previous-permutation" class="headerlink" title="Previous permutation"></a>Previous permutation</h2><p>A variation of the puzzle is to compute the previous permutation of the array in lexicographical order. The idea is to “reverse” the logic for computing the next permutation. If we look closely, we’ll find that all we’re changing are the comparison operators.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">previous_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    inversion_point = <span class="built_in">len</span>(perm) - <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (inversion_point &gt;= <span class="number">0</span>) <span class="keyword">and</span> (perm[inversion_point] &lt;= perm[inversion_point + <span class="number">1</span>]):</span><br><span class="line">        inversion_point = inversion_point - <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> inversion_point == -<span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">reversed</span>(<span class="built_in">range</span>(inversion_point + <span class="number">1</span>, <span class="built_in">len</span>(perm))):</span><br><span class="line">        <span class="keyword">if</span> perm[i] &lt; perm[inversion_point]:</span><br><span class="line">            perm[inversion_point], perm[i] = perm[i], perm[inversion_point]</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    perm[inversion_point + <span class="number">1</span>:] = <span class="built_in">reversed</span>(perm[inversion_point + <span class="number">1</span>:])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<h2 id="kth-smallest-permutation"><a href="#kth-smallest-permutation" class="headerlink" title="kth smallest permutation"></a>kth smallest permutation</h2><p>The final puzzle we’ll look at is the one where we need to compute the k’th smallest permutation. The solution to this uses the <code>previous_permutation</code> function that we saw above. The idea is to call this function k times on the lexicographically-largest array. Sorting the array in decreasing order results is the largest. This becomes the input to the <code>previous_permutation</code> function.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">kth_smallest_permutation</span>(<span class="params">perm: <span class="built_in">list</span>[<span class="built_in">int</span>], k: <span class="built_in">int</span></span>) -&gt; <span class="built_in">list</span>[<span class="built_in">int</span>]:</span><br><span class="line">    <span class="comment"># -- Arrange the numbers in decreasing order</span></span><br><span class="line">    <span class="comment"># -- thereby creating the lexicographically largest permutation</span></span><br><span class="line">    perm = <span class="built_in">sorted</span>(perm, reverse=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(k):</span><br><span class="line">        perm = previous_permutation(perm)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> perm</span><br></pre></td></tr></table></figure>  
-<p>That’s it. These are puzzles involving permutations.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm5qq90hj002e6trufxb44xde" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/epi/" rel="tag">epi</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Programming-Puzzles-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/06/24/Programming-Puzzles-1/" class="article-date">
-  <time datetime="2024-06-24T06:58:05.000Z" itemprop="datePublished">2024-06-24</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/06/24/Programming-Puzzles-1/">Programming Puzzles 1</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I am working my way through a classic book of programming puzzles. As I work through more of these puzzles, I’ll share what I discover to solidify my understanding and help others who are doing the same. If you’ve ever completed puzzles on a site like <a target="_blank" rel="noopener" href="https://leetcode.com/">leetcode</a>, you’ll notice that the sheer volume of puzzles is overwhelming. However, there are patterns to these puzzles, and becoming familiar with them makes it easier to solve them. In this post we’ll take a look at one such pattern - two pointers - and see how it can be used to solve puzzles involving arrays.  </p>
-<h2 id="Two-Pointers"><a href="#Two-Pointers" class="headerlink" title="Two Pointers"></a>Two Pointers</h2><p>The idea behind two pointers is that there are, as the name suggests, two pointers that traverse the array, with one pointer leading the other. Using these two pointers we update the array and solve the puzzle at hand. As an illustrative example, let us consider the puzzle where we’re given an array of even and odd numbers and we’d like to move all the even numbers to the front of the array.  </p>
-<h3 id="Even-and-Odd"><a href="#Even-and-Odd" class="headerlink" title="Even and Odd"></a>Even and Odd</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">even_odd</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">"""Move even numbers to the front of the array."""</span></span><br><span class="line">    write_idx = <span class="number">0</span></span><br><span class="line">    idx = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[idx] % <span class="number">2</span> == <span class="number">0</span>:</span><br><span class="line">            A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br></pre></td></tr></table></figure>  
-<p>The two pointers here are <code>idx</code> and <code>write_idx</code>. While <code>idx</code> traverses the array and indicates the current element, <code>write_idx</code> indicates the position where the next even number should be written. Whenever <code>idx</code> points to an even number, it is written at the position indicated by <code>write_idx</code>. With this logic, if all the numbers in the array are even, <code>idx</code> and <code>write_idx</code> point to the same element i.e. the number is swapped with itself and the pointers are moved forward.  </p>
-<p>We’ll build upon this technique to remove duplicates from the array.  </p>
-<h3 id="Remove-Duplicates"><a href="#Remove-Duplicates" class="headerlink" title="Remove Duplicates"></a>Remove Duplicates</h3><p>Consider a sorted array containing duplicate numbers. We’d like to keep only one occurrence of each number and overwrite the rest. This can be solved using two pointers as follows.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">remove_duplicates</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">"""Remove all duplicates in the array."""</span></span><br><span class="line">    write_idx, idx = <span class="number">1</span>, <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[write_idx - <span class="number">1</span>] != A[idx]:</span><br><span class="line">            A[write_idx] = A[idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> write_idx</span><br></pre></td></tr></table></figure>  
-<p>In this solution, <code>idx</code> and <code>write_idx</code> start at index 1 instead of 0. The reason is that we’d like to look at the number to the left of <code>write_idx</code>, and starting at index 1 allows us to do that. Notice also how we’re writing the <code>if</code> condition to check for duplicity in the vicinity of <code>write_idx</code>; the number to the left of <code>write_idx</code> should be different from the one that <code>idx</code> is presently pointing to.  </p>
-<p>As a varitation, move the duplicates to the end of the array instead of overwriting them.</p>
-<div class="spoiler collapsed">
-    <div class="spoiler-title">
-        Move Duplicates to the End
-    </div>
-    <div class="spoiler-content">
-        <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">remove_duplicates</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">"""Remove all duplicates in the array and move them to the end"""</span></span><br><span class="line">    write_idx, idx = <span class="number">1</span>, <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[write_idx - <span class="number">1</span>] != A[idx]:</span><br><span class="line">            A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> write_idx</span><br></pre></td></tr></table></figure>
-
-    </div>
-</div>
-<p>As another variation, remove a given number from the array by moving it to the end.</p>
-<div class="spoiler collapsed">
-    <div class="spoiler-title">
-        Remove Key from Array
-    </div>
-    <div class="spoiler-content">
-        <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">remove</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>], k: <span class="built_in">int</span></span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    write_idx = <span class="number">0</span></span><br><span class="line">    idx = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[idx] != k:</span><br><span class="line">            A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br></pre></td></tr></table></figure>
-
-    </div>
-</div>
-<p>With this same pattern, we can now change the puzzle to state that we want at most two instances of the number in the sorted array. </p>
-<h3 id="Remove-Duplicates-Variation"><a href="#Remove-Duplicates-Variation" class="headerlink" title="Remove Duplicates Variation"></a>Remove Duplicates Variation</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">remove_duplicates</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">"""Keep at most two instances of the number."""</span></span><br><span class="line">    write_idx = <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> idx <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, <span class="built_in">len</span>(A)):</span><br><span class="line">        <span class="keyword">if</span> A[write_idx - <span class="number">2</span>] != A[idx]:</span><br><span class="line">            A[write_idx] = A[idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> write_idx</span><br></pre></td></tr></table></figure>  
-<p>Akin to the previous puzzle, we look for duplicates in the vicinity of <code>write_idx</code>. While in the previous puzzle the <code>if</code> condition checked for one number to the left, in this variation we look at two positions to the left of <code>write_idx</code> to keep at most two instances. The remainder of the logic is the same. As a variation, try keeping at most three instances of the number in the sorted array. </p>
-<p>Finally, we’ll use the same pattern to solve the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Dutch_national_flag_problem">Dutch national flag</a> problem.  </p>
-<h3 id="Dutch-National-Flag"><a href="#Dutch-National-Flag" class="headerlink" title="Dutch National Flag"></a>Dutch National Flag</h3><p>In this problem, we sort the array by dividing it into three distinct regions. The first region contains elements less than the pivot, the second region contains elements equal to the pivot, and the third region contains elements greater than the pivot. </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">dutch_national_flag</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>], pivot_idx: <span class="built_in">int</span></span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">"""Divide the array into three distinct regions."""</span></span><br><span class="line">    pivot = A[pivot_idx]</span><br><span class="line">    write_idx = <span class="number">0</span></span><br><span class="line">    idx = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># --- Move all elements less than pivot to the front</span></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[idx] &lt; pivot:</span><br><span class="line">            A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    idx = write_idx</span><br><span class="line"></span><br><span class="line">    <span class="comment"># -- Move all elements equal to the pivot to the middle</span></span><br><span class="line">    <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">        <span class="keyword">if</span> A[idx] == pivot:</span><br><span class="line">            A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">            write_idx = write_idx + <span class="number">1</span></span><br><span class="line">        idx = idx + <span class="number">1</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># -- All elements greater than pivot have been moved to the end.</span></span><br></pre></td></tr></table></figure>  
-<p>This problem combines everything we’ve seen so far about two pointers and divides the array into three distinct regions. As we compute the first two regions, the third region is computed as a side-effect.  </p>
-<p>We can now solve a variation of the Dutch national flag partitioning problem by accepting a list of pivot elements. In this variation all the numbers within the list of pivots appear together i.e. all the elements equal to the first pivot element appear first, equal to second pivot element appear second, and so on.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">dutch_national_flag</span>(<span class="params">A: <span class="built_in">list</span>[<span class="built_in">int</span>], pivots: <span class="built_in">list</span>[<span class="built_in">int</span>]</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">"""This is a variation in which all elements with same key appear together."""</span></span><br><span class="line">    write_idx = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> pivot <span class="keyword">in</span> pivots:</span><br><span class="line">        idx = write_idx</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> idx &lt; <span class="built_in">len</span>(A):</span><br><span class="line">            <span class="keyword">if</span> A[idx] == pivot:</span><br><span class="line">                A[write_idx], A[idx] = A[idx], A[write_idx]</span><br><span class="line">                write_idx = write_idx + <span class="number">1</span></span><br><span class="line">            idx = idx + <span class="number">1</span></span><br></pre></td></tr></table></figure>  
-<p>That’s it, that’s how we can solve puzzles involving two pointers and arrays.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm5qq90hj002c6tru6g59987e" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/epi/" rel="tag">epi</a></li></ul>
 
     </footer>
   </div>
@@ -599,7 +420,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm5qq90hf00136truh8xc8azl" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm5tt0qfu001as6ru132e9qe3" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -645,7 +466,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm5qq90hb00086tru17u9ds6z" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm5tt0qfp0008s6ru1t5phns0" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -767,7 +588,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm5qq90hf00176tru9zxq6z6x" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm5tt0qfu001fs6rua7g8g8db" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -838,7 +659,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm5qq90hk002t6truct9lac4r" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm5tt0qg0003es6rug6e373gi" data-title="Scaling Python Microservices Part 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -902,7 +723,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm5qq90hk002q6true8bka0li" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/" data-id="cm5tt0qfy002os6ru0o1cc3uv" data-title="Scaling Python Microservices Part 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/05/12/Scaling-Python-Microservices-Part-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -961,13 +782,216 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm5qq90hg001b6tru61ek967f" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/" data-id="cm5tt0qfw001ss6ru4llf996z" data-title="Implementing TSum with Dask" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/04/07/Implementing-TSum-with-Dask/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/algorithms/" rel="tag">algorithms</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Running-Database-Migrations" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/31/Running-Database-Migrations/" class="article-date">
+  <time datetime="2024-03-31T05:40:44.000Z" itemprop="datePublished">2024-03-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/31/Running-Database-Migrations/">Running Database Migrations</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Let’s start with a question: how do you run database migrations? Depending on the technology you are using, you may choose something like <a target="_blank" rel="noopener" href="https://documentation.red-gate.com/home">Flyway</a>, <a target="_blank" rel="noopener" href="https://alembic.sqlalchemy.org/en/latest/">Alembic</a>, or some other tool that fits well with your process. My preference is to write and run the migrations as SQL files. I recently released a small library, <a target="_blank" rel="noopener" href="https://pypi.org/project/yoyo-cloud/">yoyo-cloud</a>, that allows storing the migrations as files in S3 and then applying them to the database. In this post we will look at the rationale behind the library, and the kind of workflow it enables.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll start with an example that shows how to run migrations on a Postgres instance. There are a couple of SQL files that I have stored in an S3 bucket — one to create a table, and another to insert a row after the table is created. The bucket is public so you should be able to run the snippet below.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> yoyo <span class="keyword">import</span> get_backend</span><br><span class="line"><span class="keyword">from</span> yoyo_cloud <span class="keyword">import</span> read_s3_migrations</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:</span><br><span class="line">    migrations = read_s3_migrations(paths=[<span class="string">"s3://yoyo-migrations/"</span>])</span><br><span class="line">    backend = get_backend(<span class="string">f"postgresql://postgres:my-secret-pw@localhost:5432/postgres"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> backend.lock():</span><br><span class="line">        <span class="comment"># -- Apply any outstanding migrations</span></span><br><span class="line">        backend.apply_migrations(backend.to_apply(migrations))</span><br></pre></td></tr></table></figure>
+<p>As you can see from the imports, we use a combination of the original library, <code>yoyo</code>, which provides a helper function to connect to the database, and the new library, <code>yoyo_cloud</code>, which provides a helper function to read the migrations that are stored in S3. </p>
+<p>The <code>read_s3_migrations</code> function reads the files that are stored in S3. It takes as input a list of S3 paths that point to directories where the files are stored. This function is similar in interface to the <code>read_migrations</code> function in <code>yoyo</code> which reads migrations from a directory on the file system except that it reads from S3; the value returned is the same — a list of migrations.</p>
+<p>Finally, we apply the migrations to the Postgres instance. The purpose of this example was to demonstrate the simplicity with which migrations stored in S3 can be applied to a database using <code>yoyo_cloud</code>. We will now look at the rationale behind the library in the next section.</p>
+<h2 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h2><p>The rationale behind the library, as mentioned at the start of this post, is to store SQL migrations as files and apply them one-by-one. Additionally, it allows migrating multiple similar databases easily. In the <a href="2024/03/25/Scaling-Python-Microservices/">previous post on scaling Python microservices</a> we’d seen how a Flask microservice can dynamically connect to multiple databases. If we want to apply a migration, say adding a new column to a table, we’d want it to be applied to all the databases that the service connects to. Using <code>yoyo_cloud</code> we can read the migration from S3, and apply to every table. Since the migrations are idempotent, we can safely reapply the previous migrations. </p>
+<h2 id="Workflow"><a href="#Workflow" class="headerlink" title="Workflow"></a>Workflow</h2><p>Let’s assume we’d like to create an automation which applies database migrations. We’ll assume we have two environments — stage, and prod. Whenever a migration is to be released to production, it is first tested in the dev environment, and then committed to version control to be applied to the staging environment. These could be stored as a part of the same repository or in a separate repository that contains only migrations. Let’s assume it is the latter. We could have a directory structure as follows.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">migrations</span><br><span class="line">  - order_service</span><br><span class="line">    - prod</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">    - stage</span><br><span class="line">      - 001-create-table.sql</span><br><span class="line">      - 002-add-column.sql</span><br></pre></td></tr></table></figure>
+<p>The automation could then apply these migrations to the relevant environment of the service. An additional benefit of this approach is that it makes setting up new environments easier because the migrations can applied to a new database. Additionally, committing migrations to version control, as opposed to running them in an adhoc manner, allows keeping track of when the migration was introduced, why, and by whom.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can apply migrations stored in S3 using <code>yoyo_cloud</code>. If you’re using it, or considering using it, please leave a comment.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/" data-id="cm5tt0qfz002xs6rug7atb8nn" data-title="Running Database Migrations" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/31/Running-Database-Migrations/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Scaling-Python-Microservices" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/25/Scaling-Python-Microservices/" class="article-date">
+  <time datetime="2024-03-25T07:09:42.000Z" itemprop="datePublished">2024-03-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/25/Scaling-Python-Microservices/">Scaling Python Microservices</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In one of the <a href="2024/03/21/Setting-up-a-Python-microservice/">previous posts</a> we saw how to set up a Python microservice. This post is a continuation and shows how to scale it. Specifically, we’ll look at handling larger volumes of data by sharding it across databases. We’ll shard based on the customer (or tenant, or user, etc.) making the request, and route it to the right database. While load tests on my local machine show promise, the pattern outlined is far from production-ready. </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>We’ll assume that we’d like to create a service that can handle growing volume of data. To accommodate this we’d like to shard the data across databases based on the user making the request. For the sake of simplicity we’ll assume that the customer is a user of a SaaS platform. The customers are heterogenous in their volume of data — some small, some large, some so large that they require their own dedicated database. </p>
+<p>We’ll develop a library, and a sharding microservice. Everything outlined in this post is very specific to the Python ecosystem and the libraries chosen but I am hopeful that the ideas can be translated to a language of your choice. We’ll use Flask and Peewee to do the routing and create a pattern that allows transitioning from a single database to multiple databases. </p>
+<p>The setup is fully Dockerized and consists of three Postgres databases, a sharding service, and an api service.</p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>In a nutshell, we’d like to look at a header in the request and decide which database to connect to. This needs to happen as soon as the request is received. Flask makes this easy by allowing us to execute functions before and after receiving a request and we’ll leverage them to do the routing. </p>
+<h3 id="Library"><a href="#Library" class="headerlink" title="Library"></a>Library</h3><p>We’ll begin by creating a library that allows connecting to the right database.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@attr.s(<span class="params">auto_attribs=<span class="literal">True</span>, frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Shard</span>:</span><br><span class="line">    config: APIConfig | StandaloneConfig</span><br><span class="line">    identifier_field: <span class="built_in">str</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">db</span>(<span class="params">self, identifier: Identifier</span>) -&gt; Database:</span><br><span class="line">        credentials = self._db_credentials(identifier=identifier)</span><br><span class="line"></span><br><span class="line">        credentials_dict = attr.asdict(credentials)  <span class="comment"># noqa</span></span><br><span class="line">        credentials_dict.pop(<span class="string">"flavor"</span>)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> credentials.flavor == DatabaseFlavor.POSTGRES:</span><br><span class="line">            <span class="keyword">return</span> PostgresqlDatabase(**credentials_dict)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> credentials.flavor == DatabaseFlavor.MYSQL:</span><br><span class="line">            <span class="keyword">return</span> MySQLDatabase(**credentials_dict)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_db_credentials</span>(<span class="params">self, identifier: Identifier</span>) -&gt; DBCredentials:</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(self.config, StandaloneConfig):</span><br><span class="line">            credentials = attr.asdict(self.config)  <span class="comment"># noqa</span></span><br><span class="line">            <span class="keyword">return</span> DBCredentials(**credentials)</span><br><span class="line">        <span class="keyword">return</span> self._fetch_credentials_from_api(identifier=identifier)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">_fetch_credentials_from_api</span>(<span class="params">self, identifier: Identifier</span>) -&gt; DBCredentials:</span><br><span class="line">        url = <span class="string">f"<span class="subst">{self.config.endpoint}</span>/write/<span class="subst">{<span class="built_in">str</span>(identifier)}</span>"</span></span><br><span class="line">        response = requests.get(url)</span><br><span class="line">        response.raise_for_status()</span><br><span class="line">        json = response.json()</span><br><span class="line">        <span class="keyword">return</span> cattrs.structure(json, DBCredentials)</span><br></pre></td></tr></table></figure>  
+<p>An instance of <code>Shard</code> is responsible for connecting to the right database depending on how it is configured. In “standalone” mode, it connects to a single database for all customers. This is helpful when creating the microservice for the first time. In “api” mode it makes a request to the sharding microservice. This is helpful when we’d like to scale the service. The API returns the credentials for the appropriate database depending on the identifier passed to it. The <code>identifier_field</code> is a column which must be present in all tables. For example, every table must have a “customer_id” column.  </p>
+<p>We’ll add a helper function to create an instance of the <code>Shard</code>. This makes it easy to transition from standalone to api mode by simply setting a few environment variables.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">from_env_variables</span>() -&gt; Shard:</span><br><span class="line">    mode = os.environ.get(EnvironmentVariables.SHARDING_MODE)</span><br><span class="line">    identifier_field = os.environ.get(EnvironmentVariables.SHARDING_IDENTIFIER_FIELD)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> mode == ShardingMode.API:</span><br><span class="line">        endpoint = os.environ.get(EnvironmentVariables.SHARDING_API_ENDPOINT)</span><br><span class="line">        config = APIConfig(endpoint=endpoint)</span><br><span class="line">        <span class="keyword">return</span> Shard(config=config, identifier_field=identifier_field)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> mode == ShardingMode.STANDALONE:</span><br><span class="line">        host = os.environ.get(EnvironmentVariables.SHARDING_HOST)</span><br><span class="line">        port = os.environ.get(EnvironmentVariables.SHARDING_PORT)</span><br><span class="line">        user = os.environ.get(EnvironmentVariables.SHARDING_USER)</span><br><span class="line">        password = os.environ.get(EnvironmentVariables.SHARDING_PASSWORD)</span><br><span class="line">        database = os.environ.get(EnvironmentVariables.SHARDING_DATABASE)</span><br><span class="line">        flavor = os.environ.get(EnvironmentVariables.SHARDING_FLAVOR)</span><br><span class="line"></span><br><span class="line">        config = StandaloneConfig(</span><br><span class="line">            host=host,</span><br><span class="line">            port=<span class="built_in">int</span>(port),</span><br><span class="line">            user=user,</span><br><span class="line">            password=password,</span><br><span class="line">            database=database,</span><br><span class="line">            flavor=flavor,</span><br><span class="line">        )</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> Shard(config=config, identifier_field=identifier_field)</span><br></pre></td></tr></table></figure>
+<h3 id="API-service"><a href="#API-service" class="headerlink" title="API service"></a>API service</h3><p>We’ll add request hooks to the API service which will use an instance of the <code>Shard</code> to connect to the right database.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">_shard = sharding.from_env_variables()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_before_request</span>():</span><br><span class="line">    identifier = request.headers.get(<span class="string">"X-Customer-ID"</span>)</span><br><span class="line">    g.db = _shard.db(identifier=identifier)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">_after_request</span>(<span class="params">response</span>):</span><br><span class="line">    g.db.close()</span><br><span class="line">    <span class="keyword">return</span> response</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">api = Blueprint(<span class="string">"api"</span>, __name__)</span><br><span class="line">api.before_app_request(_before_request)</span><br><span class="line">api.after_app_request(_after_request)</span><br></pre></td></tr></table></figure>  
+<p>We’re creating an instance of <code>Shard</code> and using it to retrieve the appropriate database. This is then stored in the per-request global <code>g</code>. This lets us use the same database throughout the context of the request. Finally, we register the before and after hooks.  </p>
+<p>We’ll now add functions to the library which allow saving and retrieving the data using the database stored in <code>g</code>.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">save_with_db</span>(<span class="params"></span></span><br><span class="line"><span class="params">    instance: Model,</span></span><br><span class="line"><span class="params">    db: Database,</span></span><br><span class="line"><span class="params">    force_insert: <span class="built_in">bool</span> = <span class="literal">False</span>,</span></span><br><span class="line"><span class="params"></span>):</span><br><span class="line">    identifier_field = os.environ.get(EnvironmentVariables.SHARDING_IDENTIFIER_FIELD)</span><br><span class="line">    identifier = <span class="built_in">getattr</span>(instance, identifier_field)</span><br><span class="line">    <span class="keyword">assert</span> identifier, <span class="string">"identifier field is not set on the instance"</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">with</span> db.bind_ctx(models=[instance.__class__]):</span><br><span class="line">        instance.save(force_insert=force_insert)</span><br></pre></td></tr></table></figure>  
+<p>What allows us to switch the database at runtime is the <code>bind_ctx</code> method of the Peewee <code>Database</code> instance. This temporarily binds the model to the database that was retrieved using the <code>Shard</code>. In essence, we’re storing and retrieving the data from the right database.  </p>
+<p>Next we’ll add a simple Peewee model that represents a person.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span>(<span class="title class_ inherited__">Model</span>):</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Meta</span>:</span><br><span class="line">        model_metadata_class = ThreadSafeDatabaseMetadata</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">id</span> = BigAutoField(primary_key=<span class="literal">True</span>)</span><br><span class="line">    name = TextField()</span><br><span class="line">    address = TextField()</span><br><span class="line">    customer_id = TextField()</span><br></pre></td></tr></table></figure>  
+<p>We’ll add an endpoint which will let us save a row with some randomly generated data.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.post(<span class="params"><span class="string">"/person/&lt;string:customer_id&gt;"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">post_person</span>(<span class="params">customer_id: <span class="built_in">str</span></span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    fake = Faker()</span><br><span class="line">    person = Person(</span><br><span class="line">        name=fake.name(),</span><br><span class="line">        address=fake.address(),</span><br><span class="line">        customer_id=customer_id,</span><br><span class="line">    )</span><br><span class="line">    save_with_db(instance=person, db=g.db, force_insert=<span class="literal">True</span>)</span><br><span class="line">    <span class="keyword">return</span> {<span class="string">"success"</span>: <span class="literal">True</span>}</span><br></pre></td></tr></table></figure>  
+<h3 id="Sharding-service"><a href="#Sharding-service" class="headerlink" title="Sharding service"></a>Sharding service</h3><p>We’ll add an endpoint to the sharding service which will return the database to connect to over an API.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.get(<span class="params"><span class="string">"/write/&lt;string:identifier&gt;"</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_write_db</span>(<span class="params">identifier: <span class="built_in">str</span></span>):</span><br><span class="line">    <span class="keyword">return</span> {</span><br><span class="line">        <span class="string">"host"</span>: <span class="string">f"postgres_<span class="subst">{identifier}</span>"</span>,</span><br><span class="line">        <span class="string">"port"</span>: <span class="number">5432</span>,</span><br><span class="line">        <span class="string">"flavor"</span>: <span class="string">"postgres"</span>,</span><br><span class="line">        <span class="string">"user"</span>: <span class="string">"postgres"</span>,</span><br><span class="line">        <span class="string">"password"</span>: <span class="string">"my-secret-pw"</span>,</span><br><span class="line">        <span class="string">"database"</span>: <span class="string">"postgres"</span>,</span><br><span class="line">    }</span><br></pre></td></tr></table></figure>
+<p>Here we’re selecting the right database depending on the customer making the request. For the sake of this demo the information is mostly static but in a production scenario this would come from a meta database that the sharding service connects to.  </p>
+<h3 id="Databases"><a href="#Databases" class="headerlink" title="Databases"></a>Databases</h3><p>We’ll now create tables in each of the three databases.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> person (</span><br><span class="line">  id BIGSERIAL <span class="keyword">PRIMARY</span> KEY,</span><br><span class="line">  name TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  address TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  customer_id TEXT <span class="keyword">NOT</span> <span class="keyword">NULL</span></span><br><span class="line">);</span><br></pre></td></tr></table></figure>  
+<h3 id="Testing"><a href="#Testing" class="headerlink" title="Testing"></a>Testing</h3><p>We’ll add a small script which uses Apache Bench to send requests for three different customers.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line"></span><br><span class="line">ab -p /dev/null -T <span class="string">"Content-Type: application/json"</span> -n 1000 -c 100 -H <span class="string">"X-Customer-ID: 1"</span> http://localhost:5000/person/1 &amp;</span><br><span class="line">ab -p /dev/null -T <span class="string">"Content-Type: application/json"</span> -n 1000 -c 100 -H <span class="string">"X-Customer-ID: 2"</span> http://localhost:5000/person/2 &amp;</span><br><span class="line">ab -p /dev/null -T <span class="string">"Content-Type: application/json"</span> -n 1000 -c 100 -H <span class="string">"X-Customer-ID: 3"</span> http://localhost:5000/person/3 &amp;</span><br></pre></td></tr></table></figure>
+<p>We’ll run the script and wait for it to complete.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./bench.sh</span><br></pre></td></tr></table></figure> 
+<p>We’ll now connect to one of the databases and check the data. I’m connecting to the third instance of Postgres which should have data for the customer with ID “3”. We’ll first check the count of the rows to see that all 1000 rows are present, and then check the customer ID to ensure that requests are properly routed in a multithreaded environment.  </p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="built_in">COUNT</span>(<span class="operator">*</span>) <span class="keyword">FROM</span> person;</span><br></pre></td></tr></table></figure>
+<p>This returns the following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">count</span><br><span class="line">1000</span><br></pre></td></tr></table></figure>
+<p>We’ll now check for the customer ID stored in the database.</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">DISTINCT</span> customer_id <span class="keyword">FROM</span> person;</span><br></pre></td></tr></table></figure>
+<p>This returns the following:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">customer_id</span><br><span class="line">3</span><br></pre></td></tr></table></figure>  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can connect a Flask service to multiple databases dynamically.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/" data-id="cm5tt0qfz002ts6rucckv8my5" data-title="Scaling Python Microservices" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/25/Scaling-Python-Microservices/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Hosting-Python-Packages" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/03/22/Hosting-Python-Packages/" class="article-date">
+  <time datetime="2024-03-22T16:34:29.000Z" itemprop="datePublished">2024-03-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/03/22/Hosting-Python-Packages/">Hosting Python Packages</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2024/03/21/Setting-up-a-Python-microservice/">previous post</a> we saw how to create Python microservices. It’s likely that these microservices will share code. For example libraries for logging, accessing the database, etc. In this post we’ll see how to create and host Python packages.  </p>
+<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>The setup is intentionally chosen for simplicity. We’ll separate the common code into a repository of its own, and use Poetry to package it. We’ll deploy it to S3, and use <code>dumb-pypi</code> to generate a static site which can be used to list the hosted packages.  </p>
+<p>The setup can be expanded to accommodate larger organizations with more teams, but it is primarily intended for smaller organizations with fewer teams that need to ramp up quickly. The main idea behind package distribution for Python is to arrange the files in a particular directory structure that can be accessed by a web server. While I am utilizing S3, you are free to use any comparable technology. You may even host everything on virtual machines (VMs) that are placed behind a load balancer. </p>
+<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>Let’s start with a package called “common” which contains the OTel code we saw previously. In essence, we’ve simply copied the contents of package over into a new repository. Next we’ll intialize a Poetry project and enter the relevant information interactively.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">poetry init --name=<span class="string">"common"</span> --description=<span class="string">"A collection of utilities"</span> --python=<span class="string">"^3.12"</span></span><br></pre></td></tr></table></figure>
+<p>Next we’ll add the relevant dependencies with Poetry. The first three are for the common code, and the fourth is for generating static pages.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">poetry add opentelemetry-sdk@latest</span><br><span class="line">poetry add opentelemetry-api@latest</span><br><span class="line">poetry add setuptools@latest</span><br><span class="line">poetry add --group dev dumb-pypi@latest</span><br></pre></td></tr></table></figure>
+<p>Next we’ll write a small bash script which will create the package, generate a static site to display hosted packages, and upload them to S3.</p>
+<figure class="highlight bash"><figcaption><span>deploy.sh</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#!/bin/sh</span></span><br><span class="line">PROJECT=<span class="string">"common"</span></span><br><span class="line">BUCKET=<span class="string">"... bucket name ..."</span></span><br><span class="line">TEAM=<span class="string">"devtools"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Generate the package file for dumb-pypi</span></span><br><span class="line">PACKAGE=$(poetry build | awk <span class="string">'{print $3}'</span> | sed -n <span class="string">'3p'</span>)</span><br><span class="line"><span class="built_in">echo</span> <span class="string">"<span class="variable">$PACKAGE</span>"</span> &gt;&gt; packages</span><br><span class="line"><span class="built_in">sort</span> -u packages -o packages</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Upload package</span></span><br><span class="line">aws s3 <span class="built_in">cp</span> <span class="string">"dist/<span class="variable">$PACKAGE</span>"</span> <span class="string">"s3://<span class="variable">$BUCKET</span>/packages/<span class="variable">$TEAM</span>/<span class="variable">$PROJECT</span>/<span class="variable">$PACKAGE</span>"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Generate static files for PyPi</span></span><br><span class="line">dumb-pypi \</span><br><span class="line">    --package-list packages \</span><br><span class="line">    --packages-url <span class="string">"https://<span class="variable">$BUCKET</span>.s3.us-west-2.amazonaws.com/packages/<span class="variable">$TEAM</span>/<span class="variable">$PROJECT</span>"</span> \</span><br><span class="line">    --output-dir index</span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Upload the files in S3</span></span><br><span class="line">aws s3 <span class="built_in">cp</span> --recursive index/ <span class="string">"s3://<span class="variable">$BUCKET</span>/dumb-pypi/<span class="variable">$TEAM</span>/index/"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Open static pages in the browser</span></span><br><span class="line">open <span class="string">"https://<span class="variable">$BUCKET</span>.s3.us-west-2.amazonaws.com/dumb-pypi/<span class="variable">$TEAM</span>/index/index.html"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># -- Serve static pages locally</span></span><br><span class="line"><span class="comment"># -- python -m http.server -b 0.0.0.0 -d index 8080</span></span><br></pre></td></tr></table></figure>
+<p>There’s a lot going on in the script. First we build the package using Poetry on line #7. The output contains the name of the zip file and we extract that into a variable. This is then stored into a file on line #8 and will be used by <code>dumb-pypi</code> to generate the static files. We sort and deduplicate the packages on line #9. On line #12 we store copy the package to S3. On line #15 we generate the static files into a folder named <code>index</code> which we then copy to S3 on line #21. On line #24 we open the documentation in the browser.  </p>
+<p>The S3 bucket contains a directory structure as mentioned in the Python packaging docs.<sup>[1]</sup></p>
+<p>Before we run the script, however, we will have to configure the S3 bucket to be publicly accessible. We do so by enabling it to serve static content, and adding a policy which enables access to the content. The policy is given below.  </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">{</span></span><br><span class="line">    <span class="attr">"Version"</span><span class="punctuation">:</span> <span class="string">"2012-10-17"</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">"Statement"</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">        <span class="punctuation">{</span></span><br><span class="line">            <span class="attr">"Sid"</span><span class="punctuation">:</span> <span class="string">"ReadIndex"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Effect"</span><span class="punctuation">:</span> <span class="string">"Allow"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Principal"</span><span class="punctuation">:</span> <span class="string">"*"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Action"</span><span class="punctuation">:</span> <span class="string">"s3:GetObject"</span><span class="punctuation">,</span></span><br><span class="line">            <span class="attr">"Resource"</span><span class="punctuation">:</span> <span class="string">"arn:aws:s3:::yourbucketnamehere/*"</span></span><br><span class="line">        <span class="punctuation">}</span></span><br><span class="line">    <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">}</span></span><br></pre></td></tr></table></figure>
+<p>Now we’ll run the script.  </p>
+<figure class="highlight plaintext"><figcaption><span>lang;bash</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./deploy.sh</span><br></pre></td></tr></table></figure>
+<p>The browser displays the following page.  </p>
+<img src="/2024/03/22/Hosting-Python-Packages/Package-1.png" class="" title="Dumb PyPi Homepage">
+<p>We can now test the installation of the package with both Poetry and Pip. We will do this in a different Poetry project so that the install does not conflict with the existing “common” package.</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">pip install --extra-index-url https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/ common</span><br><span class="line"></span><br><span class="line">Looking <span class="keyword">in</span> indexes: https://pypi.org/simple, https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/</span><br><span class="line">Collecting common</span><br><span class="line">  Using cached common-0.1.2.tar.gz (3.5 kB)</span><br><span class="line">  Preparing metadata (setup.py) ... <span class="keyword">done</span></span><br><span class="line">Building wheels <span class="keyword">for</span> collected packages: common</span><br><span class="line">  Building wheel <span class="keyword">for</span> common (setup.py) ... <span class="keyword">done</span></span><br><span class="line">  Created wheel <span class="keyword">for</span> common: filename=common-0.1.2-py3-none-any.whl size=3708 sha256=51d2f21c15829e49375762f5ca246d7f0e4d0bc82c425b25b5e77fcc83e97eae</span><br><span class="line">  Stored <span class="keyword">in</span> directory: /home/fasih/.cache/pip/wheels/12/f4/3f/8982873f5bfad3134251f605011de0c35f93d64b78cb07e3b8</span><br><span class="line">Successfully built common</span><br><span class="line">Installing collected packages: common</span><br><span class="line">Successfully installed common-0.1.2</span><br></pre></td></tr></table></figure>
+<p>Notice how we added the location an extra index using <code>--extra-index-url</code>. The URL points to the <code>devtools</code> directory in the bucket which is the root directory for the packages created by the “devtools” team. The subdirectories follow the layout mentioned previously.</p>
+<p>Next we’ll try the same with Poetry after uninstalling the package using pip. First, we’ll check how Poetry allows us to do it. </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">poetry add --<span class="built_in">help</span></span><br><span class="line">...</span><br><span class="line">A url (https://example.com/packages/my-package-0.1.0.tar.gz)</span><br></pre></td></tr></table></figure>
+<p>Let’s go ahead and add the package in that format.  </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">poetry add --dry-run https://selfhostedpackages.s3.us-west-2.amazonaws.com/packages/devtools/common/common-0.1.0.tar.gz</span><br><span class="line"></span><br><span class="line">Updating dependencies</span><br><span class="line">Resolving dependencies... (0.1s)</span><br><span class="line"></span><br><span class="line">Package operations: 3 installs, 0 updates, 0 removals, 29 skipped</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>We can verify that the package was installed successfully by importing it in a Python shell. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Python <span class="number">3.12</span><span class="number">.0</span> | packaged by Anaconda, Inc. | (main, Oct  <span class="number">2</span> <span class="number">2023</span>, <span class="number">17</span>:<span class="number">29</span>:<span class="number">18</span>) [GCC <span class="number">11.2</span><span class="number">.0</span>] on linux</span><br><span class="line"><span class="type">Type</span> <span class="string">"help"</span>, <span class="string">"copyright"</span>, <span class="string">"credits"</span> <span class="keyword">or</span> <span class="string">"license"</span> <span class="keyword">for</span> more information.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> common <span class="keyword">import</span> create_histogram</span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how we can host our own Python packages using S3. Note that this is a setup to get started quickly. If you’re looking for a more matured setup, please take a look at the devpi project.<sup>[2]</sup> <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/library">The code is available on Github.</a></p>
+<h2 id="Footnotes-and-References"><a href="#Footnotes-and-References" class="headerlink" title="Footnotes and References"></a>Footnotes and References</h2><p>[1] <a target="_blank" rel="noopener" href="https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository">https://packaging.python.org/en/latest/guides/hosting-your-own-index/#manual-repository</a><br>[2] <a target="_blank" rel="noopener" href="https://devpi.net/docs/devpi/devpi/latest/+doc/index.html">https://devpi.net/docs/devpi/devpi/latest/+doc/index.html</a></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/" data-id="cm5tt0qfv001ps6ruhx7p56lp" data-title="Hosting Python Packages" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/03/22/Hosting-Python-Packages/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
 
     </footer>
   </div>
@@ -992,7 +1016,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 18.57px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.86px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1002,6 +1026,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/01/12/Creating-a-realtime-data-platform-indexing/">Creating a realtime data platform - indexing</a>
+          </li>
         
           <li>
             <a href="/2025/01/10/Creating-a-realtime-data-platform-embedding/">Creating a realtime data platform - embedding</a>
@@ -1037,10 +1065,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
           </li>
         
       </ul>

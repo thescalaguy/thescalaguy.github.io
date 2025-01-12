@@ -188,164 +188,6 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
-    <article id="post-scalaz-tryops" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/06/scalaz-tryops/" class="article-date">
-  <time datetime="2017-07-06T07:11:25.000Z" itemprop="datePublished">2017-07-06</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/06/scalaz-tryops/">Scalaz TryOps</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/TryOps.scala"><code>TryOps</code></a> and the goodies it provides to work with <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.9.3/scala/util/Try.html"><code>scala.util.Try</code></a>. To recap, here’s what <code>Try</code> does:  </p>
-<p><em>The Try type represents a computation that may either result in an exception, or return a successfully computed value. It’s similar to, but semantically different from the scala.util.Either type.</em>  </p>
-<h3 id="Converting-to-a-Disjunction"><a href="#Converting-to-a-Disjunction" class="headerlink" title="Converting to a Disjunction"></a>Converting to a Disjunction</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="keyword">import</span> scala.util.<span class="type">Try</span></span><br><span class="line"><span class="comment">// an operation that may potentially throw an exception</span></span><br><span class="line">@ <span class="keyword">val</span> t1 = <span class="type">Try</span> { <span class="string">"1"</span>.toInt }</span><br><span class="line">t1: <span class="type">Try</span>[<span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br><span class="line"><span class="comment">// converting to a Scalaz disjunction</span></span><br><span class="line">@ <span class="keyword">val</span> disjunction = t1 toDisjunction</span><br><span class="line">disjunction: <span class="type">Throwable</span> \/ <span class="type">Int</span> = \/-(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>The result of a <code>Try</code> is either a <code>Success</code> or  a <code>Failure</code>. This can very easily be translated to a Scalaz disjunction. A <code>Success</code> produces a right disjunction whereas a <code>Failure</code> produces a left disjunction.  </p>
-<h3 id="Converting-to-a-Validation"><a href="#Converting-to-a-Validation" class="headerlink" title="Converting to a Validation"></a>Converting to a Validation</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> validation = t1 toValidation</span><br><span class="line">validation: <span class="type">Validation</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>Similarly, if this <code>Try</code> were a part of validating your data like checking values in a JSON object, you can convert this to a Scalaz <code>Validation</code>.  </p>
-<h3 id="Converting-to-a-ValidationNel"><a href="#Converting-to-a-ValidationNel" class="headerlink" title="Converting to a ValidationNel"></a>Converting to a ValidationNel</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> nel = t1 toValidationNel</span><br><span class="line">nel: <span class="type">ValidationNel</span>[<span class="type">Throwable</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p><code>ValidationNel</code> is useful for accumulating errors. We’ll cover all of this in coming posts.   </p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This brings us to the end of the post on <code>TryOps</code>. In coming posts we’ll look at <code>Validation</code> type which lets us represent, as you might have guessed, the result of validating an input. Similarly, if we want to accumulate all the results of validating inputs, we use <code>ValidationNel</code>. Both of these are subjects of coming posts.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/06/scalaz-tryops/" data-id="cm5qq90hq004v6trugj2b8r0w" data-title="Scalaz TryOps" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/06/scalaz-tryops/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-tupleops" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/05/scalaz-tupleops/" class="article-date">
-  <time datetime="2017-07-05T11:45:10.000Z" itemprop="datePublished">2017-07-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/05/scalaz-tupleops/">Scalaz TupleOps</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <code>TupleOps</code> and the goodies it provides to work with <code>Tuple</code>s. There’s no <code>TupleOps.scala</code> file in the GitHub repo because the file is generated by <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/project/GenerateTupleW.scala"><code>GenerateTupleW</code></a>. You can see the code for <code>TupleOps</code> if you’re using an IDE like IntelliJ. There’s a number of <code>TupleNOps</code> classes like <code>Tuple2Ops[A, B]</code>, etc. all the way to <code>Tuple12Ops[A, B]</code>.   </p>
-<p>With that said, let’s jump into examples. We’ll look at what <code>Tuple2Ops</code> provides us. Everything is analogous to <code>Tuple3Ops</code>, etc. It’s just the number of arguments to the methods that will change. </p>
-<h3 id="Folding-a-Tuple"><a href="#Folding-a-Tuple" class="headerlink" title="Folding a Tuple"></a>Folding a Tuple</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) fold( (_1, _2) =&gt; _1 + _2 )</span><br><span class="line">res2: <span class="type">Int</span> = <span class="number">3</span></span><br></pre></td></tr></table></figure>  
-<p><code>fold</code> in <code>Tuple2Ops</code> takes a function which accepts 2 arguments i.e. equal to the arity of the tuple. Here, we’re folding the tuple and adding together its two <code>Int</code> elements but you can do whatever you want.  </p>
-<h3 id="Converting-to-IndexedSeq"><a href="#Converting-to-IndexedSeq" class="headerlink" title="Converting to IndexedSeq"></a>Converting to IndexedSeq</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) toIndexedSeq</span><br><span class="line">res3: collection.immutable.<span class="type">IndexedSeq</span>[<span class="type">Int</span>] = <span class="type">Vector</span>(<span class="number">1</span>, <span class="number">2</span>)</span><br></pre></td></tr></table></figure>  
-<p>This one is self-explanatory. The tuple is converted to an <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/current/scala/collection/IndexedSeq.html"><code>IndexedSeq</code></a>.  </p>
-<h3 id="Mapping-Elements-in-a-Tuple"><a href="#Mapping-Elements-in-a-Tuple" class="headerlink" title="Mapping Elements in a Tuple"></a>Mapping Elements in a Tuple</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) mapElements(_1 =&gt; _1 * <span class="number">2</span>, _2 =&gt; _2 * <span class="number">2</span>)</span><br><span class="line">res4: (<span class="type">Int</span>, <span class="type">Int</span>) = (<span class="number">2</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>  
-<p><code>mapElements</code> in <code>Tuple2Ops</code> takes 2 functions as arguments, 1 for each element of the tuple. The functions are then applied to their corresponding elements and the result is returned as a <code>Tuple</code>. In the example above, we’re just multiplying both the elements by 2.   </p>
-<p>This is different from the <code>map</code> from the standard library. The <code>map</code> from the standard library only operates on the last element of the tuple.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ (<span class="number">1</span>, <span class="number">2</span>) map (_ * <span class="number">2</span>)</span><br><span class="line">res5: (<span class="type">Int</span>, <span class="type">Int</span>) = (<span class="number">1</span>, <span class="number">4</span>)</span><br></pre></td></tr></table></figure>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s the end of the post on <code>TupleOps</code>. <code>TupleOps</code>‘s convenience methods can be used to manipulate tuples easily.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/" data-id="cm5qq90hq004z6trudkmlgf31" data-title="Scalaz TupleOps" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/05/scalaz-tupleops/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-stringops" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/05/scalaz-stringops/" class="article-date">
-  <time datetime="2017-07-05T08:50:50.000Z" itemprop="datePublished">2017-07-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/05/scalaz-stringops/">Scalaz StringOps</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/c0e4b531847348e1fd533c7d3605fe69320dde91/core/src/main/scala/scalaz/syntax/std/StringOps.scala"><code>StringOps</code></a> and the goodies it provides to work with <code>String</code>s. Like we did last time, we’ll jump straight into examples.  </p>
-<h3 id="Plural"><a href="#Plural" class="headerlink" title="Plural"></a>Plural</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="comment">// keep the doctor away</span></span><br><span class="line">@ <span class="string">"apple"</span> plural <span class="number">2</span></span><br><span class="line">res2: <span class="type">String</span> = <span class="string">"apples"</span></span><br><span class="line"><span class="comment">// oops!</span></span><br><span class="line">@ <span class="string">"dress"</span> plural <span class="number">3</span></span><br><span class="line">res3: <span class="type">String</span> = <span class="string">"dresss"</span></span><br><span class="line"><span class="comment">// singular</span></span><br><span class="line">@ <span class="string">"apple"</span> plural <span class="number">1</span></span><br><span class="line">res4: <span class="type">String</span> = <span class="string">"apple"</span></span><br><span class="line"><span class="comment">// is it Friday, yet?</span></span><br><span class="line">@ <span class="string">"day"</span> plural <span class="number">3</span></span><br><span class="line">res5: <span class="type">String</span> = <span class="string">"days"</span></span><br></pre></td></tr></table></figure>  
-<p>Scalaz provides a convenient <code>plural</code> method on <code>String</code> to get its plural form. Going over the docs for <code>plural</code>:  </p>
-<p><em>Returns the same String value if the given value is 1 otherwise pluralises this String by appending an “s” unless this String ends with “y” and not one of [“ay”, “ey”, “iy”, “oy”, “uy”] in which case the ‘y’ character is chopped and “ies” is appended.</em>  </p>
-<p>This explains why the plural of “dress” was “dresss” with 3 “s”; <code>plural</code> simply appended an “s”. Nonetheless, this is a convenient method.  </p>
-<h3 id="Non-Empty-List"><a href="#Non-Empty-List" class="headerlink" title="Non-Empty List"></a>Non-Empty List</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="string">"list"</span> charsNel</span><br><span class="line">res6: <span class="type">Option</span>[<span class="type">NonEmptyList</span>[<span class="type">Char</span>]] = <span class="type">Some</span>(<span class="type">NonEmpty</span>[l,i,s,t])</span><br><span class="line">@ <span class="string">""</span> charsNel</span><br><span class="line">res7: <span class="type">Option</span>[<span class="type">NonEmptyList</span>[<span class="type">Char</span>]] = <span class="type">None</span></span><br></pre></td></tr></table></figure>  
-<p><code>charsNel</code> converts the <code>String</code> into an <code>Option[NonEmptyList[Char]]</code>. This method is useful if the string represents a sequence of actions to be taken as characters. For example, “OCOC” could mean “Open, Close, Open, Close” or something and <code>charsNel</code> would convert this into an <code>Option</code> of <code>NonEmptyList[Char]</code>. You can then iterate over the characters and take whatever action you want to. </p>
-<h3 id="Parsing"><a href="#Parsing" class="headerlink" title="Parsing"></a>Parsing</h3><p>Scalaz provides convenient methods for parsing a <code>String</code> into <code>Boolean</code>, <code>Int</code>, etc. The advantage of using these over standard Scala parsing methods is that these methods return a <code>Validation</code>. You can then fold the <code>Validation</code> object to see whether the value was successfully parsed or resulted in an error. This is good for functional programming as you don’t have to catch exceptions. We’ll first look at the Scala way and then the Scalaz way.</p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Scala way</span></span><br><span class="line">@ <span class="string">"1"</span>.toInt</span><br><span class="line">res8: <span class="type">Int</span> = <span class="number">1</span></span><br><span class="line">@ <span class="string">"x"</span>.toInt</span><br><span class="line">java.lang.<span class="type">NumberFormatException</span>: <span class="type">For</span> input string: <span class="string">"x"</span></span><br><span class="line">...</span><br><span class="line"><span class="comment">// Scalaz way</span></span><br><span class="line">@ <span class="string">"1"</span>.parseInt.fold(err =&gt; <span class="string">"failed parse"</span>.println, num =&gt; num.println)</span><br><span class="line"><span class="number">1</span></span><br><span class="line">@ <span class="string">"x"</span>.parseInt.fold(err =&gt; <span class="string">"failed parse"</span>.println, num =&gt; num.println)</span><br><span class="line"><span class="string">"failed parse"</span></span><br></pre></td></tr></table></figure>  
-<p>It’s also possible to parse values to <code>BigDecimal</code> and <code>BigInt</code>.</p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="string">"3.14159265358979323846"</span>.parseBigDecimal.fold(err =&gt; <span class="string">"failed parse"</span>.println, num =&gt; num.println)</span><br><span class="line"><span class="number">3.14159265358979323846</span></span><br></pre></td></tr></table></figure>  
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This covers the convenience methods Scalaz provides for dealing with <code>String</code>s. The <code>parseXXX</code> methods are the most useful as they avoid having to deal with an exception.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/05/scalaz-stringops/" data-id="cm5qq90hq004x6truab909xqi" data-title="Scalaz StringOps" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/05/scalaz-stringops/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
     <article id="post-scalaz-optionops" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2017/07/04/scalaz-optionops/" class="article-date">
@@ -380,7 +222,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cm5qq90hq004o6tru3od21gpt" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/04/scalaz-optionops/" data-id="cm5tt0qg4004qs6rubl1gbnp2" data-title="Scalaz OptionOps" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/04/scalaz-optionops/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -458,7 +300,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cm5qq90ho004b6tru3pjf7jau" data-title="Scalaz Enum" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/03/scalaz-enum/" data-id="cm5tt0qg3004gs6ru83b9czc5" data-title="Scalaz Enum" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/03/scalaz-enum/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -510,7 +352,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cm5qq90hq004q6tru0mv88l9q" data-title="Scalaz Show" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/01/scalaz-show/" data-id="cm5tt0qg9006ws6ruatcz99ro" data-title="Scalaz Show" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/01/scalaz-show/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -582,7 +424,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cm5qq90hq004s6truc3wwaqqc" data-title="Scalaz Order" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/29/scalaz-order/" data-id="cm5tt0qg4004ss6rua0n73fnm" data-title="Scalaz Order" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/29/scalaz-order/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -649,7 +491,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm5qq90hp004e6trudajvcnfz" data-title="Scalaz Equal" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/28/scalaz-equals/" data-id="cm5tt0qg4004xs6ru9lg31y8b" data-title="Scalaz Equal" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/28/scalaz-equals/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -721,7 +563,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm5qq90hr00506tru3v3sbzjy" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/" data-id="cm5tt0qg50054s6rubs1n37do" data-title="Scalaz Types of Polymorphism" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/27/scalaz-types-of-polymorphism/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -778,7 +620,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm5qq90hw007g6trugsf0doug" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/" data-id="cm5tt0qga0073s6ru4yly26fq" data-title="Scalaz Under the Hood" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/24/scalaz-under-the-hoods/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -835,7 +677,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm5qq90ho00496tru16krftn6" data-title="Scalaz Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/06/23/scalaz-introduction/" data-id="cm5tt0qg4004vs6ru7iyjcs81" data-title="Scalaz Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/06/23/scalaz-introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -866,7 +708,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 18.57px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.86px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -876,6 +718,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/01/12/Creating-a-realtime-data-platform-indexing/">Creating a realtime data platform - indexing</a>
+          </li>
         
           <li>
             <a href="/2025/01/10/Creating-a-realtime-data-platform-embedding/">Creating a realtime data platform - embedding</a>
@@ -911,10 +757,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
-          </li>
-        
-          <li>
-            <a href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
           </li>
         
       </ul>
