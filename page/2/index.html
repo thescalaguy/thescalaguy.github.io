@@ -188,6 +188,105 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Property-based-testing-with-Hypothesis" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2024/11/24/Property-based-testing-with-Hypothesis/" class="article-date">
+  <time datetime="2024-11-24T14:07:21.000Z" itemprop="datePublished">2024-11-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2024/11/24/Property-based-testing-with-Hypothesis/">Property-based testing with Hypothesis</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>I’d <a href="/2017/11/16/unit-testing-with-specs/">previously written about property-based testing in Clojure</a>. In this blog post I’d like to talk about how we can do the same in Python using the <a target="_blank" rel="noopener" href="https://hypothesis.readthedocs.io/en/latest/quickstart.html">Hypothesis</a> library. We’ll begin with a quick recap of what property-based testing is, and then dive head-first into writing some tests.  </p>
+<h2 id="What-is-property-based-testing"><a href="#What-is-property-based-testing" class="headerlink" title="What is property-based testing?"></a>What is property-based testing?</h2><p>Before we get into property-based testing, let’s talk about how we usually write tests. We provide a known input to the code under test, capture the resulting output, and write an assertion to check that it matches our expectations. This technique of writing tests is called example-based testing since we provide examples of inputs that the code has to work with.  </p>
+<p>While this technique works, there are some drawbacks to it. Example-based tests take longer to write since we need to come up with examples ourselves. Also, it’s possible to miss out on corner cases.</p>
+<p>In contrast, property-based testing allows us to specify the properties of the code and test that they hold true under a wide range of inputs. For example, if we have a function <code>f</code> that takes an integer and performs some computation on it, a property-based test would test it for positive integers, negative integers, very large integers, and so on. These inputs are generated for us by the testing framework and we simply need to specify what kind of inputs we’re looking for.  </p>
+<p>Having briefly discussed what property-based testing is, let’s write some code.  </p>
+<h2 id="Writing-property-based-tests"><a href="#Writing-property-based-tests" class="headerlink" title="Writing property-based tests"></a>Writing property-based tests</h2><h3 id="Testing-a-pure-function"><a href="#Testing-a-pure-function" class="headerlink" title="Testing a pure function"></a>Testing a pure function</h3><p>Let’s start with a function which computes the n’th Fibonacci number.   </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@functools.cache</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Computes the nth number in the Fibonacci sequence.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">if</span> n &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> n</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fibonacci(n - <span class="number">1</span>) + fibonacci(n - <span class="number">2</span>)</span><br></pre></td></tr></table></figure>  
+<p>The sequence of numbers goes 0, 1, 1, 2, 3, etc. We can see that all of these numbers are greater than or equal to zero. Let’s write a property-based test to formalize this.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> hypothesis <span class="keyword">import</span> given, strategies <span class="keyword">as</span> st</span><br><span class="line"><span class="keyword">from</span> functions <span class="keyword">import</span> fibonacci</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@given(<span class="params">st.integers(<span class="params"></span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_fibonacci</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">assert</span> fibonacci(n) &gt;= <span class="number">0</span></span><br></pre></td></tr></table></figure>  
+<p>In the code snippet above, we’ve wrapped our test using the <code>@given</code> decorator. This makes it a property-based test. The argument to the decorator is a search strategy. A search strategy generates random data of a given type for us. Here we’ve specified that we need integers. We can now run the test using pytest as follows.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PYTHONPATH=. pytest .</span><br></pre></td></tr></table></figure>  
+<p>The test fails with the following summary.  </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">FAILED test/functions/test_fibonacci.py::test_fibonacci - ExceptionGroup: Hypothesis found 2 distinct failures. (2 sub-exceptions)</span><br></pre></td></tr></table></figure>  
+<p>When looking at the logs, we find that the first failure is because the maximum recursion depth is reached when the value of <code>n</code> is large. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">n = 453</span><br><span class="line">... lines omitted ...</span><br><span class="line">RecursionError: maximum recursion depth exceeded</span><br></pre></td></tr></table></figure>  
+<p>The second failure is because the function returned a negative integer when the value of <code>n</code> is negative; in this case it is <code>n=-1</code>. This violates our assertion that the numbers in the Fibonacci sequence are non-negative.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">+---------------- 2 ----------------</span><br><span class="line">| Traceback (most recent call last):</span><br><span class="line">|   File "/Users/fasih/Personal/pytesting/test/functions/test_fibonacci.py", line 8, in test_fibonacci</span><br><span class="line">|     assert fibonacci(n) &gt;= 0</span><br><span class="line">| AssertionError: assert -1 &gt;= 0</span><br><span class="line">|  +  where -1 = fibonacci(-1)</span><br><span class="line">| Falsifying example: test_fibonacci(</span><br><span class="line">|     n=-1,</span><br><span class="line">| )</span><br><span class="line">+------------------------------------</span><br></pre></td></tr></table></figure>  
+<p>To remedy the two failures above, we’ll add an assertion at the top of the function which will ensure that the input <code>n</code> is in some specified range. The updated function is given below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@functools.cache</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">fibonacci</span>(<span class="params">n: <span class="built_in">int</span></span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Computes the nth number in the Fibonacci sequence.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= n &lt;= <span class="number">300</span>, <span class="string">f"n must be between 0 and 300; <span class="subst">{n}</span> was passed."</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> n &lt;= <span class="number">1</span>:</span><br><span class="line">        <span class="keyword">return</span> n</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> fibonacci(n - <span class="number">1</span>) + fibonacci(n - <span class="number">2</span>)</span><br></pre></td></tr></table></figure>  
+<p>We’ll update our test cases to reflect this change in code. The first test case checks the function when <code>n</code> is between 0 and 300.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params">st.integers(<span class="params">min_value=<span class="number">0</span>, max_value=<span class="number">300</span></span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_fibonacci</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">assert</span> fibonacci(n) &gt;= <span class="number">0</span></span><br></pre></td></tr></table></figure>  
+<p>The second case checks when <code>n</code> is large. In this case we check that the function raises an <code>AssertionError</code>. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params">st.integers(<span class="params">min_value=<span class="number">5000</span></span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_fibonacci_large_n</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">with</span> pytest.raises(AssertionError):</span><br><span class="line">        fibonacci(n)</span><br></pre></td></tr></table></figure>  
+<p>Finally, we’ll check the function with negative values of <code>n</code>. Similar to the previous test case, we’ll check that the function raises an <code>AssertionError</code>.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params">st.integers(<span class="params">min_value=-<span class="number">2</span>, max_value=-<span class="number">1</span></span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_fibonacci_negative</span>(<span class="params">n</span>):</span><br><span class="line">    <span class="keyword">with</span> pytest.raises(AssertionError):</span><br><span class="line">        fibonacci(n)</span><br></pre></td></tr></table></figure>  
+<h3 id="Testing-persistent-data"><a href="#Testing-persistent-data" class="headerlink" title="Testing persistent data"></a>Testing persistent data</h3><p>We’ll now use Hypothesis to generate data that we’d like to persist in the database. The snippet below shows a <code>Person</code> model with fields to store name and date of birth. The <code>age</code> property returns the current age of the person in years, and the <code>MAX_AGE</code> variable indicates that the maximum age we’d like to allow in the system is 120 years. </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span>(peewee.Model):</span><br><span class="line"></span><br><span class="line">    MAX_AGE = <span class="number">120</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Meta</span>:</span><br><span class="line">        database = db</span><br><span class="line"></span><br><span class="line">    <span class="built_in">id</span> = peewee.BigAutoField(primary_key=<span class="literal">True</span>, null=<span class="literal">False</span>)</span><br><span class="line">    name = peewee.CharField(null=<span class="literal">False</span>, max_length=<span class="number">120</span>)</span><br><span class="line">    dob = peewee.DateField(null=<span class="literal">False</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">    @property</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">age</span>(<span class="params">self</span>) -&gt; <span class="built_in">int</span>:</span><br><span class="line">        <span class="keyword">return</span> (datetime.date.today()).year - self.dob.year</span><br></pre></td></tr></table></figure>  
+<p>We’ll add a helper function to create <code>Person</code> instances as follows.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">name: <span class="built_in">str</span>, dob: datetime.date</span>) -&gt; Person:</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Create a new person instance with the given name and date of birth.</span></span><br><span class="line"><span class="string">    :param name: Name of the person.</span></span><br><span class="line"><span class="string">    :param dob: Date of birth of the person.</span></span><br><span class="line"><span class="string">    :return: A Person instance.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    <span class="keyword">assert</span> name, <span class="string">f"name cannot by empty"</span></span><br><span class="line">    <span class="keyword">return</span> Person.create(name=name, dob=dob)</span><br></pre></td></tr></table></figure>  
+<p>Like we did for the function which computes Fibonacci numbers, we’ll add a test case to formalize this expectation. This time we’re generating random names and dates of birth and passing them to the helper function.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    text=st.text(<span class="params">min_size=<span class="number">1</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">    dob=st.dates(<span class="params"></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person</span>(<span class="params">text, dob, create_tables</span>):</span><br><span class="line">    person = pr.create(name=text, dob=dob)</span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= person.age &lt;= Person.MAX_AGE</span><br></pre></td></tr></table></figure>  
+<p>I’m persisting this data in a Postgres table and the <code>create_tables</code> fixture ensures that the tables are created before the test runs.   </p>
+<p>Upon running the test we find that it fails for two cases. The first case is when the input string contains a NULL character <code>\x00</code>. Postgres tables do not allow strings will NULL characters in them.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ValueError: A string literal cannot contain NUL (0x00) characters.</span><br><span class="line">Falsifying example: test_create_person(</span><br><span class="line">     create_tables=None,</span><br><span class="line">     text='\x00',</span><br><span class="line">     dob=datetime.date(2000, 1, 1),  # or any other generated value</span><br><span class="line">)</span><br></pre></td></tr></table></figure>  
+<p>The second case is when the date of birth is in the future. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">AssertionError: assert 0 &lt;= -1</span><br><span class="line">  +  where -1 = &lt;Person: 5375&gt;.age</span><br><span class="line"> Falsifying example: test_create_person(</span><br><span class="line">     create_tables=None,</span><br><span class="line">     text='0',  # or any other generated value</span><br><span class="line">     dob=datetime.date(2025, 1, 1),</span><br><span class="line">)</span><br></pre></td></tr></table></figure>  
+<p>To remedy the first failure, we’ll have to sanitize the <code>name</code> input string that gets stored in the table. We’ll create a helper function which removes any NULL characters from the string. This will be called before <code>name</code> gets saved in the table.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sanitize</span>(<span class="params">s: <span class="built_in">str</span></span>) -&gt; <span class="built_in">str</span>:</span><br><span class="line">    <span class="keyword">return</span> s.replace(<span class="string">"\x00"</span>, <span class="string">""</span>).strip()</span><br></pre></td></tr></table></figure>  
+<p>To remedy the second failure, we’ll add an assertion ensuring that the age is less than or equal to 120. The updated <code>create</code> function is shown below.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create</span>(<span class="params">name: <span class="built_in">str</span>, dob: datetime.date</span>) -&gt; Person:</span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Create a new person instance with the given name and date of birth.</span></span><br><span class="line"><span class="string">    :param name: Name of the person.</span></span><br><span class="line"><span class="string">    :param dob: Date of birth of the person.</span></span><br><span class="line"><span class="string">    :return: A Person instance.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    name = sanitize(name)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> name, <span class="string">f"name cannot by empty"</span></span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= (datetime.date.today().year - dob.year) &lt;= Person.MAX_AGE</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Person.create(name=name, dob=dob)</span><br></pre></td></tr></table></figure>  
+<p>We’ll update the test cases to reflect these changes. Let’s start by creating two variables that will hold the minimum and maximum dates allowed.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MIN_DATE = datetime.date.today() - datetime.timedelta(days=Person.MAX_AGE * <span class="number">365</span>)</span><br><span class="line">MAX_DATE = datetime.date.today()</span><br></pre></td></tr></table></figure>  
+<p>Next, we’ll add a test to ensure that we raise an <code>AssertionError</code> when the string contains only NULL characters.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params">text=st.text(<span class="params">alphabet=[<span class="string">"\x00"</span>]</span>)</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person_null_text</span>(<span class="params">text, create_tables</span>):</span><br><span class="line">    <span class="keyword">with</span> pytest.raises(AssertionError):</span><br><span class="line">        pr.create(name=text, dob=MIN_DATE)</span><br></pre></td></tr></table></figure>
+<p>Next, we’ll add a test to ensure that dates cannot be in the future.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    text=st.text(<span class="params">min_size=<span class="number">1</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">    dob=st.dates(<span class="params">min_value=MAX_DATE + datetime.timedelta(<span class="params">days=<span class="number">365</span></span>)</span>),</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person_future_dob</span>(<span class="params">text, dob, create_tables</span>):</span><br><span class="line">    <span class="keyword">with</span> pytest.raises(AssertionError):</span><br><span class="line">        pr.create(name=text, dob=dob)</span><br></pre></td></tr></table></figure>
+<p>Similarly, we’ll add a test to ensure that dates cannot be more than 120 years in the past.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    text=st.text(<span class="params">min_size=<span class="number">1</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">    dob=st.dates(<span class="params">max_value=MIN_DATE - datetime.timedelta(<span class="params">days=<span class="number">365</span></span>)</span>),</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person_past_dob</span>(<span class="params">text, dob, create_tables</span>):</span><br><span class="line">    <span class="keyword">with</span> pytest.raises(AssertionError):</span><br><span class="line">        pr.create(name=text, dob=dob)</span><br></pre></td></tr></table></figure>
+<p>Finally, we’ll add a test to ensure that in all other cases, the function creates a <code>Person</code> instance as expected.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    text=st.text(<span class="params">min_size=<span class="number">5</span></span>),</span></span></span><br><span class="line"><span class="params"><span class="meta">    dob=st.dates(<span class="params"></span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">        min_value=MIN_DATE,</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">        max_value=MAX_DATE,</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">    </span>),</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person</span>(<span class="params">text, dob, create_tables</span>):</span><br><span class="line">    person = pr.create(name=text, dob=dob)</span><br><span class="line">    <span class="keyword">assert</span> <span class="number">0</span> &lt;= person.age &lt;= Person.MAX_AGE</span><br></pre></td></tr></table></figure>  
+<p>The tests pass when we rerun them so we can be sure that the function behaves as expected.  </p>
+<h3 id="Testing-a-REST-API"><a href="#Testing-a-REST-API" class="headerlink" title="Testing a REST API."></a>Testing a REST API.</h3><p>Finally, we’ll look at testing a REST API. We’ll create a small Flask app with an endpoint which allows us to create <code>Person</code> instances. The API endpoint is a simple wrapper around the <code>create</code> helper function and returns the created <code>Person</code> instance as a dictionary.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@api.route(<span class="params"><span class="string">"/person"</span>, methods=[<span class="string">"POST"</span>]</span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">create_person</span>():</span><br><span class="line">    name = request.json[<span class="string">"name"</span>]</span><br><span class="line"></span><br><span class="line">    dob = request.json[<span class="string">"dob"</span>]</span><br><span class="line">    dob = parse(dob).date()</span><br><span class="line"></span><br><span class="line">    person = pr.create(name, dob)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> model_to_dict(person)</span><br></pre></td></tr></table></figure>  
+<p>We’ll add a test to generate random JSON dictionaries which we’ll pass as the body of the <code>POST</code> request. The test is given below.  </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@given(<span class="params"></span></span></span><br><span class="line"><span class="params"><span class="meta">    json=st.fixed_dictionaries(<span class="params"></span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">        {</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">            <span class="string">"name"</span>: st.text(<span class="params">min_size=<span class="number">5</span></span>),</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">            <span class="string">"dob"</span>: st.dates(<span class="params">min_value=MIN_DATE, max_value=MAX_DATE</span>),</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">        }</span></span></span></span><br><span class="line"><span class="params"><span class="params"><span class="meta">    </span>)</span></span></span><br><span class="line"><span class="params"><span class="meta"></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">test_create_person</span>(<span class="params">json, test_client</span>):</span><br><span class="line">    response = test_client.post(</span><br><span class="line">        <span class="string">"/api/person"</span>,</span><br><span class="line">        json=json,</span><br><span class="line">        headers={<span class="string">"Content-Type"</span>: <span class="string">"application/json"</span>},</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> response.status_code == <span class="number">200</span></span><br></pre></td></tr></table></figure>  
+<p>Similar to the tests for <code>create</code> function, we test that the API returns a response successfully when the inputs are proper.  </p>
+<p>That’s it. That’s how we can leverage Hypothesis to test Python code. You’ll find the code for this post in <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/pytesting">the Github repository.</a></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/" data-id="cmcc0t01r002p0zru3iat2dh7" data-title="Property-based testing with Hypothesis" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2024/11/24/Property-based-testing-with-Hypothesis/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/" rel="tag">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/testing/" rel="tag">testing</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Programming-Puzzles-4" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2024/11/06/Programming-Puzzles-4/" class="article-date">
@@ -277,7 +376,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cm5wmda4w002nq9ru2fl4bdwc" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/" data-id="cmcc0t01q002h0zruakm2ctal" data-title="Programming Puzzles 4" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/06/Programming-Puzzles-4/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -333,7 +432,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cm5wmda4v002iq9ru2kpi7qwo" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/" data-id="cmcc0t01q002k0zru4nvog1k9" data-title="Programming Puzzles 3" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/11/04/Programming-Puzzles-3/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -379,7 +478,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cm5wmda4q0012q9ru2syz7u04" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/" data-id="cmcc0t01n00130zrudi0kb2du" data-title="Detecting disguised email addresses in a corpus of text" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/03/Detecting-disguised-email-addresses-in-a-corpus-of-text/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -431,7 +530,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cm5wmda4n000dq9rug67wdczy" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/" data-id="cmcc0t01k00090zruawpg0u6m" data-title="An experiemental library to detect PII" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/08/02/An-experiemental-library-to-detect-PII/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -481,7 +580,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cm5wmda4m0008q9ru79sm9uz0" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/" data-id="cmcc0t01j00080zru6j3p4i1p" data-title="A question on algebraic manipulations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/23/A-question-on-algebraic-manipulations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -547,7 +646,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cm5wmda4x0034q9ru1gpzho5i" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/" data-id="cmcc0t01s003b0zru3txqbfa9" data-title="Setting up a data catalog with DataHub" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/06/Setting-up-a-data-catalog-with-DataHub/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -600,7 +699,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cm5wmda4v002gq9rueno5h2ri" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/" data-id="cmcc0t01q002f0zrug5cxg0dk" data-title="Programming Puzzles 2" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/07/03/Programming-Puzzles-2/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -680,7 +779,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cm5wmda4v002dq9ru34l5g2ly" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/" data-id="cmcc0t01q002c0zrufghx04m8" data-title="Programming Puzzles 1" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/24/Programming-Puzzles-1/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -760,7 +859,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cm5wmda4q000zq9ru1oyudagf" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/" data-id="cmcc0t01m000y0zru7ie4bfk9" data-title="Creating a realtime data platform with Pinot, Airflow, Trino, and Debezium" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -806,7 +905,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cm5wmda4l0007q9rucnndby87" data-title="A note on exponents" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/" data-id="cmcc0t01j00070zru0wlp58qz" data-title="A note on exponents" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/17/A-note-on-exponents/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -928,84 +1027,13 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cm5wmda4r0014q9rud0mccpln" data-title="Factoring Quadratics" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/" data-id="cmcc0t01n00160zru4bpa7jkm" data-title="Factoring Quadratics" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/06/10/Factoring-Quadratics/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
   <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/math/" rel="tag">math</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Scaling-Python-Microservices-Part-3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/05/19/Scaling-Python-Microservices-Part-3/" class="article-date">
-  <time datetime="2024-05-19T12:05:46.000Z" itemprop="datePublished">2024-05-19</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/05/19/Scaling-Python-Microservices-Part-3/">Scaling Python Microservices - service discovery</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In a <a href="/2024/03/21/Setting-up-a-Python-microservice/">previous blog post</a> we’d seen how to use OpenTelemetry and Parca to instrument two microservcies. Imagine that our architecture has grown and we now have many microservices. For example, there is a microservice that is used to send emails, another which keeps track of user profile information, etc. We’d previously hardcoded the HTTP address of the second microservice to make a call from the first microservice. We could have, in a production environment, added a DNS entry which points to the load balancer and used that instead. However, when there are many microservcies, it becomes cumbersome to add these entries. Furthermore, any new microservice which depends on another microservice now needs to have the address as a part of its configuration. Maintaining a single repository, which can be used to find the microservices and their addresses, becomes difficult to maintain. An easier way to find services is to use service discovery - a dynamic way for one service to find another. In this post we’ll modify the previous architecture and add service discovery using Zookeeper.  </p>
-<h2 id="Before-We-Begin"><a href="#Before-We-Begin" class="headerlink" title="Before We Begin"></a>Before We Begin</h2><p>In a nutshell, we’ll use Zookeeper for service registration and discovery. We’ll modify our <code>create_app</code> factory function to make one more function call which registers the service as it starts. The function call creates an ephemeral node in Zookeeper at a specified path and stores the host and port. Any service which needs to find another service looks for it on the same path. We’ll create a small library for all of this which will make things easier.</p>
-<h2 id="Getting-Started"><a href="#Getting-Started" class="headerlink" title="Getting Started"></a>Getting Started</h2><p>We’ll begin by creating a simple attr class to represent a service.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@define(<span class="params">frozen=<span class="literal">True</span></span>)</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Service</span>:</span><br><span class="line">    host: <span class="built_in">str</span></span><br><span class="line">    port: <span class="built_in">int</span></span><br></pre></td></tr></table></figure>  
-<p>We’ll be using the <code>kazoo</code> Python library to interact with Zookeeper. The next step is to create a private variable which will be used to store the Zookeeper client.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_zk: KazooClient | <span class="literal">None</span> = <span class="literal">None</span></span><br></pre></td></tr></table></figure>  
-<p>Next we’ll add the function which will be called as a part of the <code>create_app</code> factory function.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">init_zookeeper_and_register</span>():</span><br><span class="line">    _init_zookeeper()</span><br><span class="line">    _register_service()</span><br></pre></td></tr></table></figure>  
-<p>In this function we’ll first initialize the connection to Zookeeper and then register our service. We’ll see both of these functions next, starting with the one to init Zookeeper.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_init_zookeeper</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> _zk:</span><br><span class="line">        _zk = KazooClient(hosts=<span class="string">'127.0.0.1:2181'</span>)</span><br><span class="line">        _zk.start(timeout=<span class="number">5</span>)</span><br><span class="line">        _zk.add_listener(_state_change_listener)</span><br></pre></td></tr></table></figure>  
-<p>The <code>_zk</code> variable is meant to be a singleton. I was unable to find whether this is thread-safe or not but for the sake of this post we’ll assume it is. The <code>start</code> method creates a connection to Zookeeper synchronously and raises an error if no connection could be made in <code>timeout</code> seconds. We also add a listener to respond to changes in the state of a Zookeeper connection. This enables us to respond to scenarios where the connection drops momentarily. Since we’ll be creating ephemeral nodes in Zookeeper, they’ll be removed in the case of a session loss and would need to be recreated. In the listener we recreate the node upon a successful reconnection.  </p>
-<p>Next we’ll look at the function to register the service.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_register_service</span>():</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line"></span><br><span class="line">    service = os.environ.get(<span class="string">"SERVICE"</span>)</span><br><span class="line">    host = socket.getfqdn()</span><br><span class="line">    port = os.environ.get(<span class="string">"PORT"</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">assert</span> service</span><br><span class="line">    <span class="keyword">assert</span> host</span><br><span class="line">    <span class="keyword">assert</span> port</span><br><span class="line"></span><br><span class="line">    identifier = <span class="built_in">str</span>(uuid4())</span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{identifier}</span>"</span></span><br><span class="line">    data = {<span class="string">"host"</span>: host, <span class="string">"port"</span>: <span class="built_in">int</span>(port)}</span><br><span class="line">    data_bytes = json.dumps(data).encode(<span class="string">"utf-8"</span>)</span><br><span class="line"></span><br><span class="line">    _zk.create(path, data_bytes, ephemeral=<span class="literal">True</span>, makepath=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>  
-<p>We get the name of the service and the port it is running on as environment variables. The host is retrieved as the fully-qualified domain name of the machine we’re on. Although the example is running on my local machine, it may work on a cloud provider like AWS. We then create a UUID identifier for the service, and a path on which the service will be registered. The information stored on the path is a JSON containing the host and the port of the service. Finally, we create an ephemeral node on the path and store the host and port.  </p>
-<p>Next we’ll look at the function which handles changes in connection state.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">_state_change_listener</span>(<span class="params">state</span>):</span><br><span class="line">    <span class="keyword">if</span> state == KazooState.CONNECTED:</span><br><span class="line">        _register_service()</span><br></pre></td></tr></table></figure>  
-<p>We simply re-register the service upon reconnection.  </p>
-<p>Finally, we’ll look at the function which retrieves an instance of the service from Zookeeper.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">get_service_from_zookeeper</span>(<span class="params">service: <span class="built_in">str</span></span>) -&gt; Service | <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">global</span> _zk</span><br><span class="line">    <span class="keyword">assert</span> _zk</span><br><span class="line"></span><br><span class="line">    path = <span class="string">f"/providers/<span class="subst">{service}</span>"</span></span><br><span class="line">    children = _zk.get_children(path)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> children:</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">    idx = random.randint(<span class="number">0</span>, <span class="built_in">len</span>(children) - <span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">    child = children[idx]</span><br><span class="line">    config, _ = _zk.get(<span class="string">f"/providers/<span class="subst">{service}</span>/<span class="subst">{child}</span>"</span>)</span><br><span class="line">    config = config.decode(<span class="string">"utf-8"</span>)</span><br><span class="line">    config = json.loads(config)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> Service(**config)</span><br></pre></td></tr></table></figure>  
-<p>To get a service we get all the children at the path <code>/providers/SERVICE_NAME</code>. This returns a list of UUIDs, each of which represents an instance of the service. We randomly pick one of these instances and fetch the information associated with it. What we get back is a two-tuple containing the host and port, and an instance of ZStat which we can ignore. We decode and parse the returned information to get an instance of <code>dict</code>. This is then used to return an instance of <code>Service</code>. We can then use this information to make a call to the returned service.  </p>
-<p>This is all we need to create a small set of utility functions to register and discover services. All we need to do to register the service as a part of the Flask application process is to add a function call in the <code>create_app</code> factory function.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create_app</span>() -&gt; Flask:</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment"># -- Initialize Zookeeper and register the service.</span></span><br><span class="line">    init_zookeeper_and_register()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> app</span><br><span class="line"></span><br></pre></td></tr></table></figure>  
-<p>Finally, we’ll retrieve the information about the second service in the first service right before we make the call.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">make_request</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    service = get_service_from_zookeeper(service=<span class="string">"second"</span>)</span><br><span class="line">    url = <span class="string">f"http://<span class="subst">{service.host}</span>:<span class="subst">{service.port}</span>"</span></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>  
-<p>As an aside, the service will automatically be deregistered once it stops running. This is because we created an ephemeral node in Zookeeper and it only persists as long as the session that created it is alive. When the service stops, the session is disconnected, and the node is removed from Zookeeper.</p>
-<h3 id="Rationale"><a href="#Rationale" class="headerlink" title="Rationale"></a>Rationale</h3><p>The rationale behind registering and discovering services from Zookeeper is to make it easy to create new services and to find the ones that we need. It’s even more convenient when there is a shared library which contains the code that we saw above. For the sake of simplicity, we’ll assume all our services are written in Python and there is a single library that we need. The library could also contain an enum that represents all the services that are registered with Zookeeper. For example, to make a call to an email microservice, we could have code that looks like the following.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">email_service = Service.EMAIL_SERVICE.value</span><br><span class="line">service = get_service_from_zookeeper(service=email_service)</span><br></pre></td></tr></table></figure>  
-<p>This, in my opinion, is much simpler than adding a DNS entry. The benefits add up over time and result in code that is both readable and maintainable.  </p>
-<p>That’s it. That’s how we can register and retrieve services from Zookeeper. <a target="_blank" rel="noopener" href="https://github.com/thescalaguy/microservice">Code is available on Github.</a></p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/" data-id="cm5wmda4x0039q9ru2wbufusu" data-title="Scaling Python Microservices - service discovery" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/05/19/Scaling-Python-Microservices-Part-3/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
 
     </footer>
   </div>
@@ -1030,7 +1058,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.86px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.86px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.86px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 20px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.29px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.43px;">math</a> <a href="/tags/misc/" style="font-size: 15.71px;">misc</a> <a href="/tags/python/" style="font-size: 12.86px;">python</a> <a href="/tags/scala/" style="font-size: 18.57px;">scala</a> <a href="/tags/scalaz/" style="font-size: 17.14px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.5px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 18.75px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 12.5px;">python</a> <a href="/tags/scala/" style="font-size: 17.5px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.25px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1040,6 +1068,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2025/06/25/Real-time-restaurant-recommendations/">Real-time Restaurant Recommendations</a>
+          </li>
         
           <li>
             <a href="/2025/01/12/Creating-a-realtime-data-platform-indexing/">Creating a realtime data platform - indexing</a>
@@ -1075,10 +1107,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
-          </li>
-        
-          <li>
-            <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
           </li>
         
       </ul>
@@ -1142,6 +1170,21 @@ mjx-container[display="true"] + br {
 
 
 
-  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>
