@@ -188,6 +188,74 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-JVM-JIT-Inlining" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/29/JVM-JIT-Inlining/" class="article-date">
+  <time datetime="2018-04-29T05:04:32.000Z" itemprop="datePublished">2018-04-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/04/29/JVM-JIT-Inlining/">JVM JIT - Inlining</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the previous post we looked at how interpreted and compiled languages work. To recap, an interpreter works by generating assembly code for every bytecode it encounters. This is a very simple way to execute a program and also a very slow one. It ends up redoing a lot of translation from bytecode to assembly. Also, this simplistic approach means that the interpreter cannot do optimizations as it executes the bytecodes. Then there are compilers which produce assembly ahead-of-time. This overcomes having to generate assembly again and again but once the assembly is generated it cannot be changed on the fly.  </p>
+<p>JVM comes with both an interpreter and a compiler. When the execution of the code begins, the bytecodes are interpreted. For the sake of this series, I’ll be looking at Oracle HotSpot JVM which looks for “hot spots” in the code as the bytecodes get interpreted. These are the parts of the code which are most frequently executed and the performance of the application depends on these. Once the code is identified as “hot”, JVM can go from interpreting the code to compiling it to assembly i.e. the code is compiled “just-in-time”. In addition, since the code is being profiled as it is run, the compiled code is optimized. </p>
+<p>In this post we’ll look at one such optimization: inlining.</p>
+<h2 id="Inlining"><a href="#Inlining" class="headerlink" title="Inlining"></a>Inlining</h2><p>Inlining is an optimization where the call to a method is replaced by the body of the called method i.e. at the call site, the caller and the callee are melded together. When a method is called, the JVM has to push a stack frame so that it can resume from where it left off after the called method has finished executing. Inlining improves performance since JVM will not have to push a stack frame.  </p>
+<p>I’ll start with a simple example to demonstrate how inlining works. </p>
+<figure class="highlight java"><figcaption><span>Inline.java</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Inline</span> {</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> {</span><br><span class="line">        <span class="type">long</span> <span class="variable">upto</span> <span class="operator">=</span> Long.parseLong(args[<span class="number">0</span>]);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; upto; i++) {</span><br><span class="line">            <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> inline1();</span><br><span class="line">        }</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline1</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> inline2();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline2</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> inline3();</span><br><span class="line">    }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="type">int</span> <span class="title function_">inline3</span><span class="params">()</span> {</span><br><span class="line">        <span class="keyword">return</span> <span class="number">4</span>;</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>Next, let’s compile and run the code. </p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+PrintCompilation -XX:+UnlockDiagnosticVMOptions -XX:+PrintInlining Inline 100000</span><br></pre></td></tr></table></figure>
+<p>Output:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">63    1             Inline::inline1 (4 bytes)</span><br><span class="line">63    2             Inline::inline2 (4 bytes)</span><br><span class="line">                       @ 0   Inline::inline3 (2 bytes)   inline (hot)</span><br><span class="line">                       @ 0   Inline::inline2 (4 bytes)   inline (hot)</span><br><span class="line">                         @ 0   Inline::inline3 (2 bytes)   inline (hot)</span><br><span class="line">66    3             Inline::inline3 (2 bytes)</span><br><span class="line">66    4 %           Inline::main @ 9 (28 bytes)</span><br><span class="line">                       @ 16   Inline::inline1 (4 bytes)   inline (hot)</span><br><span class="line">                         @ 0   Inline::inline2 (4 bytes)   inline (hot)</span><br><span class="line">                           @ 0   Inline::inline3 (2 bytes)   inline (hot)</span><br><span class="line">66    4 %           Inline::main @ -2 (28 bytes)   made not entrant</span><br></pre></td></tr></table></figure>
+<p>Line #1 shows that <code>inline1</code> was compiled to assembly. Line #2 and Line #6 show that <code>inline2</code> and <code>inline3</code> were also compiled to assembly. Line #3 to line #5 show inlining. We can see that <code>inline3</code> was merged into <code>inline2</code>. Similarly, line #8 and #9 show that <code>inline2</code> was merged into <code>inline1</code>. So basically, all the methods were inlined into <code>inline1</code>. This means that once a certain threshold is crossed, we’ll no longer be making methods calls at all. This gives a significant performance boost.</p>
+<h3 id="Which-flags-control-inlining"><a href="#Which-flags-control-inlining" class="headerlink" title="Which flags control inlining?"></a>Which flags control inlining?</h3><p>When you run a Java program, you can view the flags with which it ran using <code>-XX:+PrintFlagsFinal</code>. Let’s do that and look at a few flags of interest.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -XX:+PrintFlagsFinal Inline 10000</span><br></pre></td></tr></table></figure>
+<p>You’ll see a bunch of flags and their default values. The ones we are interested in are <code>CompileThreshold</code>, <code>MaxInlineLevel</code>, <code>MaxInlineSize</code>, and <code>FreqInlineSize</code>.   </p>
+<p><code>CompileThreshold</code> is the number of invocations before compiling a method to native.<br><code>MaxInlineLevel</code> is a limit on how deep you’d go before you stop inlining. The default value is <code>9</code>. This means if we had method calls like <code>inline1</code> ⟶ <code>inline2</code> … ⟶ <code>inline20</code>, we’d only inline upto <code>inline10</code>. There after, we’d invoke <code>inline11</code>.<br><code>MaxInlineSize</code> decides the maximum size of a method, in bytecodes, to be inlined. The default value is <code>35</code>. This means that if the method to be inlined has mre than <code>35</code> bytecodes, it will not be inlined.<br><code>FreqInlineSize</code>, in contrast, decides the maximum size of a hot method, in bytecodes, to be inlined. This is a platform-dependent value and on my machine it is <code>325</code>.  </p>
+<p>You can tweak these flags to change how inlining behaves for your program.  </p>
+<h3 id="What-is-On-Stack-Replacement-OSR"><a href="#What-is-On-Stack-Replacement-OSR" class="headerlink" title="What is On Stack Replacement (OSR)?"></a>What is On Stack Replacement (OSR)?</h3><p>When we make a method call, JVM pushes a stack frame. When a method is deemed hot, the JVM replaces the intrepreted version with the compiled version by replacing the old stack frame with a new one. This is done while the method is running. We saw OSR being indicated in our example. The <code>%</code> indicates that an OSR was made.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">66    4 %           Inline::main @ -2 (28 bytes)   made not entrant</span><br></pre></td></tr></table></figure>
+<p>Let’s write some code to see OSR in action once again.  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.lang.ref.WeakReference;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">OSR</span> {</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> {</span><br><span class="line">        <span class="type">Object</span> <span class="variable">unused</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Object</span>();</span><br><span class="line">        WeakReference&lt;Object&gt; ref = <span class="keyword">new</span> <span class="title class_">WeakReference</span>&lt;&gt;(unused);</span><br><span class="line"></span><br><span class="line">        <span class="type">int</span> <span class="variable">x</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>( ref.get() != <span class="literal">null</span> ) {</span><br><span class="line">            x += <span class="number">1</span>;</span><br><span class="line">            System.out.println(x);</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">"Finished!"</span>);</span><br><span class="line">    }</span><br><span class="line">}</span><br></pre></td></tr></table></figure>
+<p>So this is a loop that will never terminate, right? Let’s run the program and see.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">434062</span><br><span class="line">  16828   59 %           OSR::main @ -2 (48 bytes)   made not entrant</span><br><span class="line">Finished!</span><br></pre></td></tr></table></figure>
+<p>What just happened? When the JVM decided to perform an OSR, it saw that there was no use for the <code>unused</code> object and decided to set it to null, causing the <code>WeakReference</code> to return <code>null</code> and thus breaking the loop. When an OSR is performed, the method that is invoked doesn’t restart execution from the start. Rather, It continues from the “back-edge”. In our case, it would be the loop. Since the JVM saw that there was no use for the <code>unused</code> object after this back-edge, it was removed and the loop could terminate.   </p>
+<p>Being able to resume execution from the back-edge is very efficient. This means that once a method has been compiled to native code it can be used rightaway rather than at the next invocation of the method.  </p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>To recap, we saw how JVM inlines code. Fusing the caller and the callee provides for improved performance since the overhead of method dispatch is avoided. We saw the flags which control inlining and we saw how JVM performs OSR.  </p>
+<p>Inlining is a very useful optimization because it forms the basis for other optimizations like escape analysis and dead code elimination.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/" data-id="cmguwlrc9001ojtruhg9x4tof" data-title="JVM JIT - Inlining" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2018/04/29/JVM-JIT-Inlining/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/compilers/" rel="tag">compilers</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-JVM-JIT-Introduction" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/04/17/JVM-JIT-Introduction/" class="article-date">
@@ -240,7 +308,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cmcc0t01o001n0zruew8pbx2g" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/" data-id="cmguwlrc9001mjtru6zmsgmce" data-title="JVM JIT - Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/04/17/JVM-JIT-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -322,7 +390,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="cmcc0t021007p0zru0oytcfja" data-title="Transducers" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2018/01/06/transducers/" data-id="cmguwlrcm007jjtru3w331fdo" data-title="Transducers" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2018/01/06/transducers/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -398,7 +466,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="cmcc0t01u004b0zru2aht28eh" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/" data-id="cmguwlrcf004bjtru4utr45i4" data-title="One Year as a Software Engineer - a Retrospective" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/12/06/one-year-an-engineer/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -502,7 +570,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="cmcc0t021007n0zrud97zbiaz" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/" data-id="cmguwlrcm007mjtruetnm3oww" data-title="Unit Testing with Specs" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/11/16/unit-testing-with-specs/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -569,7 +637,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cmcc0t01u00490zru59gtbu6t" data-title="Monad" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/10/13/monad/" data-id="cmguwlrcf0044jtrugotnfj0o" data-title="Monad" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/10/13/monad/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -648,7 +716,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cmcc0t01u00440zru0q70ha9g" data-title="Functor" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/09/05/functors/" data-id="cmguwlrcf0042jtru3m1w253o" data-title="Functor" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/09/05/functors/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -719,7 +787,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cmcc0t01u00470zrubkpl1ejb" data-title="Monoid" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/10/monoid/" data-id="cmguwlrcf004ejtru0ab535uz" data-title="Monoid" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/10/monoid/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -798,7 +866,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cmcc0t01u00420zruakvy74ag" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/08/category-theory-intro/" data-id="cmguwlrcf0049jtrubnuj5y7b" data-title="Introduction to Category Theory" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/08/category-theory-intro/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -847,7 +915,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cmcc0t01v004v0zru088s9i8q" data-title="Scalaz Memo" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/05/scalaz-memo/" data-id="cmguwlrch004vjtruecobclv3" data-title="Scalaz Memo" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/05/scalaz-memo/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -930,7 +998,7 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cmcc0t01v004q0zru6n6s693y" data-title="Scalaz Lens" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/08/01/scalaz-lens/" data-id="cmguwlrcg004qjtru713q5lfa" data-title="Scalaz Lens" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/08/01/scalaz-lens/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -1004,82 +1072,9 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cmcc0t01v004y0zru2qxl58aw" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/" data-id="cmguwlrch004yjtru5vol0rwd" data-title="Scalaz NonEmptyList" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2017/07/30/scalaz-nonemptylist/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/functional-programming/" rel="tag">functional programming</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scala/" rel="tag">scala</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/scalaz/" rel="tag">scalaz</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-scalaz-either" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2017/07/17/scalaz-either/" class="article-date">
-  <time datetime="2017-07-17T08:45:10.000Z" itemprop="datePublished">2017-07-17</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/07/17/scalaz-either/">Scalaz Either</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In this post we’ll look at <a target="_blank" rel="noopener" href="https://github.com/scalaz/scalaz/blob/series/7.3.x/core/src/main/scala/scalaz/Either.scala">Scalaz <code>Either</code></a>. This is Scalaz’s version of the standard <a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.9.3/scala/Either.html">Scala <code>Either</code></a>. Before we look at Scalaz <code>Either</code>, we’ll look at Scala <code>Either</code>.</p>
-<h2 id="Scala-Either"><a href="#Scala-Either" class="headerlink" title="Scala Either"></a>Scala Either</h2><p>Let’s begin by going over the docs:<sup><a target="_blank" rel="noopener" href="http://www.scala-lang.org/api/2.12.0/scala/util/Either.html">[1]</a></sup>  </p>
-<p><em>Represents a value of one of two possible types (a disjoint union.) Instances of Either are either an instance of Left or Right.<br>…<br>Convention dictates that Left is used for failure and Right is used for success.</em>  </p>
-<p>With the definition out of the way, let’s look at some code. The example is modeled around the code in the official Scala <code>Either</code> docs.  </p>
-<h3 id="Creating-an-Either"><a href="#Creating-an-Either" class="headerlink" title="Creating an Either"></a>Creating an Either</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">parseInt</span></span>(str: <span class="type">String</span>): <span class="type">Either</span>[<span class="type">String</span>, <span class="type">Int</span>] = {</span><br><span class="line">      <span class="keyword">try</span> {</span><br><span class="line">          <span class="type">Right</span>(str toInt)</span><br><span class="line">      } <span class="keyword">catch</span> {</span><br><span class="line">          <span class="keyword">case</span> e: <span class="type">Exception</span> =&gt; <span class="type">Left</span>(e getMessage)</span><br><span class="line">      }</span><br><span class="line">  }</span><br><span class="line">defined function parseInt</span><br></pre></td></tr></table></figure>
-<p>Next, let’s create a case each of success and failure.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> success = parseInt(<span class="string">"2"</span>)</span><br><span class="line">success: <span class="type">Either</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Right</span>(<span class="number">2</span>)</span><br><span class="line">@ <span class="keyword">val</span> failure = parseInt(<span class="string">"apple"</span>)</span><br><span class="line">failure: <span class="type">Either</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Left</span>(<span class="string">"For input string: \"apple\""</span>)</span><br></pre></td></tr></table></figure>  
-<h3 id="Using-a-for-Comprehension"><a href="#Using-a-for-Comprehension" class="headerlink" title="Using a for Comprehension"></a>Using a <code>for</code> Comprehension</h3><p>Scala <code>Either</code> is not a monad and so you cannot use it in a <code>for</code> comprehensions.  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">for</span> {</span><br><span class="line">      n &lt;- success</span><br><span class="line">  } <span class="keyword">yield</span> n</span><br><span class="line">res3: <span class="type">Either</span>[<span class="type">String</span>, <span class="type">Int</span>] = <span class="type">Right</span>(<span class="number">2</span>)</span><br></pre></td></tr></table></figure> 
-<p><hr></p>
-<h4 id="NOTE"><a href="#NOTE" class="headerlink" title="NOTE:"></a>NOTE:</h4><p>Previously, Scala <code>Either</code> was not a monad so it couldn’t be used in <code>for</code> comprehensions. Now, it is a monad and can be used in <code>for</code> comprehensions.</p>
-<hr> 
-
-<h2 id="Scalaz-Either"><a href="#Scalaz-Either" class="headerlink" title="Scalaz Either"></a>Scalaz Either</h2><p>A valid question to ask is why would one use Scalaz <code>Either</code> when Scala <code>Either</code> is a monad. The answer is that Scalaz <code>Either</code> is a lot more convenient and powerful compared to Scala <code>Either</code>. Let’s begin by refactoring <code>parseInt</code> to return a Scalaz <code>Either</code>.  </p>
-<h3 id="Creating-an-Either-1"><a href="#Creating-an-Either-1" class="headerlink" title="Creating an Either"></a>Creating an Either</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">import</span> scalaz._</span><br><span class="line"><span class="keyword">import</span> scalaz._</span><br><span class="line">@ <span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line"><span class="keyword">import</span> <span class="type">Scalaz</span>._</span><br><span class="line">@ <span class="function"><span class="keyword">def</span> <span class="title">parseInt</span></span>(str: <span class="type">String</span>): <span class="type">String</span> \/ <span class="type">Int</span> = {</span><br><span class="line">      <span class="keyword">import</span> scala.util.{<span class="type">Try</span>, <span class="type">Success</span>, <span class="type">Failure</span>}</span><br><span class="line">      <span class="type">Try</span> { str toInt } <span class="keyword">match</span> {</span><br><span class="line">          <span class="keyword">case</span> <span class="type">Success</span>(n) =&gt; n.right[<span class="type">String</span>]</span><br><span class="line">          <span class="keyword">case</span> <span class="type">Failure</span>(e) =&gt; e.getMessage.left[<span class="type">Int</span>]</span><br><span class="line">      }</span><br><span class="line">  }</span><br><span class="line">defined function parseInt</span><br></pre></td></tr></table></figure>  
-<p>Next, let’s create a case each of success and failure.</p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">val</span> success = parseInt(<span class="string">"2"</span>)</span><br><span class="line">success: <span class="type">String</span> \/ <span class="type">Int</span> = \/-(<span class="number">2</span>)</span><br><span class="line">@ <span class="keyword">val</span> failure = parseInt(<span class="string">"apple"</span>)</span><br><span class="line">failure: <span class="type">String</span> \/ <span class="type">Int</span> = -\/(<span class="string">"For input string: \"apple\""</span>)</span><br></pre></td></tr></table></figure>
-<p>The return type of our function is indicated by <code>String \/ Int</code>. This means we may return a <code>String</code> on the left in case of failure and an <code>Int</code> on the right in case of success. We create right or left projections by calling <code>right</code> or <code>left</code>, respectively, and mentioning the type of the value that will be on the other side. For example, we call <code>right[String]</code> because the left side is a <code>String</code>. The right projection is indicated by <code>\/-</code> and left projection is indicated by <code>-\/</code>.  </p>
-<h3 id="Using-a-for-Comprehension-1"><a href="#Using-a-for-Comprehension-1" class="headerlink" title="Using a for Comprehension"></a>Using a <code>for</code> Comprehension</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="keyword">for</span> {</span><br><span class="line">      n &lt;- success</span><br><span class="line">  } <span class="keyword">yield</span> n</span><br><span class="line">res12: <span class="type">String</span> \/ <span class="type">Int</span> = \/-(<span class="number">2</span>)</span><br></pre></td></tr></table></figure>
-<p>Because Scalaz <code>Either</code> is also a monad, it can be used in a <code>for</code> comprehension.  </p>
-<h3 id="Checking-Left-or-Right"><a href="#Checking-Left-or-Right" class="headerlink" title="Checking Left or Right"></a>Checking Left or Right</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@ success isRight</span><br><span class="line">res13: <span class="type">Boolean</span> = <span class="literal">true</span></span><br><span class="line">@ failure isLeft</span><br><span class="line">res14: <span class="type">Boolean</span> = <span class="literal">true</span></span><br></pre></td></tr></table></figure>  
-<p>Akin to Scala <code>Either</code>, Scalaz <code>Either</code> also lets you check for left or right by calling <code>isLeft</code> or <code>isRight</code>, respectively.  </p>
-<h3 id="Ternary-Operator"><a href="#Ternary-Operator" class="headerlink" title="Ternary Operator"></a>Ternary Operator</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ success ? <span class="string">"YES"</span> | <span class="string">"NO"</span></span><br><span class="line">res15: <span class="type">String</span> = <span class="string">"YES"</span></span><br></pre></td></tr></table></figure>  
-<p>Scalaz <code>Either</code> provides you with a <code>getOrElse</code> which you can use to as a ternary operator using its symbolic representation <code>|</code>.  </p>
-<h3 id="Folding-an-Either"><a href="#Folding-an-Either" class="headerlink" title="Folding an Either"></a>Folding an Either</h3><figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">@ success fold(</span><br><span class="line">    left =&gt; <span class="number">-1</span>,</span><br><span class="line">    right =&gt; right + <span class="number">1</span></span><br><span class="line">  )</span><br><span class="line">res16: <span class="type">Int</span> = <span class="number">3</span></span><br><span class="line">@ failure fold(</span><br><span class="line">    left =&gt; <span class="number">-1</span>,</span><br><span class="line">    right =&gt; right + <span class="number">1</span></span><br><span class="line">  )</span><br><span class="line">res17: <span class="type">Int</span> = <span class="number">-1</span></span><br></pre></td></tr></table></figure>  
-<p>Both Scala and Scalaz <code>Either</code> provide you with a <code>fold</code> method which run the first function if we have a left, or the second function if we have a right.  </p>
-<h3 id="Converting-to-Validation"><a href="#Converting-to-Validation" class="headerlink" title="Converting to Validation"></a>Converting to Validation</h3><p>The single biggest difference between Scala <code>Either</code> and Scalaz <code>Either</code> is that Scalaz <code>Either</code> can be converted to other types like <code>Validation</code>, etc. For example, converting an <code>Either</code> to a <code>Validation</code> allows you to accumulate errors. As the code comments state:  </p>
-<p><em><code>A \/ B</code> is also isomorphic to <code>Validation[A, B]</code>. The subtle but important difference is that <code>Applicative</code> instances for <code>Validation</code> accumulates errors (“lefts”)</em>  </p>
-<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@ <span class="number">1.</span>right validation</span><br><span class="line">res65: <span class="type">Validation</span>[<span class="type">Nothing</span>, <span class="type">Int</span>] = <span class="type">Success</span>(<span class="number">1</span>)</span><br></pre></td></tr></table></figure>  
-<p>We create a <code>Validation</code> by calling <code>validation</code> method on the <code>Either</code> instance. Depending on a left or right, we get either a <code>Success</code> or <code>Failure</code>.</p>
-<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>Scalaz <code>Either</code> and Scala <code>Either</code> are pretty similar in the latest version of Scala (2.12, as of writing). Which one you decide to use depends upon your personal preference. My preference is to use Scalaz <code>Either</code> throughout my code if I am using other Scalaz features to maintain consistency.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2017/07/17/scalaz-either/" data-id="cmcc0t01u004e0zru8gjbbebp" data-title="Scalaz Either" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2017/07/17/scalaz-either/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1120,6 +1115,10 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
       <ul>
         
           <li>
+            <a href="/2025/10/17/Writing-a-PRD-Restaurant-Reservations/">Writing a PRD - Curated Menus at Restaurants</a>
+          </li>
+        
+          <li>
             <a href="/2025/06/25/Real-time-restaurant-recommendations/">Real-time Restaurant Recommendations</a>
           </li>
         
@@ -1153,10 +1152,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
         
           <li>
             <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
-          </li>
-        
-          <li>
-            <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
           </li>
         
       </ul>
@@ -1220,21 +1215,6 @@ List(f)(L) = maplist(f)(L) = [f(s_1), f(s_2), f(s_3), ... f(s_n)]</script><p>How
 
 
 
-  </div>
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  </div><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </body>
 </html>

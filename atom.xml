@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://fasihkhatib.com/"/>
-  <updated>2025-06-25T13:57:28.405Z</updated>
+  <updated>2025-10-17T13:47:27.101Z</updated>
   <id>http://fasihkhatib.com/</id>
   
   <author>
@@ -15,6 +15,29 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Writing a PRD - Curated Menus at Restaurants</title>
+    <link href="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/"/>
+    <id>http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/</id>
+    <published>2025-10-17T13:47:27.000Z</published>
+    <updated>2025-10-17T13:47:27.101Z</updated>
+    
+    <content type="html"><![CDATA[<p>One of my favorite food delivery apps recently launched a feature where they spotlight restaurants. Upon clicking the icon which shows you more about the restaurant, you’re presented with a list of all the outlets they have in the city. As someone who eats outside frequently and eats a variety of different cuisines, this got me thinking. What if we could elevate this experience? While previously I’d written about a feature I’d love to see from a programmer’s perspective, I’ll write this post from a product manager’s perspective. In essence, I’ll attempt to write a Product Requirements Document (PRD). I’ll follow the <a href="https://www.notion.com/blog/how-to-write-a-prd">“How to write a PRD”</a> guide by Notion. Here it goes.</p><h2 id="Step-1-Define-the-Product"><a href="#Step-1-Define-the-Product" class="headerlink" title="Step 1 - Define the Product."></a>Step 1 - Define the Product.</h2><p>The aim of the product is to elevate a diner’s experience of a restaurant by presenting them with curated menus. Curated menus allow the diners to expreience the best of what the restaurants have to offer by letting them focus more on what makes eating out an experience — the cuisine, the company, and the conversations.   </p><p>There are various personas who will benefit from such a product. These personas are defined below.  </p><h3 id="Persona-1-—-The-Explorer"><a href="#Persona-1-—-The-Explorer" class="headerlink" title="Persona 1 — The Explorer."></a>Persona 1 — The Explorer.</h3><p>People who like eating out frequently and trying new places and cuisines to eat can benefit from handpicked dishes presented in the curated menu. This allows them to experience new tastes and cultures whle enjoying a tailored exprience; every dish in the menu is chosen to delight the diner by highlighting the best of what the culture has to offer.  </p><h3 id="Persona-2-—-The-Executive"><a href="#Persona-2-—-The-Executive" class="headerlink" title="Persona 2 — The Executive."></a>Persona 2 — The Executive.</h3><p>Curated menus also make dining in a business setting easier by letting the diners focus more on enjoying the cuisine, and having business discussions than choosing dishes out of a menu. This also allows highlighting, if there are diners from various countries, the cuisine of the host country.</p><h3 id="Persona-3-—-The-Lover"><a href="#Persona-3-—-The-Lover" class="headerlink" title="Persona 3 — The Lover."></a>Persona 3 — The Lover.</h3><p>Curated menus make going out on dates a more memorable experience by allowing partners to bond over meals shared together. The menu takes the mystery out of choosing the right dish as each is chosen to delight the diner. This makes going out and choosing the right restaurant for the evening an easier experience.</p><h2 id="Step-2-Determine-Goals"><a href="#Step-2-Determine-Goals" class="headerlink" title="Step 2 - Determine Goals."></a>Step 2 - Determine Goals.</h2><p>The following are the list of SMART goals which will enable the release of the first iteration of the product.</p><ol><li>Identify the top three cities where users eat out the most.  </li><li>Identify the five restaurants in these cities who’d participate.  </li><li>Create three curated menus for each of these restaurants.</li><li>Get 100 bookings for each menu in the first six months.  </li></ol><p>The KPIs for the following goals are listed below.  </p><ol><li>The number of people viewing curated menus.  </li><li>The number of people buying curated menus.</li><li>The number of people adding curated menus to their favorites.</li></ol><h2 id="Step-3-—-Constraints-and-Limitations"><a href="#Step-3-—-Constraints-and-Limitations" class="headerlink" title="Step 3 — Constraints and Limitations."></a>Step 3 — Constraints and Limitations.</h2><p>Curated menus take time to create. Getting each restaurant onboard, creating the menu, presenting them to the user, and getting them to choose the menu can be a time-taking process. Additionally, factoring in people’s dietary choices mean that some menus will have limited appeal thus reducing the number of people who choose the menu. Another factor is the pricing of the menu requiring them to be created at different price points.  </p><h2 id="Step-4-—-Scope"><a href="#Step-4-—-Scope" class="headerlink" title="Step 4 — Scope."></a>Step 4 — Scope.</h2><p>The initial pilot of the feature should include only a limited number of restaurants and menus. From the point-of-view of functionality, the engineering effort required should focus on enabling the foals outlined in Step 2 — adding curated menus in the system, displaying them to users, allowing users to buy the menu, notifying the restaurants of the purchase, and analytics to track the KPIs.</p><h2 id="Step-5-—-Features"><a href="#Step-5-—-Features" class="headerlink" title="Step 5 — Features."></a>Step 5 — Features.</h2><img src="/2025/10/17/Writing-a-PRD-Restaurant-Reservations/App.png" class="">  <p>Upon viewing a restaurant, the user will be presented with the list of curated menus for that restaurant along with the price. They will be able to buy it within the app by choosing a date and time, and paying the displayed amount. This will reserve a table for them and notify the restaurant that a curated experience is expected at the chosen time.  </p><h2 id="Step-6-—-Release-Criteria"><a href="#Step-6-—-Release-Criteria" class="headerlink" title="Step 6 — Release Criteria."></a>Step 6 — Release Criteria.</h2><p>The criteria for success would include trial runs with restaurants with a chosen group of users and ensuring that the functionality performs as expected. Once past this phase, the feature can be released generally to more users. Concretly, the following criterias would help check the readiness of the product.  </p><ol><li>Add the participating restaurants into the system.  </li><li>Add the curated menus into the system.  </li><li>Ensure that the menus show up in the app as expected.  </li><li>Purchase a menu and check the end-to-end flow.  </li><li>Release it to an early group of users.  </li></ol><p>Finito.</p><link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;One of my favorite food delivery apps recently launched a feature where they spotlight restaurants. Upon clicking the icon which shows yo
+      
+    
+    </summary>
+    
+    
+      <category term="misc" scheme="http://fasihkhatib.com/tags/misc/"/>
+    
+  </entry>
   
   <entry>
     <title>Real-time Restaurant Recommendations</title>
@@ -266,27 +289,6 @@
     
     
       <category term="architecture" scheme="http://fasihkhatib.com/tags/architecture/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Programming Puzzles 5</title>
-    <link href="http://fasihkhatib.com/2024/12/04/Programming-Puzzles-5/"/>
-    <id>http://fasihkhatib.com/2024/12/04/Programming-Puzzles-5/</id>
-    <published>2024-12-04T04:52:50.789Z</published>
-    <updated>2024-12-04T04:52:50.790Z</updated>
-    
-    <content type="html"><![CDATA[<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>]]></content>
-    
-    <summary type="html">
-    
-      
-      
-        &lt;link rel=&quot;stylesheet&quot; href=&quot;/css/spoiler.css&quot; type=&quot;text/css&quot;&gt;&lt;script src=&quot;/js/spoiler.js&quot; type=&quot;text/javascript&quot; async&gt;&lt;/script&gt;
-      
-    
-    </summary>
-    
     
   </entry>
   
