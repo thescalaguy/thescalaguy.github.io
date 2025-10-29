@@ -7,8 +7,15 @@
     </url>
     
     <url>
+        <loc>http://fasihkhatib.com/Mostly-Python/</loc>
+        <lastmod>2025-10-29T10:30:25.029Z</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
         <loc>http://fasihkhatib.com/about/</loc>
-        <lastmod>2024-08-13T06:53:21.466Z</lastmod>
+        <lastmod>2025-10-29T04:03:47.752Z</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.8</priority>
     </url>
