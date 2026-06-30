@@ -190,6 +190,78 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Salesy-An-Introduction" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2026/06/30/Salesy-An-Introduction/" class="article-date">
+  <time datetime="2026-06-30T06:35:12.000Z" itemprop="datePublished">2026-06-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2026/06/30/Salesy-An-Introduction/">Salesy - An Introduction</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Lately I’ve been working on an AI side project that’s an assistant for sales executives. The aim of the project is to automate as much of the sales process as possible by adding AI into the mix. The catalyst behind this project is the observation that there are industries where sales happen over email. Therefore, a system which automates the sales journey by reading the inbox of the sales executive allows improving efficiency by handling much of the repetitive work like asking and answering common questions, guiding the prospect through the sales journey, and so on. I nicknamed the project as “Salesy” and this series of posts will walk you through how it is built and what it does. This introductory post outlines some of the features of the project and will be written in a PRD style.  </p>
+<h2 id="Defining-the-Product"><a href="#Defining-the-Product" class="headerlink" title="Defining the Product"></a>Defining the Product</h2><p>Salesy is a human-in-the-loop AI sales assistant that analyses every incoming email and intelligently guides the prospect through the sales journey. There is a singular persona that it is designed for — the sales executive. Sales executives can connect their inbox to the system, allowing it to handle much of the sales journey automatically while they focus on the more human aspect of the process like relationship building.   </p>
+<h2 id="Defining-the-Goals"><a href="#Defining-the-Goals" class="headerlink" title="Defining the Goals"></a>Defining the Goals</h2><p>The following are the list of goals for Salesy.  </p>
+<ol>
+<li>Improve the efficiency of the sales executive by drafting their emails. </li>
+<li>Improve the efficiency of the organization by moving prospects through the sales journey seamlessly.</li>
+<li>Improve the satisfaction of the prospect by providing them with relevant information when they need it.</li>
+</ol>
+<p>The following are the KPIs to be tracked.  </p>
+<ol>
+<li>The number of emails sent by Salesy.  </li>
+<li>The number of steps the prospect has moved through and the time spent in each.  </li>
+<li>The number of questions asked by the prospect to gather information.  </li>
+<li>The number of questions asked by Salesy to gather requirements.</li>
+</ol>
+<h2 id="Constraints-and-Limitations"><a href="#Constraints-and-Limitations" class="headerlink" title="Constraints and Limitations"></a>Constraints and Limitations</h2><p>There is one major constraint in the system. Anything that happens outside the email thread cannot be captured. A couple of examples demonstrate this. Consider an industry where the prospect may request a sample to be sent before an order is placed. Dispatching the sample and awaiting its delivery happen outside the email thread. A similar constraint is encountered when the prospect requests a meeting, either virtual or in-person. Thus, the system can automate the sales journey only using information that’s present in the ongoing email thread. Any information captured outside the email would need to be added back to it. For example, by sending a follow-up email to capture what was discussed in the meeting.</p>
+<h2 id="Features"><a href="#Features" class="headerlink" title="Features"></a>Features</h2><h3 id="Connect-Email"><a href="#Connect-Email" class="headerlink" title="Connect Email"></a>Connect Email</h3><img src="/2026/06/30/Salesy-An-Introduction/Connect.png" class="">  
+<p>The first step in using Salesy is to connect the inbox with the system. For the case when the user uses Gmail, they’d have to perform OAuth authorization and give Salesy the permission to read their inbox. As shown in the screenshot above, the prompt tells the user why Salesy needs these permissions and the “Authorize” button begins the OAuth process.  </p>
+<h3 id="Activity"><a href="#Activity" class="headerlink" title="Activity"></a>Activity</h3><img src="/2026/06/30/Salesy-An-Introduction/Activity.png" class="">  
+<p>Once the inbox is connected, Salesy categorizes each incoming email. The “Activity” tab provides an overview of the emails that require the user’s attention. The screenshot above shows the ones that have been labelled “Sales Lead”. Each item in the list shows the title of the email, its label, whether it’s AI handling the conversation or the human since it’s a human-in-the-loop system, and a summary of the email. The user has the option to “View” the details of the action suggested by AI or to “Dismiss” it.  </p>
+<h3 id="Businesses"><a href="#Businesses" class="headerlink" title="Businesses"></a>Businesses</h3><img src="/2026/06/30/Salesy-An-Introduction/Businesses.png" class="">  
+<p>The “Businesses” tab provides a quick way for the user to find out which businesses they are in conversation with and why. That is, who’s interested in making a purchase or requesting after-sales support. Since Salesy is B2B, every business is identified by their domain. Clicking on the domain displays the conversations associated with that business. Additionally, the user is also shown the first and last dates of communication with that business.   </p>
+<h3 id="Files"><a href="#Files" class="headerlink" title="Files"></a>Files</h3><img src="/2026/06/30/Salesy-An-Introduction/Files.png" class="">  
+<p>The “Files” tab allows the user to upload files. These are used by Salesy’s AI to construct response to emails. Files can be of different types. For example, you may have one file which contains all the questions the bot should ask to determine the requirements of the prospect and another which contains general information about the company. Some of these files are read in their entirety to construct a response where as others are read in parts as chunks.  </p>
+<h3 id="Team"><a href="#Team" class="headerlink" title="Team"></a>Team</h3><img src="/2026/06/30/Salesy-An-Introduction/Team.png" class="">  
+<p>The “Team” tab allows inviting other people to Salesy.  </p>
+<h3 id="Settings"><a href="#Settings" class="headerlink" title="Settings"></a>Settings</h3><img src="/2026/06/30/Salesy-An-Introduction/Settings.png" class="">  
+<p>The “Settings” tab allows changing the settings in the system. For example, since different organizations have different sales journeys, the various steps the prospect goes through can be configured via the settings.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>This was a brief overview of what Salesy can do. Later posts will look at the system in more detail.  </p>
+<p>Finito.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2026/06/30/Salesy-An-Introduction/" data-id="cmr09x7cd002xl7rucauth882" data-title="Salesy - An Introduction" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2026/06/30/Salesy-An-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PRD/" rel="tag">PRD</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Writing-a-PRD-Restaurant-Reservations" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2025/10/17/Writing-a-PRD-Restaurant-Reservations/" class="article-date">
@@ -225,7 +297,7 @@ mjx-container[display="true"] + br {
 <li>Create three curated menus for each of these restaurants.</li>
 <li>Get 100 bookings for each menu in the first six months.  </li>
 </ol>
-<p>The KPIs for the following goals are listed below.  </p>
+<p>The KPIs for the goals are listed below.  </p>
 <ol>
 <li>The number of people viewing curated menus.  </li>
 <li>The number of people buying curated menus.</li>
@@ -248,7 +320,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/" data-id="cmmei2jis00400kru7c34933q" data-title="Writing a PRD - Curated Menus at Restaurants" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/" data-id="cmr09x7cf004dl7ru99fs5j5h" data-title="Writing a PRD - Curated Menus at Restaurants" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -321,7 +393,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/" data-id="cmmei2jip002p0kru4rutbxwv" data-title="Real-time Restaurant Recommendations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/" data-id="cmr09x7cc002sl7ru3by22wva" data-title="Real-time Restaurant Recommendations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -394,7 +466,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/" data-id="cmmei2jik000r0kru7hiq9cj9" data-title="Creating a realtime data platform - indexing" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/" data-id="cmr09x7c7000sl7ruguvjfm35" data-title="Creating a realtime data platform - indexing" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -482,7 +554,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cmmei2jik000n0kru8a7zdab2" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cmr09x7c7000ml7ru2fhf4x4y" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -555,7 +627,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cmmei2jil000x0krubvo619eo" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cmr09x7c8000vl7ru0bhqa2dv" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -623,7 +695,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cmmei2jil000u0krudyf1hpxd" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cmr09x7c8000yl7ru1ww07q9k" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -710,7 +782,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cmmei2jij000h0kru8mwu112l" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cmr09x7c6000il7rudrexgjtq" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -776,7 +848,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cmmei2jil000t0kru8kewcaba" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cmr09x7c7000ul7ru8fwfeo0d" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -843,7 +915,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cmmei2jik000p0kru3uolgf0f" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cmr09x7c7000ql7ru1dz545c8" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -917,7 +989,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cmmei2jik000j0kru4fcbcxr4" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cmr09x7c6000kl7rugay4et16" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -970,65 +1042,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cmmei2jik000l0kru9w3zgrub" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cmr09x7c7000ol7rufcuu8p14" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" class="article-date">
-  <time datetime="2024-12-18T02:13:04.000Z" itemprop="datePublished">2024-12-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">Creating a realtime data platform - the design</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>I’d previously written about <a href="/2024/06/20/Creating-a-realtime-data-platform-with-Pinot-Airflow-Trino-and-Debezium/">creating a data platform using Pinot, Trino, Airflow, and Debezium</a>. It was a quick how-to that showed how to glue the pieces together to create a data platform. In this post we’ll go deeper into the design of the system and look at building the system in the posts that follow.</p>
-<h2 id="The-design"><a href="#The-design" class="headerlink" title="The design"></a>The design</h2><p>A common requirement for data engineering teams is to move data stored within the databases owned by various microservices into a central data warehouse. One of the ways to move this data is by loading it incrementally. In this approach, once the data has been loaded fully, subsequent loads are done in smaller increments. These contain rows that have changed since the last time the warehouse was loaded. This brings the data into the warehouse periodically as the loads are run on a specified schedule.  </p>
-<p>Recently the shift has been towards moving data in realtime so that analytics can be derived quickly. Change data capture allows capturing row-level changes as they happen as a result of inserts, updates, and deletes in the tables. Responding to these events allows us to load the warehouse in realtime.  </p>
-<p>The diagram below shows how we can combine Pinot, Trino, Airflow, Debezium, and Superset to create a realtime data platform.</p>
-<img src="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/Diagram2.png" class="">  
-<p>The components of the system can be divided into three broad categories. The first category is those that bring data into the platform and are shown in dark green. This category consists of the source database system, Debezium, and Pinot. Debezium reads the stream of changes happening in the database and writes them into Pinot. The second category is those that create datasets on top of the data ingested into Pinot and are shown in dark grey. This category consists of Airflow, Trino, and HDFS. Airflow uses Trino to create tables and views in HDFS on top of the data stored in Pinot. Finally, the last category is those that consume the datasets and present them to the end user. This category consists of data visualization tools like Superset.  </p>
-<p>Let’s discuss each of these components in more detail.  </p>
-<p>Debezium is a platform for change data capture. It consists of connectors which monitor the database tables for inserts, updates, and deletes and emit events into Kafka. These events can then be written into the data warehouse to create an up-to-date version of the table in the upstream database. We’ll run Debezium as a Docker container. When run like this, the connectors are available as a part of the image and can be configured using a REST API. To configure the connector we’ll send a JSON object to a specific endpoint. This object contains information such as the credentials of the database, the databases or tables we’d like to monitor, any transformations we’d like to apply to this data, and so on. As we’ll see when we begin building the system, we can monitor all of our tables for changes happening in them.  </p>
-<p>Pinot is an OLAP datastore that is built for real-time analytics. It supports creating tables that consume data in realtime so that insights can be derived quickly. Pinot, when combined with Debezium, allows us to ingest row-level changes as they happen in the source table. Configurations for Pinot tables and schemas are written in JSON and sent to their respective endpoints to create them. We’ll create a realtime table which ingests events emitted by Debezium. Using the upsert functionality provided by Pinot, we’ll keep only the latest state of the row in the table. This makes it easier to to create reports or do ad-hoc analysis.  </p>
-<p>Trino provides query federation by allowing us to query multiple data sources with a unified SQL interface. It is fast and distributed which means we can use it to query large amounts of data. We’ll use it in conjunction with Pinot since the latter does not yet provide full SQL capabilities. Trino allows connecting to a database by creating a catalog. As we can see from the diagram, we’ll need two catalogs - Pinot and HDFS. Since it is currently not possible to create views, materialized views, or tables from select statements in Pinot, we’ll create them in HDFS using Trino. This allows us to speed up the reports and dashboards since all of the required data will be precomputed and available in HDFS as either a materialized view or a table.  </p>
-<p>Airflow is an orchestrator that allows creating complex workflows. These workflows are created as Python scripts that define a directed acyclic graph (DAG) of tasks. Airflow then schedules these tasks for execution at defined intervals. Tasks are defined using operators. For example, to execute a Python function one would use the PythonOperator. Similarly, there are operators to execute SQL queries. We’ll use these operators to query Trino and create the datasets that are needed for reporting and dashboards. Peridocially regenerating these datasets would allow us to provide reports that present the latest data.  </p>
-<p>Superset is a data visualization tool. We’ll connect Superset to Trino so that we can visualize the datasets that we’ve created in HDFS.   </p>
-<p>Having discussed the various components of the design, let’s look at the design goals it achieves. First, the system is designed to be realtime. With change data capture using Debezium, we can respond to every insert, update, and delete happening in the source table as soon as it happens. Second, the system is designed with open-source technologies. This allows us to benefit from the experience of the collaborators and community behind each of these projects. Finally, the system is designed to be as close to self-service as possible. As we’ll see, the design of the system reduces the dependency of the of the downstream business analytics and data scientist teams on the data engineering team significantly.  </p>
-<p>This is it for the first part of the series.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/" data-id="cmmei2jij000f0kru1shz5pm8" data-title="Creating a realtime data platform - the design" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1057,7 +1073,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/PRD/" style="font-size: 10px;">PRD</a> <a href="/tags/algorithms/" style="font-size: 11.11px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 13.33px;">category theory</a> <a href="/tags/clojure/" style="font-size: 11.11px;">clojure</a> <a href="/tags/compilers/" style="font-size: 13.33px;">compilers</a> <a href="/tags/epi/" style="font-size: 13.33px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 18.89px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 14.44px;">machine learning</a> <a href="/tags/math/" style="font-size: 12.22px;">math</a> <a href="/tags/misc/" style="font-size: 15.56px;">misc</a> <a href="/tags/python/" style="font-size: 13.33px;">python</a> <a href="/tags/scala/" style="font-size: 17.78px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.67px;">scalaz</a> <a href="/tags/testing/" style="font-size: 11.11px;">testing</a>
+      <a href="/tags/PRD/" style="font-size: 10px;">PRD</a> <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.5px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 18.75px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 12.5px;">python</a> <a href="/tags/scala/" style="font-size: 17.5px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.25px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1067,6 +1083,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2026/06/30/Salesy-An-Introduction/">Salesy - An Introduction</a>
+          </li>
         
           <li>
             <a href="/2025/10/17/Writing-a-PRD-Restaurant-Reservations/">Writing a PRD - Curated Menus at Restaurants</a>
@@ -1102,10 +1122,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
-          </li>
-        
-          <li>
-            <a href="/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/">Creating a realtime data platform - bringing data in</a>
           </li>
         
       </ul>
