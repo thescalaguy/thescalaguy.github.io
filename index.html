@@ -190,6 +190,61 @@ mjx-container[display="true"] + br {
       <div class="outer">
         <section id="main">
   
+    <article id="post-Salesy-Connecting-Inbox" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2026/07/06/Salesy-Connecting-Inbox/" class="article-date">
+  <time datetime="2026-07-06T03:01:10.000Z" itemprop="datePublished">2026-07-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2026/07/06/Salesy-Connecting-Inbox/">Salesy - Connecting Inbox</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>In the <a href="/2026/06/30/Salesy-An-Introduction/">previous post</a> I introduced Salesy, a human-in-the-loop AI assistant that streamlines sales journeys by guiding the prospect through various stages of the journey. I mentioned that Salesy works over email. That is, it reads incoming emails and drafts reponses to them with the intention of keeping the sales process moving forward. The first step to use the system, therefore, is to connect the inbox so that Salesy can read emails. This post talks about how to connect your inbox to Salesy and gives an overview of what happens in the background.  </p>
+<h2 id="Connecting-Inbox"><a href="#Connecting-Inbox" class="headerlink" title="Connecting Inbox"></a>Connecting Inbox</h2><p>The very first time a user logs into their Salesy account, they’re presented with the consent screen. This is to make them aware of how their data is processed. As of writing, Salesy uses OpenAI’s models for reasoning. This means that the content of user’s email will be sent to OpenAI. By deafult, OpenAI retains the data for a period of 30 days. Their zero data retention policy is only available for enterprises with a qualifying use case. Similarly, another option is to use self-hosted open-source models. The economics of this makes sense when the scale is high enough. For the initial version, it’s only feasible to use hosted models. With this constraint, the user is asked to consent to Salesy’s use of OpenAI and be aware of the retention policy.</p>
+<img src="/2026/07/06/Salesy-Connecting-Inbox/Consent.png" class="">  
+<p>Once the user has consented, they’re presented with the button to connect their inbox with Salesy. For the first iteration, it only works with Gmail. Clicking on the “Authorize” button takes them through the Gmail OAuth process. They’re asked to give Salesy the permissions to read their inbox and to send emails. </p>
+<img src="/2026/07/06/Salesy-Connecting-Inbox/Connect.png" class="">  
+<p>After they’ve connected their inbox by completing the OAuth process, Salesy begins a historical sync of the Gmail inbox. Given that this is a time-taking process, the user is asked to upload files into the system. We’ll look more into what the different types of files can be in a later post. For now, it’s sufficient to know that these can be questionnaires, instructions, general information about the company, and so on.</p>
+<img src="/2026/07/06/Salesy-Connecting-Inbox/Sync.png" class="">  
+<p>A spinner is presented while the initial sync runs and changes to the “Done” button once it is complete. Once the sync is over and the files have been uploaded, Salesy will begin analyzing the emails and drafting responses to them. While drafting responses, it’ll gather information from the relevant files to ensure that what’s drafted is grounded in information provided by the user.</p>
+<img src="/2026/07/06/Salesy-Connecting-Inbox/Upload.png" class="">   
+<p>As Salesy drafts each reply, it presents them to the user in the dashboard. Each item in the list is presented with information like its label, such as “Sales Lead”, whether it is human driving the conversation or AI, by mentioning that the conversation is in “AI Mode” or “Human Mode”, and a brief summary of the email. The user then has the option to view the details of the drafted response or dismiss it altogether.</p>
+<img src="/2026/07/06/Salesy-Connecting-Inbox/Activity.png" class="">  
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>That’s it. That’s how you connect your inbox to Salesy. In the next post we’ll look at how to upload files to Salesy.</p>
+<p>Finito.</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://fasihkhatib.com/2026/07/06/Salesy-Connecting-Inbox/" data-id="cmr8n5hv900326hru8xmu9yr2" data-title="Salesy - Connecting Inbox" class="article-share-link">Share</a>
+      
+        <a href="http://fasihkhatib.com/2026/07/06/Salesy-Connecting-Inbox/#disqus_thread" class="article-comment-link">Comments</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PRD/" rel="tag">PRD</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-Salesy-An-Introduction" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2026/06/30/Salesy-An-Introduction/" class="article-date">
@@ -246,7 +301,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2026/06/30/Salesy-An-Introduction/" data-id="cmr1m3de7002xc0ru3woh38hm" data-title="Salesy - An Introduction" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2026/06/30/Salesy-An-Introduction/" data-id="cmr8n5hv900306hru7un8gmof" data-title="Salesy - An Introduction" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2026/06/30/Salesy-An-Introduction/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -320,7 +375,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/" data-id="cmr1m3dea0046c0ru606ge9th" data-title="Writing a PRD - Curated Menus at Restaurants" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/" data-id="cmr8n5hvb004a6hrucuf87wqw" data-title="Writing a PRD - Curated Menus at Restaurants" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/10/17/Writing-a-PRD-Restaurant-Reservations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -393,7 +448,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/" data-id="cmr1m3de7002sc0rue6eh9rg7" data-title="Real-time Restaurant Recommendations" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/" data-id="cmr8n5hv9002x6hrue585boez" data-title="Real-time Restaurant Recommendations" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/06/25/Real-time-restaurant-recommendations/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -466,7 +521,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/" data-id="cmr1m3de2000sc0rubq9e0d2j" data-title="Creating a realtime data platform - indexing" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/" data-id="cmr8n5hv4000u6hru31sc0kqp" data-title="Creating a realtime data platform - indexing" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/12/Creating-a-realtime-data-platform-indexing/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -554,7 +609,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cmr1m3de2000oc0ruhiyy56lc" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/" data-id="cmr8n5hv3000q6hru7uoo8zh5" data-title="Creating a realtime data platform - embedding" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/10/Creating-a-realtime-data-platform-embedding/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -627,7 +682,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cmr1m3de3000yc0ruf37cc9bf" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/" data-id="cmr8n5hv4000z6hruhx0odfzo" data-title="Creating a realtime data platform - visualization" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/06/Creating-a-realtime-data-platform-visualization/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -695,7 +750,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cmr1m3de2000vc0ru5set85ka" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/" data-id="cmr8n5hv4000y6hrucnjh8nw8" data-title="Creating a realtime data platform - orchestration" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/04/Creating-a-realtime-data-platform-orchestration/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -782,7 +837,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cmr1m3de1000ic0ru1lwe5f3d" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/" data-id="cmr8n5hv3000k6hru89trfw8m" data-title="Creating a realtime data platform - SQL" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2025/01/02/Creating-a-realtime-data-platform-SQL/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -848,7 +903,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cmr1m3de2000uc0ru7etz8qwr" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/" data-id="cmr8n5hv4000v6hru5q1m6jgj" data-title="Creating a realtime data platform - nullability" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/27/Creating-a-realtime-data-platform-nullability/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -915,7 +970,7 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cmr1m3de2000qc0ru63y49fvf" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/" data-id="cmr8n5hv3000s6hru6vlrfjh5" data-title="Creating a realtime data platform - evolving the schema" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/#disqus_thread" class="article-comment-link">Comments</a>
       
@@ -989,62 +1044,9 @@ mjx-container[display="true"] + br {
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cmr1m3de1000kc0rufrty31ao" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
+      <a data-url="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/" data-id="cmr8n5hv3000m6hru27zd8pvf" data-title="Creating a realtime data platform - bringing data in" class="article-share-link">Share</a>
       
         <a href="http://fasihkhatib.com/2024/12/24/Creating-a-realtime-data-platform-bringing-data-in/#disqus_thread" class="article-comment-link">Comments</a>
-      
-      
-      
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/architecture/" rel="tag">architecture</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-Creating-a-realtime-data-platform-creating-the-data" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" class="article-date">
-  <time datetime="2024-12-22T07:03:43.000Z" itemprop="datePublished">2024-12-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/">Creating a realtime data platform - creating the data</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>In the <a href="/2024/12/18/Creating-a-data-wrehouse-with-Apache-Pinot-and-Debezium/">previous post</a> we saw the overall design of the platform. We saw how the components of the system are divided into three separate categories: those that bring the data in, those that create datasets on this data, and those that display visualizations. Starting from this post, we’re going to start building the system. We’ll work with the data of a fictitious online cafe that we’ll populate using a Python script. In subsequent posts, we’ll ingest this data into the platform and create visualizations on top of it.</p>
-<h2 id="Before-we-begin"><a href="#Before-we-begin" class="headerlink" title="Before we begin"></a>Before we begin</h2><p>The setup, for this post, consists of a Docker container for Postgres which is a part of the compose file. We’ll bring up the container before we begin populating the database.</p>
-<h2 id="The-data"><a href="#The-data" class="headerlink" title="The data"></a>The data</h2><p>We’ll create and populate a table which stores the orders placed by the customer. The table contains, among other fields, the id of the user who placed the order, the id of the address where the order needs to be delivered, the status of the order, and the user agent of the device used to place the order. The code snippet below shows how the model is represented as a Python class.</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Order</span>(peewee.Model):</span><br><span class="line">    <span class="string">"""An order placed by the customer."""</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Meta</span>:</span><br><span class="line">        table_name = <span class="string">"orders"</span></span><br><span class="line">        database = database</span><br><span class="line"></span><br><span class="line">    <span class="built_in">id</span> = peewee.BigAutoField()</span><br><span class="line">    user_id = peewee.IntegerField()</span><br><span class="line">    address_id = peewee.IntegerField()</span><br><span class="line">    cafe_id = peewee.IntegerField()</span><br><span class="line">    partner_id = peewee.IntegerField(null=<span class="literal">True</span>)</span><br><span class="line">    created_at = peewee.DateTimeField(default=datetime.datetime.now)</span><br><span class="line">    updated_at = peewee.DateTimeField(null=<span class="literal">True</span>)</span><br><span class="line">    deleted_at = peewee.DateTimeField(null=<span class="literal">True</span>)</span><br><span class="line">    status = peewee.IntegerField(default=<span class="number">0</span>)</span><br><span class="line">    user_agent = peewee.TextField()</span><br></pre></td></tr></table></figure>  
-<p>Once we’ve created this class, we’ll write a function which creates instances of this class and persists them in the database. There are classes representing the cafe, the addresses saved by the user, and the delivery partner who will be assigned to deliver the order. However, these have been left out for the sake of brevity. The code snippet below shows this function.  </p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">create_orders</span>(<span class="params"></span></span><br><span class="line"><span class="params">    users: <span class="built_in">list</span>[User],</span></span><br><span class="line"><span class="params">    addresses: <span class="built_in">list</span>[Address],</span></span><br><span class="line"><span class="params">    cafes: <span class="built_in">list</span>[Cafe],</span></span><br><span class="line"><span class="params">    partners: <span class="built_in">list</span>[Partner],</span></span><br><span class="line"><span class="params">    n: <span class="built_in">int</span> = <span class="number">100</span>,</span></span><br><span class="line"><span class="params"></span>) -&gt; <span class="built_in">list</span>[Order]:</span><br><span class="line">    ua = UserAgent()</span><br><span class="line">    orders = []</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">base_order</span>() -&gt; <span class="built_in">dict</span>:</span><br><span class="line">        cafe = cafes[random.randint(<span class="number">0</span>, <span class="built_in">len</span>(cafes) - <span class="number">1</span>)]</span><br><span class="line">        user = users[random.randint(<span class="number">0</span>, <span class="built_in">len</span>(users) - <span class="number">1</span>)]</span><br><span class="line">        addr = [_ <span class="keyword">for</span> _ <span class="keyword">in</span> addresses <span class="keyword">if</span> _.user_id == user.<span class="built_in">id</span>][<span class="number">0</span>]</span><br><span class="line">        user_agent = ua.random</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> {</span><br><span class="line">            <span class="string">"user_id"</span>: user.<span class="built_in">id</span>,</span><br><span class="line">            <span class="string">"address_id"</span>: addr.<span class="built_in">id</span>,</span><br><span class="line">            <span class="string">"cafe_id"</span>: cafe.<span class="built_in">id</span>,</span><br><span class="line">            <span class="string">"user_agent"</span>: user_agent,</span><br><span class="line">        }</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> _ <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">        data = {**base_order(), <span class="string">"status"</span>: OrderStatus.PLACED.value}</span><br><span class="line">        order = Order.create(**data)</span><br><span class="line">        orders.append(order)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> orders</span><br></pre></td></tr></table></figure>  
-<p>Once we have all our classes and functions in place, we’ll run the script which populates the data.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python faker/data.py</span><br></pre></td></tr></table></figure>  
-<p>We can now query the database to see our data.  </p>
-<img src="/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/data.png" class="">  
-<p>This is it for the second part of the series.</p>
-<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/" data-id="cmr1m3de2000mc0rueav20c1x" data-title="Creating a realtime data platform - creating the data" class="article-share-link">Share</a>
-      
-        <a href="http://fasihkhatib.com/2024/12/22/Creating-a-realtime-data-platform-creating-the-data/#disqus_thread" class="article-comment-link">Comments</a>
       
       
       
@@ -1073,7 +1075,7 @@ mjx-container[display="true"] + br {
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/PRD/" style="font-size: 10px;">PRD</a> <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.5px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 18.75px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 12.5px;">python</a> <a href="/tags/scala/" style="font-size: 17.5px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.25px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
+      <a href="/tags/PRD/" style="font-size: 11.25px;">PRD</a> <a href="/tags/algorithms/" style="font-size: 10px;">algorithms</a> <a href="/tags/architecture/" style="font-size: 20px;">architecture</a> <a href="/tags/category-theory/" style="font-size: 12.5px;">category theory</a> <a href="/tags/clojure/" style="font-size: 10px;">clojure</a> <a href="/tags/compilers/" style="font-size: 12.5px;">compilers</a> <a href="/tags/epi/" style="font-size: 12.5px;">epi</a> <a href="/tags/functional-programming/" style="font-size: 18.75px;">functional programming</a> <a href="/tags/machine-learning/" style="font-size: 13.75px;">machine learning</a> <a href="/tags/math/" style="font-size: 11.25px;">math</a> <a href="/tags/misc/" style="font-size: 15px;">misc</a> <a href="/tags/python/" style="font-size: 12.5px;">python</a> <a href="/tags/scala/" style="font-size: 17.5px;">scala</a> <a href="/tags/scalaz/" style="font-size: 16.25px;">scalaz</a> <a href="/tags/testing/" style="font-size: 10px;">testing</a>
     </div>
   </div>
 
@@ -1083,6 +1085,10 @@ mjx-container[display="true"] + br {
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2026/07/06/Salesy-Connecting-Inbox/">Salesy - Connecting Inbox</a>
+          </li>
         
           <li>
             <a href="/2026/06/30/Salesy-An-Introduction/">Salesy - An Introduction</a>
@@ -1118,10 +1124,6 @@ mjx-container[display="true"] + br {
         
           <li>
             <a href="/2024/12/27/Creating-a-realtime-data-platform-nullability/">Creating a realtime data platform - nullability</a>
-          </li>
-        
-          <li>
-            <a href="/2024/12/26/Creating-a-realtime-data-platform-evolving-the-schema/">Creating a realtime data platform - evolving the schema</a>
           </li>
         
       </ul>
